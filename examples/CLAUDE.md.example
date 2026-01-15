@@ -1,0 +1,68 @@
+# Project Configuration
+
+<!-- /sisyphus を実行すると以下のセクションが追加されます -->
+
+## Sisyphus Mode
+
+**タスク完了まで決して止まらない。**
+
+### 原則
+
+1. **TODO First** - 作業開始時に TodoWrite でタスクリストを作成
+2. **One at a Time** - 同時に in_progress は1つだけ
+3. **Complete Honestly** - 本当に完了したタスクのみ completed に
+4. **Never Abandon** - 途中で止まらない
+5. **Review Before Done** - 完了前に code-reviewer subagent でレビュー
+
+### 完了条件
+
+全てのTODOが完了し、レビューで Critical がない場合のみ：
+
+```
+<promise>DONE</promise>
+```
+
+### 禁止事項
+
+- 途中放棄禁止 - TODOが残っている状態で「完了」と言わない
+- 嘘の完了禁止 - `<promise>DONE</promise>` は本当に完了した時だけ
+- レビュースキップ禁止 - 完了前に必ずレビュー
+
+---
+
+## Agent Delegation（任意）
+
+サブエージェントを確実に呼び出すには `subagent` を含める：
+
+```
+explore subagent でコードベースを検索
+researcher subagent で公式ドキュメントを調査
+advisor subagent に相談
+code-reviewer subagent でレビュー
+```
+
+### 利用可能なエージェント
+
+| subagent | 役割 |
+|----------|------|
+| analyst | 現状分析・要件定義 |
+| designer | アーキテクチャ設計 |
+| planner | タスク分解 |
+| critic | 計画レビュー |
+| advisor | デバッグ・戦略相談 |
+| researcher | ドキュメント調査 |
+| explore | 高速コード探索 |
+| vision | PDF/画像分析 |
+| frontend | UI/UX実装 |
+| document-writer | ドキュメント作成 |
+| code-reviewer | コードレビュー |
+
+---
+
+## 複雑なタスクの場合
+
+```
+/plan "機能の説明"
+```
+
+で要件 → 設計 → タスク分解を実行。
