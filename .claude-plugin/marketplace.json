@@ -14,8 +14,8 @@
       "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー",
       "version": "0.1.0",
       "source": {
-        "source": "local",
-        "path": "."
+        "source": "url",
+        "url": "https://github.com/tazawa-masayoshi/o-m-cc.git"
       }
     }
   ]
