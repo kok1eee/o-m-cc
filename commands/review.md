@@ -1,7 +1,7 @@
 ---
 description: "コード変更をレビュー（code-reviewer subagent）"
 argument-hint: "[specific files or 'all']"
-allowed-tools: [Task, Read, Glob, Grep, Bash]
+allowed-tools: [Task, Read, Glob, Grep, Bash, AskUserQuestion]
 model: sonnet
 ---
 
@@ -44,8 +44,22 @@ Task tool で code-reviewer subagent を呼び出し：
 
 code-reviewer の結果を確認：
 
-- **Critical なし** → レビュー完了、次のステップへ
-- **Critical あり** → 問題を修正してから再レビュー
+- **Critical なし** → レビュー完了
+- **Critical あり** → Step 4 へ
+
+### Step 4: Critical 発見時の対応確認
+
+Critical が見つかった場合、**AskUserQuestion** で対応を確認：
+
+```
+質問: Critical な問題が見つかりました。どう対応しますか？
+
+選択肢:
+1. 今すぐ修正（推奨） - 問題を修正して再レビュー
+2. 詳細を確認 - 問題の詳細説明を表示
+3. 後で対応 - 問題を記録して一旦終了
+4. 無視して続行 - リスクを承知で続行
+```
 
 ---
 

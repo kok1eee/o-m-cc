@@ -1,7 +1,7 @@
 ---
 description: "Sisyphusモードを有効化（CLAUDE.mdに原則を追加）"
 argument-hint: ""
-allowed-tools: [Read, Write, Edit, Glob, Bash]
+allowed-tools: [Read, Write, Edit, Glob, Bash, AskUserQuestion]
 model: sonnet
 ---
 
@@ -10,6 +10,21 @@ model: sonnet
 **プロジェクトに Sisyphus モードを有効化します。**
 
 一度有効化すれば、以降は自動的に「タスク完了まで止まらない」モードで動作します。
+
+---
+
+## Step 0: 設定内容の確認
+
+**AskUserQuestion** で設定内容を確認してください：
+
+```
+質問: Sisyphus モードの設定を行います。どのように設定しますか？
+
+選択肢:
+1. 標準設定（推奨） - 基本原則のみ追加
+2. フル設定 - 原則 + hooks（stop-guard.sh）を設定
+3. 確認のみ - 現在の設定状態を確認
+```
 
 ---
 

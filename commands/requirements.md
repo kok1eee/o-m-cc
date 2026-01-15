@@ -1,7 +1,7 @@
 ---
 description: "要件定義を作成（SDD Phase 1）"
 argument-hint: "<feature description>"
-allowed-tools: [Task, Read, Write, Glob, Grep, WebSearch]
+allowed-tools: [Task, Read, Write, Glob, Grep, WebSearch, AskUserQuestion]
 model: sonnet
 ---
 
@@ -12,6 +12,22 @@ model: sonnet
 ## 機能
 
 $ARGUMENTS
+
+---
+
+## Step 0: 要件の明確化
+
+機能説明が曖昧な場合は、**AskUserQuestion** で確認してください：
+
+```
+確認すべき点（必要に応じて）:
+- 対象ユーザーは？（管理者/一般ユーザー/両方）
+- 優先する品質は？（パフォーマンス/セキュリティ/UX）
+- 既存機能との関係は？（新規/拡張/置換）
+- スコープは？（MVP/フル機能）
+```
+
+**明確な場合はスキップして次へ進む。**
 
 ---
 
@@ -72,13 +88,6 @@ Task tool で analyst subagent を呼び出し：
 
    - 機能要件: X件
    - 非機能要件: X件
-
-┌─────────────────────────────────────┐
-│ 次のステップ                        │
-├─────────────────────────────────────┤
-│ /design      設計書を作成           │
-│ /plan        残りを一括実行         │
-└─────────────────────────────────────┘
 ```
 
 ---

@@ -1,7 +1,7 @@
 ---
 description: "設計書を作成（SDD Phase 2）"
 argument-hint: ""
-allowed-tools: [Task, Read, Write, Glob, Grep, WebSearch, WebFetch]
+allowed-tools: [Task, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion]
 model: opus
 ---
 
@@ -16,6 +16,25 @@ model: opus
 `.plan/requirements.md` が存在すること。
 
 存在しない場合は、先に `/requirements` を実行してください。
+
+---
+
+## Step 0: 設計アプローチの確認
+
+複数のアーキテクチャパターンが考えられる場合、**AskUserQuestion** で確認してください：
+
+```
+例: 状態管理の選択
+質問: どの状態管理アプローチを使用しますか？
+
+選択肢:
+1. Context API（推奨） - シンプルで十分な場合
+2. Redux - 複雑な状態管理が必要な場合
+3. Zustand - 軽量で柔軟な選択肢
+4. 既存のパターンに合わせる
+```
+
+**明確な場合やプロジェクトのパターンがある場合はスキップ。**
 
 ---
 
@@ -81,13 +100,6 @@ Task tool で designer subagent を呼び出し：
 
    - コンポーネント: X個
    - API: X個
-
-┌─────────────────────────────────────┐
-│ 次のステップ                        │
-├─────────────────────────────────────┤
-│ /tasks       タスク分解             │
-│ /plan        残りを一括実行         │
-└─────────────────────────────────────┘
 ```
 
 ---

@@ -1,7 +1,7 @@
 ---
 description: "仕様駆動の計画フロー（要件 → 設計 → タスク 一括実行）"
 argument-hint: "<feature description>"
-allowed-tools: [Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite]
+allowed-tools: [Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, AskUserQuestion]
 model: opus
 ---
 
@@ -9,11 +9,28 @@ model: opus
 
 **要件 → 設計 → タスク** を一括で実行します。
 
-個別に実行したい場合は `/requirements`, `/design`, `/tasks` を使用してください。
-
 ## 機能
 
 $ARGUMENTS
+
+---
+
+## Step 0: 実行方式の確認
+
+**AskUserQuestion** で実行方式を確認してください：
+
+```
+質問: どのように計画を進めますか？
+
+選択肢:
+1. 一括実行（推奨） - 要件→設計→タスクを自動で実行
+2. 段階的に実行 - 各フェーズで確認しながら進める
+3. 要件定義のみ - /requirements だけ実行
+```
+
+- **一括実行** → Phase 1-3 を連続実行
+- **段階的** → 各 Phase 完了後にユーザー確認
+- **要件のみ** → Phase 1 のみ実行して終了
 
 ---
 

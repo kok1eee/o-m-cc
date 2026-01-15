@@ -1,7 +1,7 @@
 ---
 description: "タスク分解（SDD Phase 3）"
 argument-hint: ""
-allowed-tools: [Task, Read, Write, Glob, Grep]
+allowed-tools: [Task, Read, Write, Glob, Grep, AskUserQuestion]
 model: sonnet
 ---
 
