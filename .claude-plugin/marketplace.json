@@ -13,7 +13,10 @@
       "name": "o-m-cc",
       "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー",
       "version": "0.1.0",
-      "path": "."
+      "source": {
+        "source": "local",
+        "path": "."
+      }
     }
   ]
 }
