@@ -1,0 +1,12 @@
+{
+  "name": "tazawa-masayoshi",
+  "description": "Personal Claude Code plugins by tazawa-masayoshi",
+  "plugins": {
+    "o-m-cc": {
+      "name": "o-m-cc",
+      "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー",
+      "version": "0.1.0",
+      "path": "."
+    }
+  }
+}
