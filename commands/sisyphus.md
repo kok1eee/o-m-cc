@@ -13,32 +13,43 @@ model: sonnet
 
 ---
 
-## Step 0: 依存プラグインの確認（任意）
+## Step 0: 推奨プラグインのインストール（任意）
 
-**推奨プラグインがインストールされているか確認:**
+**AskUserQuestion** で使用する言語を確認：
 
-```bash
-echo "=== 推奨プラグイン確認 ==="
-for plugin in frontend-design feature-dev code-simplifier security-guidance pyright vtsls; do
-  claude plugin list 2>/dev/null | grep -q "$plugin" && echo "✅ $plugin" || echo "❌ $plugin (未インストール)"
-done
+```
+質問: 普段使用するプログラミング言語は？（LSPプラグインの選択用）
+
+選択肢:
+1. TypeScript/JavaScript - vtsls をインストール
+2. Python - pyright をインストール
+3. 両方 - vtsls + pyright をインストール
+4. スキップ - LSPは後でインストール
 ```
 
-**未インストールのプラグインをインストール:**
+**マーケットプレイス追加（初回のみ）:**
 
 ```bash
-# マーケットプレイス追加（初回のみ）
 claude plugin marketplace add anthropics/claude-plugins-official
+```
 
-# 推奨（開発支援）
+**開発支援プラグイン（共通）:**
+
+```bash
 claude plugin install frontend-design
 claude plugin install feature-dev
 claude plugin install code-simplifier
 claude plugin install security-guidance
+```
 
-# LSP（エラー検出）
-claude plugin install pyright
+**LSPプラグイン（選択に応じて）:**
+
+```bash
+# TypeScript/JavaScript
 claude plugin install vtsls
+
+# Python
+claude plugin install pyright
 ```
 
 | プラグイン | 用途 |
@@ -47,10 +58,10 @@ claude plugin install vtsls
 | feature-dev | 機能開発ワークフロー |
 | code-simplifier | コード簡素化（レビュー後サジェスト） |
 | security-guidance | セキュリティレビュー支援 |
-| pyright | Python エラー検出 |
 | vtsls | TypeScript/JS LSP |
+| pyright | Python エラー検出 |
 
-> **Note**: ループ制御は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
+> **Note**: ループ制御は o-m-cc 内蔵の Stop Hook で実現。外部プラグイン不要。
 
 ---
 
