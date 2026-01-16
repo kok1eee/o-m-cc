@@ -112,55 +112,23 @@ CLAUDE.md に以下のセクションを追加（既に存在する場合はス�
 - レビュースキップ禁止 - 完了前に必ずレビュー
 ```
 
-### Step 4: hooks の設定（フル設定時）
+### Step 4: hooks の確認（フル設定時）
 
-o-m-cc 内蔵の Stop Hook を設定。これで普段のタスクでも自動的に「完了まで止まらない」動きになる。
+o-m-cc プラグインをインストールすると、Stop Hook が自動的に有効になります。
 
-**1. hooks ディレクトリ作成:**
+**自動で有効になる機能:**
+- `<promise>DONE</promise>` 検知でループ終了
+- code-reviewer 未実行なら block
+- Critical な問題があれば block
+- max_iterations（デフォルト: 50）で安全弁
+
+**確認:**
 ```bash
-mkdir -p .claude/hooks
+# プラグインの hooks が有効か確認
+ls -la ~/.claude/plugins/o-m-cc/hooks/
 ```
 
-**2. stop-guard.sh 作成:**
-```bash
-cat > .claude/hooks/stop-guard.sh << 'EOF'
-#!/bin/bash
-# Sisyphus Stop Guard - o-m-cc 内蔵
-# <promise>DONE</promise> が出力されるまでループ継続
-
-TRANSCRIPT="$CLAUDE_TRANSCRIPT"
-
-if echo "$TRANSCRIPT" | grep -q "<promise>DONE</promise>"; then
-  # 完了条件を満たした → 停止を許可
-  exit 0
-else
-  # 完了条件を満たしていない → 続行を強制
-  echo "⚠️ タスク未完了。続行します..."
-  exit 2
-fi
-EOF
-chmod +x .claude/hooks/stop-guard.sh
-```
-
-**3. settings.json に hooks 追加:**
-```bash
-# .claude/settings.json を編集（または作成）
-```
-
-```json
-{
-  "hooks": {
-    "Stop": [
-      {
-        "type": "command",
-        "command": ".claude/hooks/stop-guard.sh"
-      }
-    ]
-  }
-}
-```
-
-> **動作**: Claude が停止しようとすると stop-guard.sh が実行され、`<promise>DONE</promise>` がない場合は exit 2 で続行を強制。
+> **Note**: 手動設定は不要。プラグインの hooks が自動適用されます。
 
 ---
 

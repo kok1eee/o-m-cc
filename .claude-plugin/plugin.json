@@ -1,6 +1,6 @@
 {
   "name": "o-m-cc",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー。13の専門エージェントと仕様駆動開発（SDD）フローで複雑なタスクを完遂。",
   "author": {
     "name": "kok1eee"
