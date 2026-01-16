@@ -114,25 +114,55 @@ CLAUDE.md に以下のセクションを追加（既に存在する場合はス�
 - レビュースキップ禁止 - 完了前に必ずレビュー
 ```
 
-### Step 4: hooks の設定（任意）
+### Step 4: hooks の設定（フル設定時）
 
-stop-guard.sh を設定する場合は、hooks.json を作成：
+ralph-wiggum 連携の hooks を設定。これで普段のタスクでも自動的に「完了まで止まらない」動きになる。
+
+**1. hooks ディレクトリ作成:**
+```bash
+mkdir -p .claude/hooks
+```
+
+**2. stop-guard.sh 作成:**
+```bash
+cat > .claude/hooks/stop-guard.sh << 'EOF'
+#!/bin/bash
+# Sisyphus Stop Guard - ralph-wiggum 連携
+# <promise>DONE</promise> が出力されるまでループ継続
+
+TRANSCRIPT="$CLAUDE_TRANSCRIPT"
+
+if echo "$TRANSCRIPT" | grep -q "<promise>DONE</promise>"; then
+  # 完了条件を満たした → 停止を許可
+  exit 0
+else
+  # 完了条件を満たしていない → 続行を強制
+  echo "⚠️ タスク未完了。続行します..."
+  exit 2
+fi
+EOF
+chmod +x .claude/hooks/stop-guard.sh
+```
+
+**3. settings.json に hooks 追加:**
+```bash
+# .claude/settings.json を編集（または作成）
+```
 
 ```json
 {
-  "hooks": [
-    {
-      "matcher": "Stop",
-      "hooks": [
-        {
-          "type": "command",
-          "command": ".claude/hooks/stop-guard.sh"
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": ".claude/hooks/stop-guard.sh"
+      }
+    ]
+  }
 }
 ```
+
+> **動作**: Claude が停止しようとすると stop-guard.sh が実行され、`<promise>DONE</promise>` がない場合は exit 2 で続行を強制。
 
 ---
 
