@@ -13,21 +13,41 @@ model: sonnet
 
 ---
 
-## Step 0: ralph-wiggum 確認
+## Step 0: 依存プラグインの確認
 
-**まず ralph-wiggum プラグインがインストールされているか確認:**
+**必要なプラグインがインストールされているか確認:**
 
 ```bash
-claude plugin list 2>/dev/null | grep -q "ralph-wiggum" && echo "✅ ralph-wiggum installed" || echo "❌ ralph-wiggum not installed"
+echo "=== 依存プラグイン確認 ==="
+for plugin in ralph-wiggum frontend-design feature-dev code-simplifier pyright-lsp typescript-lsp; do
+  claude plugin list 2>/dev/null | grep -q "$plugin" && echo "✅ $plugin" || echo "❌ $plugin (未インストール)"
+done
 ```
 
-**インストールされていない場合:**
+**未インストールのプラグインをインストール:**
 
 ```bash
+# 必須（ループ制御）
 claude plugin install ralph-wiggum@anthropics
+
+# 推奨（開発支援）
+claude plugin install frontend-design@claude-code-plugins
+claude plugin install feature-dev@claude-code-plugins
+claude plugin install code-simplifier@claude-code-plugins
+
+# LSP（エラー検出）
+claude plugin install pyright-lsp@claude-code-lsps
+claude plugin install typescript-lsp@claude-code-lsps
 ```
 
-> ralph-wiggum は Sisyphus の依存関係です。`<promise>DONE</promise>` が出力されるまでループを継続します。
+| プラグイン | 用途 |
+|-----------|------|
+| ralph-wiggum | `<promise>DONE</promise>` までループ継続 |
+| frontend-design | フロントエンド設計支援 |
+| feature-dev | 機能開発ワークフロー |
+| code-simplifier | コード簡素化（完了時サジェスト） |
+| pyright-lsp | Python エラー検出 |
+| typescript-lsp | TypeScript エラー検出 |
 
 ---
 
@@ -124,6 +144,8 @@ stop-guard.sh を設定する場合は、hooks.json を作成：
 
    以降、このプロジェクトでは自動的に
    「タスク完了まで止まらない」モードで動作します。
+
+💡 Tip: 実装完了後に /code-simplifier でコードを簡素化できます
 ```
 
 ### 既に有効な場合
@@ -131,6 +153,8 @@ stop-guard.sh を設定する場合は、hooks.json を作成：
 ```
 ℹ️ Sisyphus モードは既に有効です
    📄 CLAUDE.md に Sisyphus セクションが存在します
+
+💡 Tip: 実装完了後に /code-simplifier でコードを簡素化できます
 ```
 
 ---
