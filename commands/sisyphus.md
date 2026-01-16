@@ -13,7 +13,25 @@ model: sonnet
 
 ---
 
-## Step 0: 設定内容の確認
+## Step 0: ralph-wiggum 確認
+
+**まず ralph-wiggum プラグインがインストールされているか確認:**
+
+```bash
+claude plugin list 2>/dev/null | grep -q "ralph-wiggum" && echo "✅ ralph-wiggum installed" || echo "❌ ralph-wiggum not installed"
+```
+
+**インストールされていない場合:**
+
+```bash
+claude plugin install ralph-wiggum@anthropics
+```
+
+> ralph-wiggum は Sisyphus の依存関係です。`<promise>DONE</promise>` が出力されるまでループを継続します。
+
+---
+
+## Step 1: 設定内容の確認
 
 **AskUserQuestion** で設定内容を確認してください：
 
@@ -30,7 +48,7 @@ model: sonnet
 
 ## 実行内容
 
-### Step 1: 現状確認
+### Step 2: 現状確認
 
 まず CLAUDE.md の存在と内容を確認：
 
@@ -42,7 +60,7 @@ ls -la CLAUDE.md 2>/dev/null || echo "CLAUDE.md not found"
 - **存在しない場合** → 新規作成
 - **存在する場合** → Sisyphus セクションがあるか確認
 
-### Step 2: Sisyphus セクションの追加
+### Step 3: Sisyphus セクションの追加
 
 CLAUDE.md に以下のセクションを追加（既に存在する場合はスキップ）：
 
@@ -74,7 +92,7 @@ CLAUDE.md に以下のセクションを追加（既に存在する場合はス�
 - レビュースキップ禁止 - 完了前に必ずレビュー
 ```
 
-### Step 3: hooks の設定（任意）
+### Step 4: hooks の設定（任意）
 
 stop-guard.sh を設定する場合は、hooks.json を作成：
 
