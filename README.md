@@ -152,23 +152,32 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Dependencies
 
-`/o-m-cc:sisyphus` 実行時に以下の推奨プラグインを確認：
+`/o-m-cc:sisyphus` 実行時に推奨プラグインをインストール。
 
 ```bash
 # マーケットプレイス追加（初回のみ）
 claude plugin marketplace add anthropics/claude-plugins-official
 ```
 
-| プラグイン | 用途 | インストール |
-|-----------|------|-------------|
-| frontend-design | フロントエンド設計支援 | `claude plugin install frontend-design` |
-| feature-dev | 機能開発ワークフロー | `claude plugin install feature-dev` |
-| code-simplifier | コード簡素化（レビュー後提案） | `claude plugin install code-simplifier` |
-| security-guidance | セキュリティレビュー支援 | `claude plugin install security-guidance` |
-| pyright | Python エラー検出 | `claude plugin install pyright` |
-| vtsls | TypeScript/JS LSP | `claude plugin install vtsls` |
+### 開発支援（共通）
 
-> **Note**: ループ制御（`<promise>DONE</promise>` 検知）は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
+| プラグイン | 用途 |
+|-----------|------|
+| frontend-design | フロントエンド設計支援 |
+| feature-dev | 機能開発ワークフロー |
+| code-simplifier | コード簡素化（レビュー後提案） |
+| security-guidance | セキュリティレビュー支援 |
+
+### LSP（言語に応じて選択）
+
+| 言語 | プラグイン | インストール |
+|------|-----------|-------------|
+| TypeScript/JS/React | vtsls | `claude plugin install vtsls` |
+| Python | pyright | `claude plugin install pyright` |
+| Go | gopls | `claude plugin install gopls` |
+| Rust | rust-analyzer | `claude plugin install rust-analyzer` |
+
+> **Note**: ループ制御（`<promise>DONE</promise>` 検知）は o-m-cc 内蔵の Stop Hook で実現。外部プラグイン不要。
 
 ## Agents
 

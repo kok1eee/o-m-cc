@@ -15,16 +15,16 @@ model: sonnet
 
 ## Step 0: 推奨プラグインのインストール（任意）
 
-**AskUserQuestion** で使用する言語を確認：
+**AskUserQuestion** で使用する言語を確認（複数選択可）：
 
 ```
-質問: 普段使用するプログラミング言語は？（LSPプラグインの選択用）
+質問: 普段使用するプログラミング言語は？（LSPプラグインの選択用、複数選択可）
 
 選択肢:
-1. TypeScript/JavaScript - vtsls をインストール
+1. TypeScript/JavaScript/React - vtsls をインストール
 2. Python - pyright をインストール
-3. 両方 - vtsls + pyright をインストール
-4. スキップ - LSPは後でインストール
+3. Go - gopls をインストール
+4. Rust - rust-analyzer をインストール
 ```
 
 **マーケットプレイス追加（初回のみ）:**
@@ -44,13 +44,12 @@ claude plugin install security-guidance
 
 **LSPプラグイン（選択に応じて）:**
 
-```bash
-# TypeScript/JavaScript
-claude plugin install vtsls
-
-# Python
-claude plugin install pyright
-```
+| 言語 | プラグイン | インストール |
+|------|-----------|-------------|
+| TypeScript/JS/React | vtsls | `claude plugin install vtsls` |
+| Python | pyright | `claude plugin install pyright` |
+| Go | gopls | `claude plugin install gopls` |
+| Rust | rust-analyzer | `claude plugin install rust-analyzer` |
 
 | プラグイン | 用途 |
 |-----------|------|
@@ -58,8 +57,6 @@ claude plugin install pyright
 | feature-dev | 機能開発ワークフロー |
 | code-simplifier | コード簡素化（レビュー後サジェスト） |
 | security-guidance | セキュリティレビュー支援 |
-| vtsls | TypeScript/JS LSP |
-| pyright | Python エラー検出 |
 
 > **Note**: ループ制御は o-m-cc 内蔵の Stop Hook で実現。外部プラグイン不要。
 
