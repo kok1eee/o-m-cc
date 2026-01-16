@@ -19,7 +19,7 @@ model: sonnet
 
 ```bash
 echo "=== 推奨プラグイン確認 ==="
-for plugin in frontend-design feature-dev code-simplifier security-guidance pyright-lsp typescript-lsp; do
+for plugin in frontend-design feature-dev security-guidance pyright vtsls; do
   claude plugin list 2>/dev/null | grep -q "$plugin" && echo "✅ $plugin" || echo "❌ $plugin (未インストール)"
 done
 ```
@@ -30,22 +30,20 @@ done
 # 推奨（開発支援）
 claude plugin install frontend-design@claude-code-plugins
 claude plugin install feature-dev@claude-code-plugins
-claude plugin install code-simplifier@claude-code-plugins
 claude plugin install security-guidance@claude-code-plugins
 
 # LSP（エラー検出）
-claude plugin install pyright-lsp@claude-code-lsps
-claude plugin install typescript-lsp@claude-code-lsps
+claude plugin install pyright@claude-code-lsps
+claude plugin install vtsls@claude-code-lsps
 ```
 
 | プラグイン | 用途 |
 |-----------|------|
 | frontend-design | フロントエンド設計支援 |
 | feature-dev | 機能開発ワークフロー |
-| code-simplifier | コード簡素化（レビュー後サジェスト） |
 | security-guidance | セキュリティレビュー支援 |
-| pyright-lsp | Python エラー検出 |
-| typescript-lsp | TypeScript エラー検出 |
+| pyright | Python エラー検出 |
+| vtsls | TypeScript/JS LSP |
 
 > **Note**: ループ制御は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
 

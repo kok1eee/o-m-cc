@@ -158,10 +158,9 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 |-----------|------|-------------|
 | frontend-design | フロントエンド設計支援 | `claude plugin install frontend-design@claude-code-plugins` |
 | feature-dev | 機能開発ワークフロー | `claude plugin install feature-dev@claude-code-plugins` |
-| code-simplifier | コード簡素化（レビュー後提案） | `claude plugin install code-simplifier@claude-code-plugins` |
 | security-guidance | セキュリティレビュー支援 | `claude plugin install security-guidance@claude-code-plugins` |
-| pyright-lsp | Python エラー検出 | `claude plugin install pyright-lsp@claude-code-lsps` |
-| typescript-lsp | TypeScript エラー検出 | `claude plugin install typescript-lsp@claude-code-lsps` |
+| pyright | Python エラー検出 | `claude plugin install pyright@claude-code-lsps` |
+| vtsls | TypeScript/JS LSP | `claude plugin install vtsls@claude-code-lsps` |
 
 > **Note**: ループ制御（`<promise>DONE</promise>` 検知）は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
 
