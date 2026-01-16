@@ -143,8 +143,6 @@ Task tool で planner agent を呼び出し：
 
 ✅ 全要件達成
 
-💡 Tip: /code-simplifier でコードを簡素化できます
-
 <promise>DONE</promise>
 ```
 

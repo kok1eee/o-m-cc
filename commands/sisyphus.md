@@ -19,7 +19,7 @@ model: sonnet
 
 ```bash
 echo "=== 依存プラグイン確認 ==="
-for plugin in ralph-wiggum frontend-design feature-dev code-simplifier pyright-lsp typescript-lsp; do
+for plugin in ralph-wiggum frontend-design feature-dev code-simplifier security-guidance pyright-lsp typescript-lsp; do
   claude plugin list 2>/dev/null | grep -q "$plugin" && echo "✅ $plugin" || echo "❌ $plugin (未インストール)"
 done
 ```
@@ -34,6 +34,7 @@ claude plugin install ralph-wiggum@anthropics
 claude plugin install frontend-design@claude-code-plugins
 claude plugin install feature-dev@claude-code-plugins
 claude plugin install code-simplifier@claude-code-plugins
+claude plugin install security-guidance@claude-code-plugins
 
 # LSP（エラー検出）
 claude plugin install pyright-lsp@claude-code-lsps
@@ -45,7 +46,8 @@ claude plugin install typescript-lsp@claude-code-lsps
 | ralph-wiggum | `<promise>DONE</promise>` までループ継続 |
 | frontend-design | フロントエンド設計支援 |
 | feature-dev | 機能開発ワークフロー |
-| code-simplifier | コード簡素化（完了時サジェスト） |
+| code-simplifier | コード簡素化（レビュー後サジェスト） |
+| security-guidance | セキュリティレビュー支援 |
 | pyright-lsp | Python エラー検出 |
 | typescript-lsp | TypeScript エラー検出 |
 
@@ -144,8 +146,6 @@ stop-guard.sh を設定する場合は、hooks.json を作成：
 
    以降、このプロジェクトでは自動的に
    「タスク完了まで止まらない」モードで動作します。
-
-💡 Tip: 実装完了後に /code-simplifier でコードを簡素化できます
 ```
 
 ### 既に有効な場合
@@ -153,8 +153,6 @@ stop-guard.sh を設定する場合は、hooks.json を作成：
 ```
 ℹ️ Sisyphus モードは既に有効です
    📄 CLAUDE.md に Sisyphus セクションが存在します
-
-💡 Tip: 実装完了後に /code-simplifier でコードを簡素化できます
 ```
 
 ---
