@@ -258,6 +258,9 @@ o-m-cc/
 ├── hooks/
 │   ├── hooks.json
 │   └── stop-guard.sh      # Stop Hook（ループ制御 + code-reviewer連携）
+├── scripts/
+│   ├── install-plugins.sh # 推奨プラグインのインストール
+│   └── setup-claude-md.sh # CLAUDE.md の Sisyphus セクション管理
 ├── examples/
 │   └── CLAUDE.md.example
 └── README.md
