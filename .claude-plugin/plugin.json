@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー。13の専門エージェントと仕様駆動開発（SDD）フローで複雑なタスクを完遂。",
   "author": {
-    "name": "tazawa-masayoshi"
+    "name": "kok1eee"
   },
-  "repository": "https://github.com/tazawa-masayoshi/o-m-cc",
+  "repository": "https://github.com/kok1eee/o-m-cc",
   "license": "MIT",
   "keywords": [
     "claude-code",

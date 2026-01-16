@@ -1,11 +1,11 @@
 {
-  "name": "tazawa-masayoshi",
+  "name": "kok1eee",
   "owner": {
-    "name": "tazawa-masayoshi",
-    "email": "tazawa-masayoshi@example.com"
+    "name": "kok1eee",
+    "email": "kok1eee@example.com"
   },
   "metadata": {
-    "description": "Personal Claude Code plugins by tazawa-masayoshi",
+    "description": "Claude Code plugins by kok1eee",
     "version": "1.0.0"
   },
   "plugins": [
@@ -15,7 +15,7 @@
       "version": "0.1.0",
       "source": {
         "source": "url",
-        "url": "https://github.com/tazawa-masayoshi/o-m-cc.git"
+        "url": "https://github.com/kok1eee/o-m-cc.git"
       }
     }
   ]
