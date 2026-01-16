@@ -154,13 +154,19 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 `/o-m-cc:sisyphus` 実行時に以下の推奨プラグインを確認：
 
+```bash
+# マーケットプレイス追加（初回のみ）
+claude plugin marketplace add anthropics/claude-plugins-official
+```
+
 | プラグイン | 用途 | インストール |
 |-----------|------|-------------|
-| frontend-design | フロントエンド設計支援 | `claude plugin install frontend-design@claude-code-plugins` |
-| feature-dev | 機能開発ワークフロー | `claude plugin install feature-dev@claude-code-plugins` |
-| security-guidance | セキュリティレビュー支援 | `claude plugin install security-guidance@claude-code-plugins` |
-| pyright | Python エラー検出 | `claude plugin install pyright@claude-code-lsps` |
-| vtsls | TypeScript/JS LSP | `claude plugin install vtsls@claude-code-lsps` |
+| frontend-design | フロントエンド設計支援 | `claude plugin install frontend-design` |
+| feature-dev | 機能開発ワークフロー | `claude plugin install feature-dev` |
+| code-simplifier | コード簡素化（レビュー後提案） | `claude plugin install code-simplifier` |
+| security-guidance | セキュリティレビュー支援 | `claude plugin install security-guidance` |
+| pyright | Python エラー検出 | `claude plugin install pyright` |
+| vtsls | TypeScript/JS LSP | `claude plugin install vtsls` |
 
 > **Note**: ループ制御（`<promise>DONE</promise>` 検知）は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
 

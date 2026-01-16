@@ -76,7 +76,20 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
    🟢 Critical: なし
    🟡 Warning: X件
    🟢 Suggestion: X件
+```
 
+**AskUserQuestion** でコード簡素化を提案：
+
+```
+質問: レビュー完了しました。コードを簡素化しますか？
+
+選択肢:
+1. 簡素化する - /code-simplifier を実行
+2. スキップ（推奨） - このまま完了
+```
+
+**「スキップ」または簡素化完了後:**
+```
 <promise>DONE</promise>
 ```
 
