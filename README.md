@@ -9,17 +9,21 @@ o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注�
 - **Sisyphus哲学**: タスク完了まで決して止まらない
 - **TODOドリブン**: 明確なタスクリストに基づいて作業
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
+- **Prometheus式インタビュー**: 計画前にギャップ分析で漏れを発見
 
 ## Quick Start
 
 ```bash
-# 1. プラグインをインストール
-/plugin install o-m-cc@your-marketplace
+# 1. marketplace 追加
+claude plugin marketplace add kok1eee/o-m-cc
 
-# 2. Sisyphus モードを有効化（初回のみ）
-/sisyphus
+# 2. プラグインインストール
+claude plugin install o-m-cc@kok1eee
 
-# 3. あとは普通に作業するだけ
+# 3. Sisyphus モードを有効化（初回のみ）
+/o-m-cc:sisyphus
+
+# 4. あとは普通に作業するだけ
 「ログインボタンのバグを修正して」
 → 自動的に Sisyphus モードで動作
 ```
@@ -44,12 +48,12 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ```bash
 # 方法1: 一括実行
-/plan "認証システムを実装"
+/o-m-cc:plan "認証システムを実装"
 
 # 方法2: 段階的に実行
-/requirements "認証システムを実装"
-/design
-/tasks
+/o-m-cc:requirements "認証システムを実装"
+/o-m-cc:design
+/o-m-cc:tasks
 ```
 
 計画が完了したら、普通に実装を依頼：
@@ -58,28 +62,48 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 「計画に沿って実装を開始して」
 ```
 
+### 最大パフォーマンスモード
+
+並列エージェントで最速実行：
+
+```bash
+/o-m-cc:ultrawork "認証機能を実装"
+
+# コンテキスト整理してから実行
+/o-m-cc:ultrawork-compact "大規模リファクタリング"
+/o-m-cc:ultrawork-clear "新機能実装"
+```
+
 ## Commands
 
 ### セットアップ
 
 | コマンド | 説明 |
 |---------|------|
-| `/sisyphus` | Sisyphus モードを有効化（CLAUDE.md に追記） |
+| `/o-m-cc:sisyphus` | Sisyphus モードを有効化（依存プラグイン確認 + CLAUDE.md設定 + hooks設定） |
 
 ### 計画フェーズ（複雑なタスク用）
 
 | コマンド | 説明 | 次のステップ |
 |---------|------|-------------|
-| `/requirements <task>` | 要件定義（SDD Phase 1） | → /design |
-| `/design` | 設計書作成（SDD Phase 2） | → /tasks |
-| `/tasks` | タスク分解（SDD Phase 3） | → 実装開始 |
-| `/plan <task>` | 上記3つを一括実行 | → 実装開始 |
+| `/o-m-cc:requirements <task>` | 要件定義（SDD Phase 1） | → design |
+| `/o-m-cc:design` | 設計書作成（SDD Phase 2） | → tasks |
+| `/o-m-cc:tasks` | タスク分解（SDD Phase 3） | → 実装開始 |
+| `/o-m-cc:plan <task>` | 上記を一括実行（scout によるギャップ分析含む） | → 実装開始 |
+
+### 実行
+
+| コマンド | 説明 |
+|---------|------|
+| `/o-m-cc:ultrawork <task>` | 並列エージェントで最大パフォーマンス実行 |
+| `/o-m-cc:ultrawork-compact <task>` | /compact 後に ultrawork |
+| `/o-m-cc:ultrawork-clear <task>` | /clear 後に ultrawork |
 
 ### 品質
 
 | コマンド | 説明 |
 |---------|------|
-| `/review [files]` | コードレビュー |
+| `/o-m-cc:review [files]` | コードレビュー（security-guidance連携 + code-simplifier提案） |
 
 ## Workflow
 
@@ -87,7 +111,10 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ┌──────────────────────────────────────────────────────────┐
 │ 初回セットアップ                                         │
 ├──────────────────────────────────────────────────────────┤
-│ /sisyphus  →  CLAUDE.md に Sisyphus 原則を追加          │
+│ /o-m-cc:sisyphus                                         │
+│   → 依存プラグイン確認・インストール                     │
+│   → CLAUDE.md に Sisyphus 原則を追加                     │
+│   → hooks 設定（<promise>DONE</promise> までループ）     │
 └──────────────────────────────────────────────────────────┘
                          │
                          ▼
@@ -95,16 +122,33 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 │ 簡単なタスク                                             │
 ├──────────────────────────────────────────────────────────┤
 │ 「○○を修正して」→ TODO → 実装 → レビュー → 完了       │
+│ ※ hooks により <promise>DONE</promise> まで自動継続     │
 └──────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────┐
 │ 複雑なタスク                                             │
 ├──────────────────────────────────────────────────────────┤
-│ /plan → 要件 → 設計 → タスク分解                        │
+│ /o-m-cc:plan "機能"                                      │
+│   → 要件(analyst) → ギャップ分析(scout) → 設計 → タスク │
 │              ↓                                           │
-│ 「実装開始して」→ TODO → 実装 → レビュー → 完了        │
+│ 「実装開始して」または /o-m-cc:ultrawork                 │
+│   → TODO → 並列実装 → レビュー → 簡素化提案 → 完了     │
 └──────────────────────────────────────────────────────────┘
 ```
+
+## Dependencies
+
+`/o-m-cc:sisyphus` 実行時に以下のプラグインを確認・インストール：
+
+| プラグイン | 用途 | インストール |
+|-----------|------|-------------|
+| ralph-wiggum | `<promise>DONE</promise>` までループ継続 | `claude plugin install ralph-wiggum@anthropics` |
+| frontend-design | フロントエンド設計支援 | `claude plugin install frontend-design@claude-code-plugins` |
+| feature-dev | 機能開発ワークフロー | `claude plugin install feature-dev@claude-code-plugins` |
+| code-simplifier | コード簡素化（レビュー後提案） | `claude plugin install code-simplifier@claude-code-plugins` |
+| security-guidance | セキュリティレビュー支援 | `claude plugin install security-guidance@claude-code-plugins` |
+| pyright-lsp | Python エラー検出 | `claude plugin install pyright-lsp@claude-code-lsps` |
+| typescript-lsp | TypeScript エラー検出 | `claude plugin install typescript-lsp@claude-code-lsps` |
 
 ## Agents
 
@@ -113,6 +157,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | Agent | 役割 | Model |
 |-------|------|-------|
 | @analyst | 現状分析・要件定義 | sonnet |
+| @scout | ギャップ分析・追加質問（必ず質問で終わる） | sonnet |
 | @designer | アーキテクチャ設計 | opus |
 | @planner | タスク分解 | sonnet |
 | @critic | 計画レビュー | sonnet |
@@ -145,6 +190,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ```
 .plan/
+├── brainstorm.md    # ブレインストーミング結果（オプション）
 ├── requirements.md  # 要件定義（FR-X, NFR-X）
 ├── design.md        # 設計書（コンポーネント、API）
 └── tasks.md         # 実装タスク（依存関係、見積もり）
@@ -155,9 +201,11 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ```
 o-m-cc/
 ├── .claude-plugin/
-│   └── plugin.json
+│   ├── plugin.json
+│   └── marketplace.json
 ├── agents/
 │   ├── analyst.md         # 要件定義
+│   ├── scout.md           # ギャップ分析（Prometheus式）
 │   ├── designer.md        # アーキテクチャ設計
 │   ├── planner.md         # タスク分解
 │   ├── critic.md          # 計画レビュー
@@ -169,15 +217,18 @@ o-m-cc/
 │   ├── vision.md          # マルチモーダル分析
 │   └── code-reviewer.md   # コードレビュー
 ├── commands/
-│   ├── sisyphus.md        # モード有効化
+│   ├── sisyphus.md        # モード有効化（オンボーディング）
 │   ├── requirements.md    # 要件定義
 │   ├── design.md          # 設計
 │   ├── tasks.md           # タスク分解
 │   ├── plan.md            # 計画（オーケストレーター）
-│   └── review.md          # コードレビュー
+│   ├── review.md          # コードレビュー
+│   ├── ultrawork.md       # 並列実行
+│   ├── ultrawork-compact.md
+│   └── ultrawork-clear.md
 ├── hooks/
 │   ├── hooks.json
-│   └── stop-guard.sh
+│   └── stop-guard.sh      # ralph-wiggum連携
 ├── examples/
 │   └── CLAUDE.md.example
 └── README.md
