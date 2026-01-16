@@ -13,13 +13,13 @@ model: sonnet
 
 ---
 
-## Step 0: 依存プラグインの確認
+## Step 0: 依存プラグインの確認（任意）
 
-**必要なプラグインがインストールされているか確認:**
+**推奨プラグインがインストールされているか確認:**
 
 ```bash
-echo "=== 依存プラグイン確認 ==="
-for plugin in ralph-wiggum frontend-design feature-dev code-simplifier security-guidance pyright-lsp typescript-lsp; do
+echo "=== 推奨プラグイン確認 ==="
+for plugin in frontend-design feature-dev code-simplifier security-guidance pyright-lsp typescript-lsp; do
   claude plugin list 2>/dev/null | grep -q "$plugin" && echo "✅ $plugin" || echo "❌ $plugin (未インストール)"
 done
 ```
@@ -27,9 +27,6 @@ done
 **未インストールのプラグインをインストール:**
 
 ```bash
-# 必須（ループ制御）
-claude plugin install ralph-wiggum@anthropics
-
 # 推奨（開発支援）
 claude plugin install frontend-design@claude-code-plugins
 claude plugin install feature-dev@claude-code-plugins
@@ -43,13 +40,14 @@ claude plugin install typescript-lsp@claude-code-lsps
 
 | プラグイン | 用途 |
 |-----------|------|
-| ralph-wiggum | `<promise>DONE</promise>` までループ継続 |
 | frontend-design | フロントエンド設計支援 |
 | feature-dev | 機能開発ワークフロー |
 | code-simplifier | コード簡素化（レビュー後サジェスト） |
 | security-guidance | セキュリティレビュー支援 |
 | pyright-lsp | Python エラー検出 |
 | typescript-lsp | TypeScript エラー検出 |
+
+> **Note**: ループ制御は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
 
 ---
 
@@ -116,7 +114,7 @@ CLAUDE.md に以下のセクションを追加（既に存在する場合はス�
 
 ### Step 4: hooks の設定（フル設定時）
 
-ralph-wiggum 連携の hooks を設定。これで普段のタスクでも自動的に「完了まで止まらない」動きになる。
+o-m-cc 内蔵の Stop Hook を設定。これで普段のタスクでも自動的に「完了まで止まらない」動きになる。
 
 **1. hooks ディレクトリ作成:**
 ```bash
@@ -127,7 +125,7 @@ mkdir -p .claude/hooks
 ```bash
 cat > .claude/hooks/stop-guard.sh << 'EOF'
 #!/bin/bash
-# Sisyphus Stop Guard - ralph-wiggum 連携
+# Sisyphus Stop Guard - o-m-cc 内蔵
 # <promise>DONE</promise> が出力されるまでループ継続
 
 TRANSCRIPT="$CLAUDE_TRANSCRIPT"

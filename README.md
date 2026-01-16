@@ -152,17 +152,18 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Dependencies
 
-`/o-m-cc:sisyphus` 実行時に以下のプラグインを確認・インストール：
+`/o-m-cc:sisyphus` 実行時に以下の推奨プラグインを確認：
 
 | プラグイン | 用途 | インストール |
 |-----------|------|-------------|
-| ralph-wiggum | `<promise>DONE</promise>` までループ継続 | `claude plugin install ralph-wiggum@anthropics` |
 | frontend-design | フロントエンド設計支援 | `claude plugin install frontend-design@claude-code-plugins` |
 | feature-dev | 機能開発ワークフロー | `claude plugin install feature-dev@claude-code-plugins` |
 | code-simplifier | コード簡素化（レビュー後提案） | `claude plugin install code-simplifier@claude-code-plugins` |
 | security-guidance | セキュリティレビュー支援 | `claude plugin install security-guidance@claude-code-plugins` |
 | pyright-lsp | Python エラー検出 | `claude plugin install pyright-lsp@claude-code-lsps` |
 | typescript-lsp | TypeScript エラー検出 | `claude plugin install typescript-lsp@claude-code-lsps` |
+
+> **Note**: ループ制御（`<promise>DONE</promise>` 検知）は o-m-cc 内蔵の Stop Hook で実現。ralph-wiggum は不要です。
 
 ## Agents
 
@@ -242,11 +243,84 @@ o-m-cc/
 │   └── ultrawork-clear.md
 ├── hooks/
 │   ├── hooks.json
-│   └── stop-guard.sh      # ralph-wiggum連携
+│   └── stop-guard.sh      # Stop Hook（ループ制御 + code-reviewer連携）
 ├── examples/
 │   └── CLAUDE.md.example
 └── README.md
 ```
+
+## Philosophy
+
+Sisyphus Loop の背後にある哲学：
+
+| 原則 | 説明 |
+|------|------|
+| **Iteration > Perfection** | 最初から完璧を目指さない。ループに任せて改善させる |
+| **Failures Are Data** | 失敗は情報。予測可能な失敗から学び、プロンプトを調整 |
+| **Operator Skill Matters** | 成功は良いプロンプトを書くスキルに依存する |
+| **Persistence Wins** | 成功するまで試し続ける。ループがリトライを自動処理 |
+
+## Prompt Design Guide
+
+効果的なプロンプト設計のパターン：
+
+### 1. 明確な完了条件
+
+```
+❌ 悪い例: 「Todo APIを作って、いい感じにして」
+
+✅ 良い例:
+Build a REST API for todos.
+When complete:
+- All CRUD endpoints working
+- Input validation in place
+- Tests passing (coverage > 80%)
+- README with API docs
+```
+
+### 2. 段階的なゴール設定
+
+```
+Phase 1: User authentication (JWT, tests)
+Phase 2: Product catalog (list/search, tests)
+Phase 3: Shopping cart (add/remove, tests)
+```
+
+### 3. 自己修正の指示（TDD）
+
+```
+Implement feature X following TDD:
+1. Write failing tests
+2. Implement feature
+3. Run tests
+4. If any fail, debug and fix
+5. Refactor if needed
+6. Repeat until all green
+```
+
+### 4. 安全弁
+
+環境変数 `SISYPHUS_MAX_ITERATIONS` で最大イテレーション数を設定（デフォルト: 50）
+
+```bash
+export SISYPHUS_MAX_ITERATIONS=30
+```
+
+## Best Use Cases
+
+### ✅ 向いているタスク
+
+- **大規模リファクタリング** - フレームワーク移行、依存関係アップグレード
+- **バッチ処理** - ドキュメント生成、コード標準化
+- **テストカバレッジ向上** - 全関数にテスト追加
+- **グリーンフィールド開発** - 新規プロジェクトの足場作り
+
+### ❌ 向いていないタスク
+
+- **人間の判断が必要** - デザイン決定、UX評価
+- **一発で終わる操作** - ファイルコピー、単純なスクリプト
+- **成功基準が曖昧** - 「いい感じに」「きれいに」
+- **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Inspired By
 
