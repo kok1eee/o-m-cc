@@ -96,14 +96,14 @@ $ARGUMENTS
 ## 実行フロー
 
 ```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  Phase 1     │───▶│  Phase 2     │───▶│  Phase 3     │
-│  要件定義    │    │  設計        │    │  タスク分解  │
-│  (analyst)   │    │  (designer)  │    │  (planner)   │
-└──────────────┘    └──────────────┘    └──────────────┘
-       │                   │                   │
-       ▼                   ▼                   ▼
-  requirements.md      design.md          tasks.md
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  Phase 1     │───▶│  Phase 1.5   │───▶│  Phase 2     │───▶│  Phase 3     │
+│  要件定義    │    │  ギャップ    │    │  設計        │    │  タスク分解  │
+│  (analyst)   │    │  (scout)     │    │  (designer)  │    │  (planner)   │
+└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+  requirements.md    追加質問で補完       design.md          tasks.md
 ```
 
 ---
@@ -119,7 +119,28 @@ Task tool で analyst subagent を呼び出し：
 - 出力: .plan/requirements.md
 ```
 
-**完了を待ってから Phase 2 へ。**
+**完了を待ってから Phase 1.5 へ。**
+
+---
+
+## Phase 1.5: ギャップ分析
+
+**scout subagent** で漏れを発見し、追加質問。
+
+```
+Task tool で scout subagent を呼び出し：
+- requirements.md を読み込み
+- 曖昧な点・聞き漏れを発見
+- AskUserQuestion で追加確認
+- 必ず質問で終わる（パッシブ終了禁止）
+```
+
+**scout の原則:**
+- 読み取り専用（プランモード互換）
+- 必ず質問で終わる
+- Critical な質問が解決するまで続行
+
+**ユーザーが「十分」と確認したら Phase 2 へ。**
 
 ---
 
