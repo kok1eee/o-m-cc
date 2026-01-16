@@ -33,17 +33,8 @@ $ARGUMENTS
 
 ## Step 2: Ultrawork 開始
 
-Clear 完了後、Ultrawork モードで実行。
-
-**ULTRAWORK MODE ENABLED!**
-
-以下の原則に従って並列エージェントを起動し、最速で完了:
-
-1. **PARALLEL FIRST** - 独立タスクは並列実行（10個以上もOK）
-2. **TODO厳密** - 全ステップをトラッキング
-3. **DELEGATE** - 専門エージェントに委任
-4. **VERIFY** - 完了前に必ず検証
+Clear 完了後、**ultrawork.md の内容に従って実行**してください。
 
 ---
 
-**まず /clear の実行を依頼し、完了後に並列エージェントを起動してください。**
+**まず /clear の実行を依頼し、完了後に ultrawork 本体を実行してください。**
