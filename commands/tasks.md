@@ -97,6 +97,11 @@ Task tool で planner subagent を呼び出し：
 
 **Ultrawork選択時**: 並列実行可能なタスクを同時に起動し、最速で完了を目指す。
 
+**「ここで終了」選択時のみ:**
+```
+<promise>DONE</promise>
+```
+
 ---
 
 **planner subagent でタスク分解を開始してください。**

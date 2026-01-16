@@ -74,6 +74,8 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
    🟢 Critical: なし
    🟡 Warning: X件
    🟢 Suggestion: X件
+
+<promise>DONE</promise>
 ```
 
 ### Critical ありの場合

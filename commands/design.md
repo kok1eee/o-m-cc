@@ -115,6 +115,11 @@ Task tool で designer subagent を呼び出し：
 3. ここで終了 - 後で続行
 ```
 
+**「ここで終了」選択時のみ:**
+```
+<promise>DONE</promise>
+```
+
 ---
 
 **designer subagent で設計を開始してください。**

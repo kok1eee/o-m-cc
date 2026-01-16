@@ -189,6 +189,8 @@ Task tool で critic subagent を呼び出し：
    - タスク: X件 (S:X, M:X, L:X)
 
 計画完了。「実装を開始して」と依頼してください。
+
+<promise>DONE</promise>
 ```
 
 ---

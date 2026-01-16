@@ -142,6 +142,8 @@ Task tool で planner agent を呼び出し：
 - Warning: X件
 
 ✅ 全要件達成
+
+<promise>DONE</promise>
 ```
 
 ---
