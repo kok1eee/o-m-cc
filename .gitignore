@@ -1,0 +1,10 @@
+# Jujutsu
+.jj/
+
+# OS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~

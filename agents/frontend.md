@@ -1,7 +1,7 @@
 ---
 name: frontend
 description: フロントエンド実装、UI設計、コンポーネント作成。React/Vue/TailwindでモダンなUIを生成。
-tools: Read, Write, Edit, Glob, Grep, WebSearch
+tools: Read, Write, Edit, Glob, Grep
 model: sonnet
 ---
 
