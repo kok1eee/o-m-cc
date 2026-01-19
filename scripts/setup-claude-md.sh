@@ -44,6 +44,22 @@ SISYPHUS_CONTENT="$START_MARKER
 - 途中放棄禁止 - TODOが残っている状態で「完了」と言わない
 - 嘘の完了禁止 - \`<promise>DONE</promise>\` は本当に完了した時だけ
 - レビュースキップ禁止 - 完了前に必ずレビュー
+
+### Bash 使用制限
+
+以下のコマンドは **禁止**（専用ツールを使用）:
+
+| 禁止コマンド | 代替ツール |
+|-------------|-----------|
+| \`find\` | Glob ツール |
+| \`grep\` / \`rg\` | Grep ツール |
+| \`cat\` / \`head\` / \`tail\` | Read ツール |
+| \`ls \| grep\` | Glob ツール |
+
+**許可される Bash**:
+- \`jj\` / \`git\` - バージョン管理
+- \`npm\` / \`uv\` / \`pip\` - パッケージ管理
+- ビルド/テストコマンド
 $END_MARKER"
 
 echo -e "${GREEN}=== o-m-cc CLAUDE.md Setup ===${NC}"

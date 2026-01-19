@@ -12,7 +12,7 @@
     {
       "name": "o-m-cc",
       "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー（context: fork対応）",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "source": {
         "source": "url",
         "url": "https://github.com/kok1eee/o-m-cc.git"

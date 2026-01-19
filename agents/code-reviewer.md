@@ -136,6 +136,17 @@ Critical な問題が見つかった場合は、**AskUserQuestion** で対応を
 → Critical あり: 修正が必要
 ```
 
+## Bash の使用制限
+
+**Bash は以下の用途のみ使用可能:**
+- `jj diff` / `git diff` - 変更差分の取得
+- `jj status` / `git status` - 状態確認
+
+**以下は禁止（専用ツールを使用）:**
+- `find` → **Glob ツール** を使用
+- `grep` / `rg` → **Grep ツール** を使用
+- `cat` / `head` / `tail` → **Read ツール** を使用
+
 ## 重要
 
 - **具体的に**: 曖昧な指摘は避け、ファイル名と行番号を明記
