@@ -3,6 +3,8 @@ description: "コード変更をレビュー（code-reviewer subagent）"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Task, Read, Glob, Grep, Bash, AskUserQuestion]
 model: sonnet
+context: fork
+agent: code-reviewer
 ---
 
 # Review Command - コードレビュー

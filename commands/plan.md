@@ -3,6 +3,7 @@ description: "仕様駆動の計画フロー（要件 → 設計 → タスク �
 argument-hint: "<feature description>"
 allowed-tools: [Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, AskUserQuestion]
 model: opus
+context: fork
 ---
 
 # Plan - 仕様駆動開発オーケストレーター

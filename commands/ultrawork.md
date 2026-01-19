@@ -2,6 +2,7 @@
 description: "Ultraworkモード - 並列エージェントオーケストレーションによる最大パフォーマンス"
 allowed-tools: Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, AskUserQuestion
 model: opus
+context: fork
 ---
 
 # Ultrawork - 最大パフォーマンスモード

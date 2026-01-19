@@ -3,6 +3,7 @@ name: vision
 description: PDF・画像・スクリーンショットを分析。デザインモック、エラー画面、仕様書から情報を抽出。
 tools: Read, Glob
 model: sonnet
+permissionMode: plan
 ---
 
 # Vision - マルチモーダル分析

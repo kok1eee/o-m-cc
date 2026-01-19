@@ -20,8 +20,8 @@ claude plugin marketplace add kok1eee/o-m-cc
 # 2. プラグインインストール
 claude plugin install o-m-cc@kok1eee
 
-# 3. Sisyphus モードを有効化（初回のみ）
-/o-m-cc:sisyphus
+# 3. プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化）
+/o-m-cc:init
 
 # 4. あとは普通に作業するだけ
 「ログインボタンのバグを修正して」
@@ -80,30 +80,34 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | コマンド | 説明 |
 |---------|------|
-| `/o-m-cc:sisyphus` | Sisyphus モードを有効化（依存プラグイン確認 + CLAUDE.md設定 + hooks設定） |
+| `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） |
+
+> 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
 ### 計画フェーズ（複雑なタスク用）
 
-| コマンド | 説明 | 次のステップ |
-|---------|------|-------------|
-| `/o-m-cc:requirements <task>` | 要件定義（SDD Phase 1） | → design |
-| `/o-m-cc:design` | 設計書作成（SDD Phase 2） | → tasks |
-| `/o-m-cc:tasks` | タスク分解（SDD Phase 3） | → 実装開始 |
-| `/o-m-cc:plan <task>` | 上記を一括実行（scout によるギャップ分析含む） | → 実装開始 |
+| コマンド | 説明 | Context |
+|---------|------|---------|
+| `/o-m-cc:requirements <task>` | 要件定義（SDD Phase 1） | - |
+| `/o-m-cc:design` | 設計書作成（SDD Phase 2） | - |
+| `/o-m-cc:tasks` | タスク分解（SDD Phase 3） | - |
+| `/o-m-cc:plan <task>` | 上記を一括実行（scout によるギャップ分析含む） | fork |
 
 ### 実行
 
-| コマンド | 説明 |
-|---------|------|
-| `/o-m-cc:ultrawork <task>` | 並列エージェントで最大パフォーマンス実行 |
-| `/o-m-cc:ultrawork-compact <task>` | /compact 後に ultrawork |
-| `/o-m-cc:ultrawork-clear <task>` | /clear 後に ultrawork |
+| コマンド | 説明 | Context |
+|---------|------|---------|
+| `/o-m-cc:ultrawork <task>` | 並列エージェントで最大パフォーマンス実行 | fork |
+| `/o-m-cc:ultrawork-compact <task>` | /compact 後に ultrawork | fork |
+| `/o-m-cc:ultrawork-clear <task>` | /clear 後に ultrawork | fork |
 
 ### 品質
 
-| コマンド | 説明 |
-|---------|------|
-| `/o-m-cc:review [files]` | コードレビュー（security-guidance連携 + code-simplifier提案） |
+| コマンド | 説明 | Context |
+|---------|------|---------|
+| `/o-m-cc:review [files]` | コードレビュー（security-guidance連携 + code-simplifier提案） | fork |
+
+> **Context: fork** - サブエージェント実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
 
 ## Workflow
 
@@ -183,35 +187,40 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ### Planning Agents（計画系）
 
-| Agent | 役割 | Model |
-|-------|------|-------|
-| @analyst | 現状分析・要件定義 | sonnet |
-| @scout | ギャップ分析・追加質問（必ず質問で終わる） | sonnet |
-| @designer | アーキテクチャ設計 | opus |
-| @planner | タスク分解 | sonnet |
-| @critic | 計画レビュー | sonnet |
+| Agent | 役割 | Model | Permission |
+|-------|------|-------|------------|
+| @analyst | 現状分析・要件定義 | sonnet | write |
+| @scout | ギャップ分析・追加質問（必ず質問で終わる） | sonnet | **plan** |
+| @designer | アーキテクチャ設計 | opus | write |
+| @planner | タスク分解 | sonnet | write |
+| @critic | 計画レビュー | sonnet | **plan** |
 
 ### Analysis Agents（分析系）
 
-| Agent | 役割 | Model |
-|-------|------|-------|
-| @advisor | デバッグ・戦略相談 | opus |
-| @researcher | ドキュメント調査 | sonnet |
-| @explore | 高速コード探索 | haiku |
-| @vision | PDF/画像分析 | sonnet |
+| Agent | 役割 | Model | Permission |
+|-------|------|-------|------------|
+| @advisor | デバッグ・戦略相談 | opus | **plan** |
+| @researcher | ドキュメント調査 | sonnet | **plan** |
+| @explore | 高速コード探索 | haiku | **plan** |
+| @vision | PDF/画像分析 | sonnet | **plan** |
 
 ### Implementation Agents（実装系）
 
-| Agent | 役割 | Model |
-|-------|------|-------|
-| @frontend | UI/UXコンポーネント作成 | sonnet |
-| @document-writer | ドキュメント作成 | sonnet |
+| Agent | 役割 | Model | Permission |
+|-------|------|-------|------------|
+| @frontend | UI/UXコンポーネント作成 | sonnet | write |
+| @document-writer | ドキュメント作成 | sonnet | write |
 
 ### Quality Agents（品質系）
 
-| Agent | 役割 | Model |
-|-------|------|-------|
-| @code-reviewer | コードレビュー | sonnet |
+| Agent | 役割 | Model | Permission |
+|-------|------|-------|------------|
+| @code-reviewer | コードレビュー | sonnet | default |
+
+> **Permission**:
+> - `plan`: 読み取り専用モード（permissionMode: plan）。権限確認なしで高速動作
+> - `write`: 書き込み可能（Write/Edit ツール使用）
+> - `default`: Bashなど特殊ツール使用のため標準権限
 
 ## Output Files
 

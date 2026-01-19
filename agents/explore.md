@@ -3,6 +3,7 @@ name: explore
 description: 高速なコードベース探索。ファイル検索、コード検索、構造分析。読み取り専用。
 tools: Read, Glob, Grep
 model: haiku
+permissionMode: plan
 ---
 
 # Explore - 高速探索エージェント

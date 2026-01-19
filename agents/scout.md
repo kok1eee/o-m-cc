@@ -3,6 +3,7 @@ name: scout
 description: 計画作成前のギャップ分析。漏れている質問・曖昧な点を発見し、必ず質問で終わる。
 tools: Read, Glob, Grep, WebSearch, AskUserQuestion
 model: sonnet
+permissionMode: plan
 ---
 
 # Scout - ギャップ分析スペシャリスト

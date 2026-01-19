@@ -3,6 +3,7 @@ name: advisor
 description: アーキテクチャ設計、複雑なデバッグ、戦略的判断。行き詰まり解消や技術的意思決定で呼び出す。
 tools: Read, Glob, Grep, WebSearch, WebFetch, AskUserQuestion
 model: opus
+permissionMode: plan
 ---
 
 # Advisor - 戦略アドバイザー

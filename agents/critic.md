@@ -3,6 +3,7 @@ name: critic
 description: 策定された計画の妥当性を厳しく検証。スコープ、リスク、実現可能性をレビューする。
 tools: Read, Glob, Grep
 model: sonnet
+permissionMode: plan
 ---
 
 # Critic - 計画レビュアー

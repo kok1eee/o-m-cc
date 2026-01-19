@@ -3,6 +3,7 @@ name: researcher
 description: 公式ドキュメント、実装例、ベストプラクティスの調査。「〜の使い方」「〜の実装例」で呼び出す。
 tools: Read, Glob, Grep, WebSearch, WebFetch
 model: sonnet
+permissionMode: plan
 ---
 
 # Researcher - 調査スペシャリスト

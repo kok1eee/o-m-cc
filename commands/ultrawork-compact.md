@@ -2,6 +2,7 @@
 description: "Ultrawork + Compact - コンテキスト要約後に最大パフォーマンスモード"
 allowed-tools: Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, AskUserQuestion
 model: opus
+context: fork
 ---
 
 # Ultrawork + Compact
