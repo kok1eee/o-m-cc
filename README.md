@@ -79,7 +79,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | コマンド | 説明 |
 |---------|------|
 | `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） |
-| `/o-m-cc:update` | プラグインを最新版に更新 |
+| `/o-m-cc:update` | プラグインをクリーンインストール（キャッシュクリア + 再インストール） |
 
 > 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
@@ -559,7 +559,7 @@ o-m-cc/
 │   ├── install-plugins.sh     # 推奨プラグインのインストール
 │   ├── setup-claude-md.sh     # CLAUDE.md の Sisyphus セクション管理
 │   ├── setup-project.sh       # Standards/Steering セットアップ
-│   └── update.sh              # プラグイン更新（--clean でキャッシュクリア）
+│   └── update.sh              # クリーンインストール
 └── README.md
 ```
 

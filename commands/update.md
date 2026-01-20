@@ -1,23 +1,15 @@
 ---
 name: update
-description: o-m-cc プラグインを最新版に更新
+description: o-m-cc プラグインをクリーンインストール（キャッシュクリア + 再インストール）
 ---
 
-# o-m-cc Update
+# o-m-cc Clean Update
 
-プラグインを最新版に更新します。
+キャッシュをクリアして最新版をインストールします。
 
-## 実行コマンド
+## 実行手順
 
-```bash
-claude plugin update o-m-cc@kok1eee
-```
-
-上記コマンドを実行して、完了後にユーザーに再起動を促してください。
-
-## キャッシュ問題がある場合
-
-更新後も古いバージョンのままの場合、クリーンインストールを案内：
+以下のコマンドを順番に実行してください：
 
 ```bash
 # 1. アンインストール
@@ -28,21 +20,11 @@ rm -rf ~/.claude/plugins/cache/kok1eee/o-m-cc
 
 # 3. 再インストール
 claude plugin install o-m-cc@kok1eee
-
-# 4. Claude Code を再起動
 ```
 
-または、スクリプトを使用：
-
-```bash
-bash ~/.claude/plugins/o-m-cc/scripts/update.sh --clean
-```
-
-## 完了メッセージ
-
-更新完了後、以下を表示：
+## 完了後
 
 ```
-✅ o-m-cc を最新版に更新しました
+✅ o-m-cc をクリーンインストールしました
 ⚠️  Claude Code を再起動してください（Cmd+Shift+P → Reload Window）
 ```
