@@ -1,6 +1,6 @@
 {
   "name": "o-m-cc",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Sisyphus Loop - TODOが完了するまで止まらないマルチエージェントワークフロー。13の専門エージェント + hooks による品質チェック（セキュリティ警告、console.log検出、不要ファイル作成防止）。仕様駆動開発（SDD）フロー対応。",
   "author": {
     "name": "kok1eee"
