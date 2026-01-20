@@ -323,6 +323,46 @@ bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
 | 参照タイミング | 実装時 | 計画時 |
 | 内容 | How（どう実装するか） | What/Why（何を、なぜ） |
 
+## Token Efficiency
+
+エージェントの出力は **要約 + ログ分離** でトークン消費を抑制。
+
+### 仕組み
+
+```
+サブエージェント
+    │
+    ├─ 詳細 → .plan/logs/{agent}-{timestamp}.md に保存
+    │
+    └─ 要約 → メインエージェント（Sisyphus）に返却
+```
+
+### エージェント出力フォーマット
+
+```markdown
+## ✅ [agent-name] 完了
+
+**結果**: 成功 / 失敗 / 要確認
+**変更ファイル**:
+- path/to/file.ts:45-67
+**サマリー**: [1-2文で何をしたか]
+**詳細ログ**: .plan/logs/{agent}-{YYYYMMDD-HHMMSS}.md
+```
+
+### ログ構造
+
+```
+.plan/logs/
+├── frontend-20260120-143052.md      # フロントエンド実装詳細
+├── code-reviewer-20260120-144530.md # レビュー詳細
+└── explore-20260120-142010.md       # 探索結果詳細
+```
+
+**メリット**:
+- メインエージェントのコンテキスト消費を抑制
+- 人間への表示も簡潔に
+- 詳細は必要時のみ参照可能
+
 ## Structure
 
 ```

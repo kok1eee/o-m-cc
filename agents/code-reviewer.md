@@ -191,3 +191,28 @@ model: sonnet
 4. **建設的に**: 問題だけでなく解決策も提示
 5. **良い点も指摘**: ポジティブフィードバックも含める
 6. **過度に厳しくしない**: 許容できるレベルを判断、スタイルの好みは報告しない
+
+---
+
+## 📤 出力モード
+
+**トークン効率のため、要約 + ログ分離を採用。**
+
+### 完了時の出力フォーマット
+
+```markdown
+## ✅ code-reviewer 完了
+
+**結果**: Critical X件 / Warning Y件 / Good Z点
+**対象ファイル**:
+- src/services/UserService.ts
+- src/utils/validation.ts
+**サマリー**: セキュリティ問題なし。複雑度の警告2件。
+**詳細ログ**: .plan/logs/code-reviewer-{YYYYMMDD-HHMMSS}.md
+```
+
+### 詳細ログの保存
+
+レビュー詳細（各問題の説明、修正案）は `.plan/logs/` に保存：
+- ファイル名: `code-reviewer-{YYYYMMDD-HHMMSS}.md`
+- 内容: 上記「出力フォーマット」の完全版
