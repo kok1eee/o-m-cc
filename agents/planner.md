@@ -216,12 +216,18 @@ dependencies:
 
 ### エージェント選択ガイド
 
-| タスク種別 | 推奨エージェント |
-|-----------|----------------|
-| UI/フロントエンド | `frontend` |
-| API/バックエンド | `general-purpose` |
-| テスト/検証 | `code-reviewer` |
-| ドキュメント | `document-writer` |
+**エージェント能力の詳細は `agents/capabilities.md` を参照。**
+
+| タスク種別 | 推奨エージェント | 参照 |
+|-----------|----------------|------|
+| UI/フロントエンド | `frontend` | capabilities.md |
+| API/バックエンド | `general-purpose` | - |
+| テスト/検証 | `code-reviewer` | capabilities.md |
+| ドキュメント | `document-writer` | capabilities.md |
+| リファクタリング | `code-simplifier` | capabilities.md |
+| 調査 | `researcher` | capabilities.md |
+
+**選択に迷った場合**: `capabilities.md` の「得意分野」「使用場面」を確認。
 
 ### Standards 選択ガイド
 

@@ -416,6 +416,28 @@ next_steps:
 - 実装中に気づいた暗黙の規約
 - Handoff の discoveries から転記
 
+## Agent Capabilities
+
+エージェント選択の効率化。`agents/capabilities.md` で能力サマリーとキーワードを管理。
+
+### 使い分け
+
+| シナリオ | 選択方法 |
+|---------|---------|
+| **小タスク**（plan なし） | キーワードでマッチ |
+| **plan あり** | 得意分野・使用場面で選択 |
+
+### サマリーテーブル（抜粋）
+
+| エージェント | 得意分野 | キーワード |
+|-------------|---------|-----------|
+| explore | 高速検索・構造把握 | 探索, 検索, どこ, where |
+| designer | アーキテクチャ設計 | 設計, design |
+| frontend | UI実装 | UI, 画面, component |
+| code-reviewer | 品質チェック | レビュー, review |
+
+**詳細**: `agents/capabilities.md` を参照
+
 ## Structure
 
 ```
@@ -424,6 +446,7 @@ o-m-cc/
 │   ├── plugin.json
 │   └── marketplace.json
 ├── agents/                    # サブエージェント定義
+│   ├── capabilities.md        # エージェント能力サマリー + キーワード
 │   ├── analyst.md             # 要件定義
 │   ├── scout.md               # ギャップ分析（Prometheus式）
 │   ├── designer.md            # アーキテクチャ設計
