@@ -1,12 +1,16 @@
 #!/bin/bash
 # o-m-cc: Install recommended plugins
 # Usage: ./install-plugins.sh [--ts] [--py] [--go] [--rust] [--all]
+#
+# Note: security-guidance and code-simplifier are now integrated into o-m-cc
+# (via hooks and agents respectively)
 
 set -euo pipefail
 
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 echo -e "${GREEN}=== o-m-cc Plugin Installer ===${NC}"
@@ -16,8 +20,10 @@ echo -e "${YELLOW}Adding marketplace...${NC}"
 claude plugin marketplace add anthropics/claude-plugins-official 2>/dev/null || true
 
 # Common plugins (always install)
+# Note: security-guidance is now integrated via hooks/security_reminder_hook.py
+# Note: code-simplifier is now integrated via agents/code-simplifier.md
 echo -e "${YELLOW}Installing common plugins...${NC}"
-for plugin in frontend-design feature-dev code-simplifier security-guidance; do
+for plugin in frontend-design feature-dev; do
   if claude plugin list 2>/dev/null | grep -q "$plugin"; then
     echo "  ✅ $plugin (already installed)"
   else
@@ -25,6 +31,9 @@ for plugin in frontend-design feature-dev code-simplifier security-guidance; do
     claude plugin install "$plugin" 2>/dev/null || echo "  ⚠️  Failed to install $plugin"
   fi
 done
+
+echo -e "${CYAN}  ℹ️  security-guidance: integrated into o-m-cc (hooks)${NC}"
+echo -e "${CYAN}  ℹ️  code-simplifier: integrated into o-m-cc (agents)${NC}"
 
 # Parse arguments for LSP plugins
 INSTALL_TS=false

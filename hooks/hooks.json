@@ -1,5 +1,5 @@
 {
-  "description": "oh-my-claudecode Sisyphus hooks - DONE検知時にcode-reviewer実行",
+  "description": "oh-my-claudecode hooks - Sisyphus mode + quality checks",
   "hooks": {
     "Stop": [
       {
@@ -9,6 +9,45 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/stop-guard.sh",
             "timeout": 10000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/block-unnecessary-docs.sh",
+            "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/security_reminder_hook.py",
+            "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/security_reminder_hook.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/warn-console-log.sh",
+            "timeout": 5000
           }
         ]
       }
