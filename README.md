@@ -234,6 +234,52 @@ claude plugin marketplace add anthropics/claude-plugins-official
 └── tasks.md         # 実装タスク（依存関係、見積もり）
 ```
 
+## Standards & Steering
+
+プロジェクト固有の規約とコンテキストを `.claude/` 配下で管理：
+
+```bash
+# セットアップ（プロジェクトルートで実行）
+bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
+```
+
+### Standards（技術規約）
+
+実装時にエージェントが参照する技術規約：
+
+```
+.claude/standards/
+├── global/
+│   ├── coding-style.md   # コーディングスタイル
+│   ├── conventions.md    # 規約（Git、エラーハンドリング等）
+│   └── tech-stack.md     # 技術スタック
+├── frontend/
+│   └── components.md     # フロントエンド規約
+├── backend/
+│   └── api-design.md     # API設計規約
+└── testing/
+    └── test-strategy.md  # テスト戦略
+```
+
+### Steering（プロジェクト文脈）
+
+計画時にエージェントが参照するプロジェクト文脈：
+
+```
+.claude/steering/
+├── product.md     # プロダクト概要、目的、ロードマップ
+├── tech.md        # アーキテクチャ、技術選定理由、ADR
+└── structure.md   # ディレクトリ構造、ファイル配置規則
+```
+
+**Standards vs Steering**:
+
+| | Standards | Steering |
+|---|-----------|----------|
+| 目的 | 実装品質の統一 | 計画の文脈提供 |
+| 参照タイミング | 実装時 | 計画時 |
+| 内容 | How（どう実装するか） | What/Why（何を、なぜ） |
+
 ## Structure
 
 ```
@@ -241,37 +287,49 @@ o-m-cc/
 ├── .claude-plugin/
 │   ├── plugin.json
 │   └── marketplace.json
-├── agents/
-│   ├── analyst.md         # 要件定義
-│   ├── scout.md           # ギャップ分析（Prometheus式）
-│   ├── designer.md        # アーキテクチャ設計
-│   ├── planner.md         # タスク分解
-│   ├── critic.md          # 計画レビュー
-│   ├── advisor.md         # 戦略アドバイザー
-│   ├── researcher.md      # 調査スペシャリスト
-│   ├── explore.md         # 高速探索
-│   ├── frontend.md        # UI/UXエンジニア
-│   ├── document-writer.md # テクニカルライター
-│   ├── vision.md          # マルチモーダル分析
-│   └── code-reviewer.md   # コードレビュー
-├── commands/
-│   ├── sisyphus.md        # モード有効化（オンボーディング）
-│   ├── requirements.md    # 要件定義
-│   ├── design.md          # 設計
-│   ├── tasks.md           # タスク分解
-│   ├── plan.md            # 計画（オーケストレーター）
-│   ├── review.md          # コードレビュー
-│   ├── ultrawork.md       # 並列実行
+├── agents/                    # サブエージェント定義
+│   ├── analyst.md             # 要件定義
+│   ├── scout.md               # ギャップ分析（Prometheus式）
+│   ├── designer.md            # アーキテクチャ設計
+│   ├── planner.md             # タスク分解
+│   ├── critic.md              # 計画レビュー
+│   ├── advisor.md             # 戦略アドバイザー
+│   ├── researcher.md          # 調査スペシャリスト
+│   ├── explore.md             # 高速探索
+│   ├── frontend.md            # UI/UXエンジニア
+│   ├── document-writer.md     # テクニカルライター
+│   ├── vision.md              # マルチモーダル分析
+│   └── code-reviewer.md       # コードレビュー
+├── commands/                  # スラッシュコマンド
+│   ├── init.md                # プロジェクト初期化
+│   ├── requirements.md        # 要件定義
+│   ├── design.md              # 設計
+│   ├── tasks.md               # タスク分解
+│   ├── plan.md                # 計画（オーケストレーター）
+│   ├── review.md              # コードレビュー
+│   ├── ultrawork.md           # 並列実行
 │   ├── ultrawork-compact.md
 │   └── ultrawork-clear.md
-├── hooks/
+├── hooks/                     # フック
 │   ├── hooks.json
-│   └── stop-guard.sh      # Stop Hook（ループ制御 + code-reviewer連携）
+│   ├── stop-guard.sh          # Stop Hook（ループ制御）
+│   ├── archive-plans.sh       # プランアーカイブ
+│   ├── block-unnecessary-docs.sh
+│   └── warn-console-log.sh
+├── templates/                 # Standards/Steering テンプレート
+│   ├── standards/
+│   │   ├── global/
+│   │   ├── frontend/
+│   │   ├── backend/
+│   │   └── testing/
+│   └── steering/
+│       ├── product.md
+│       ├── tech.md
+│       └── structure.md
 ├── scripts/
-│   ├── install-plugins.sh # 推奨プラグインのインストール
-│   └── setup-claude-md.sh # CLAUDE.md の Sisyphus セクション管理
-├── examples/
-│   └── CLAUDE.md.example
+│   ├── install-plugins.sh     # 推奨プラグインのインストール
+│   ├── setup-claude-md.sh     # CLAUDE.md の Sisyphus セクション管理
+│   └── setup-project.sh       # Standards/Steering セットアップ
 └── README.md
 ```
 
