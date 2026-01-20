@@ -71,10 +71,17 @@ if [[ "$SETUP_STANDARDS" == true ]]; then
   echo -e "${YELLOW}Setting up Standards...${NC}"
 
   STANDARDS_DIR="${TARGET_DIR}/standards"
+  LEARNED_DIR="${STANDARDS_DIR}/learned"
 
   if [[ -d "$STANDARDS_DIR" ]]; then
     echo -e "${BLUE}  Standards directory already exists${NC}"
-    echo -e "${BLUE}  Skipping to avoid overwriting existing files${NC}"
+    # Check if learned/ exists, create if missing
+    if [[ ! -d "$LEARNED_DIR" ]]; then
+      cp -r "${TEMPLATES_DIR}/standards/learned" "$LEARNED_DIR"
+      echo -e "${GREEN}  ✅ Added learned/ directory for discovered patterns${NC}"
+    else
+      echo -e "${BLUE}  Skipping to avoid overwriting existing files${NC}"
+    fi
   else
     cp -r "${TEMPLATES_DIR}/standards" "$STANDARDS_DIR"
     echo -e "${GREEN}  ✅ Standards created: ${STANDARDS_DIR}${NC}"
@@ -84,6 +91,7 @@ if [[ "$SETUP_STANDARDS" == true ]]; then
     echo -e "     - frontend/components.md"
     echo -e "     - backend/api-design.md"
     echo -e "     - testing/test-strategy.md"
+    echo -e "     - learned/ (発見したパターン)"
   fi
   echo ""
 fi
