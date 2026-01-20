@@ -1,15 +1,14 @@
 ---
-description: "コード変更をレビュー（code-reviewer subagent）"
+description: "コード変更をレビュー（code-reviewer + security-reviewer 並列実行）"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Task, Read, Glob, Grep, Bash, AskUserQuestion]
 model: sonnet
 context: fork
-agent: code-reviewer
 ---
 
-# Review Command - コードレビュー
+# Review Command - コードレビュー（並列実行）
 
-実装したコードの品質をチェックします。
+コード品質とセキュリティを**同時にチェック**します。
 
 ## 対象
 
@@ -28,28 +27,45 @@ $ARGUMENTS
 jj diff  # または git diff
 ```
 
-### Step 2: コードレビュー
+### Step 2: 並列レビュー実行
 
-**code-reviewer subagent** を Task tool で呼び出してレビューを実行してください。
+**code-reviewer** と **security-reviewer** を Task tool で**同時に**呼び出し：
 
 ```
-Task tool で code-reviewer subagent を呼び出し：
-- 変更差分を共有
-- 以下の観点でレビュー：
-  - コード品質
-  - セキュリティ（security-guidance プラグイン活用）
-  - 保守性
-  - パフォーマンス
+Task tool で並列実行（両方 background=true）：
+
+1. code-reviewer subagent
+   - 変更差分を共有
+   - バグ、複雑性、保守性をチェック
+   - 発見したパターンを learned/ に記録
+
+2. security-reviewer subagent
+   - 変更差分を共有
+   - OWASP Top 10 ベースのセキュリティチェック
+   - 脆弱性、認証/認可、機密データをチェック
 ```
 
-> security-guidance プラグインがインストールされていれば、セキュリティチェックが強化されます。
+**重要**: 両方のレビュアーを並列で起動してレビュー時間を短縮。
 
-### Step 3: 結果の確認
+### Step 3: 結果の集約
 
-code-reviewer の結果を確認：
+両方のレビューが完了したら結果を集約：
 
-- **Critical なし** → レビュー完了
-- **Critical あり** → Step 4 へ
+```markdown
+# 統合レビュー結果
+
+## コード品質（code-reviewer）
+- Critical: X件
+- Warning: X件
+
+## セキュリティ（security-reviewer）
+- Critical: X件
+- Warning: X件
+
+## 総合判定
+→ 両方 Critical なし: マージ可能
+→ いずれか Critical あり: 修正必須
+```
 
 ### Step 4: Critical 発見時の対応確認
 
@@ -69,15 +85,20 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 
 ## 完了時の出力
 
-レビューが完了したら、以下を出力してください：
-
 ### Critical なしの場合
 
 ```
-✅ コードレビュー完了
+✅ コードレビュー完了（並列実行）
+
+📊 コード品質
    🟢 Critical: なし
    🟡 Warning: X件
-   🟢 Suggestion: X件
+
+🔒 セキュリティ
+   🟢 Critical: なし
+   🟡 Warning: X件
+
+→ マージ可能
 ```
 
 **AskUserQuestion** でコード簡素化を提案：
@@ -86,7 +107,7 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 質問: レビュー完了しました。コードを簡素化しますか？
 
 選択肢:
-1. 簡素化する - /code-simplifier を実行
+1. 簡素化する - code-simplifier を実行
 2. スキップ（推奨） - このまま完了
 ```
 
@@ -98,14 +119,21 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 ### Critical ありの場合
 
 ```
-⚠️ コードレビュー完了
+⚠️ コードレビュー完了（並列実行）
+
+📊 コード品質
    🔴 Critical: X件 ← 要修正
    🟡 Warning: X件
-   🟢 Suggestion: X件
+
+🔒 セキュリティ
+   🔴 Critical: X件 ← 要修正
+   🟡 Warning: X件
+
+→ 修正が必要
 ```
 
 Critical がある場合は、問題点と修正方法を具体的に提案してください。
 
 ---
 
-**レビューを開始します。まず変更差分を確認し、code-reviewer subagent を呼び出してください。**
+**レビューを開始します。変更差分を確認し、code-reviewer と security-reviewer を並列で起動してください。**
