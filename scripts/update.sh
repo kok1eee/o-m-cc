@@ -1,5 +1,5 @@
 #!/bin/bash
-# o-m-cc: Clean update (uninstall → cache clear → reinstall)
+# o-m-cc: Update plugin (keeps old version for session compatibility)
 # Usage: ./update.sh
 
 set -euo pipefail
@@ -8,22 +8,39 @@ PLUGIN_NAME="o-m-cc"
 MARKETPLACE="kok1eee"
 CACHE_DIR="${HOME}/.claude/plugins/cache/${MARKETPLACE}/${PLUGIN_NAME}"
 
-echo "=== o-m-cc Clean Update ==="
+echo "=== o-m-cc Update ==="
 
-# Uninstall
-echo "  📦 Uninstalling ${PLUGIN_NAME}..."
-claude plugin uninstall "${PLUGIN_NAME}@${MARKETPLACE}" 2>/dev/null || true
-
-# Clear cache
+# Get current version before update
+OLD_VERSION=""
 if [[ -d "$CACHE_DIR" ]]; then
-  echo "  🗑️  Clearing cache..."
-  rm -rf "$CACHE_DIR"
+  OLD_VERSION=$(ls -1 "$CACHE_DIR" 2>/dev/null | sort -V | tail -1)
+  echo "  Current version: ${OLD_VERSION:-none}"
 fi
 
-# Reinstall
-echo "  📦 Installing ${PLUGIN_NAME}..."
-claude plugin install "${PLUGIN_NAME}@${MARKETPLACE}"
+# Update plugin (this will add new version, may delete old)
+echo "  📦 Updating ${PLUGIN_NAME}..."
+claude plugin update "${PLUGIN_NAME}@${MARKETPLACE}" 2>&1 || true
+
+# Get new version
+NEW_VERSION=""
+if [[ -d "$CACHE_DIR" ]]; then
+  NEW_VERSION=$(ls -1 "$CACHE_DIR" 2>/dev/null | sort -V | tail -1)
+fi
 
 echo ""
-echo "✅ o-m-cc をクリーンインストールしました"
-echo "⚠️  Claude Code を再起動してください"
+if [[ "$OLD_VERSION" != "$NEW_VERSION" ]]; then
+  echo "✅ Updated: ${OLD_VERSION} → ${NEW_VERSION}"
+  echo ""
+  echo "════════════════════════════════════════════════════════"
+  echo "  ⚠️  セッションの再スタートが必要です"
+  echo "════════════════════════════════════════════════════════"
+  echo ""
+  echo "  hooks のパスが古いバージョンを参照しています。"
+  echo ""
+  echo "  👉 /clear で新しいセッションを開始"
+  echo "  👉 または Cmd+Shift+P → Reload Window"
+  echo ""
+  echo "════════════════════════════════════════════════════════"
+else
+  echo "✅ Already at latest version: ${NEW_VERSION}"
+fi
