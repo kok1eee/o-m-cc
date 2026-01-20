@@ -24,7 +24,7 @@
 | **code-reviewer** | コード品質チェック | バグ・複雑性・保守性レビュー | レビュー, 品質, チェック, review, quality |
 | **security-reviewer** | セキュリティチェック | OWASP Top 10、脆弱性検出 | セキュリティ, 脆弱性, security, vulnerability |
 | **code-simplifier** | リファクタリング | コード簡素化、保守性向上 | 簡素化, リファクタ, シンプル, simplify, refactor |
-| **researcher** | 外部調査 | ドキュメント調査、ベストプラクティス | 調べて, 使い方, 実装例, research, how to |
+| **researcher** | 外部調査（深度対応） | ドキュメント調査、ベストプラクティス | 調べて, 使い方, 実装例, 詳しく, 比較, research |
 | **advisor** | 戦略判断 | 行き詰まり解消、技術的意思決定 | 相談, アドバイス, 困った, advice, stuck |
 | **scout** | ギャップ分析 | 計画前の曖昧点発見 | 漏れ, 曖昧, 不明点, gaps, unclear |
 | **critic** | 計画検証 | スコープ・リスク・実現可能性チェック | 検証, 妥当性, リスク, validate, risk |
