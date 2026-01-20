@@ -131,10 +131,14 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-plugins.sh" [オプション]
 
 ---
 
-## Step 5: CLAUDE.md に Sisyphus セクション追加
+## Step 5: Sisyphus ルールを追加
+
+`.claude/rules/sisyphus.md` を作成（verup時は上書き）：
 
 ```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-claude-md.sh" CLAUDE.md
+mkdir -p .claude/rules
+cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/sisyphus.md" .claude/rules/sisyphus.md
+echo "✅ Sisyphus ルールを .claude/rules/sisyphus.md に配置"
 ```
 
 ---
@@ -156,7 +160,7 @@ ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
 
 📄 CLAUDE.md: 作成/更新済み
 📦 プラグイン: インストール済み
-🔄 Sisyphus: 有効化済み（タスク完了まで自動継続）
+🔄 Sisyphus: .claude/rules/sisyphus.md に配置
 📐 Standards: .claude/standards/ にセットアップ済み
 📋 Steering: .claude/steering/ にセットアップ済み
 
