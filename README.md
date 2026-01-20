@@ -434,7 +434,10 @@ next_steps:
 | explore | 高速検索・構造把握 | 探索, 検索, どこ, where |
 | designer | アーキテクチャ設計 | 設計, design |
 | frontend | UI実装 | UI, 画面, component |
-| code-reviewer | 品質チェック | レビュー, review |
+| code-reviewer | コード品質 | レビュー, 品質, review |
+| security-reviewer | セキュリティ | セキュリティ, 脆弱性, security |
+
+> **Note**: `code-reviewer` と `security-reviewer` は**並列実行推奨**
 
 **詳細**: `agents/capabilities.md` を参照
 
@@ -458,7 +461,8 @@ o-m-cc/
 │   ├── frontend.md            # UI/UXエンジニア
 │   ├── document-writer.md     # テクニカルライター
 │   ├── vision.md              # マルチモーダル分析
-│   └── code-reviewer.md       # コードレビュー
+│   ├── code-reviewer.md       # コード品質レビュー
+│   └── security-reviewer.md   # セキュリティレビュー（並列実行推奨）
 ├── commands/                  # スラッシュコマンド
 │   ├── init.md                # プロジェクト初期化
 │   ├── requirements.md        # 要件定義

@@ -21,7 +21,8 @@
 | **designer** | アーキテクチャ設計 | 設計書作成、API設計 | 設計, アーキテクチャ, design, architecture |
 | **planner** | タスク分解 | 実装計画、依存関係整理 | 計画, タスク, 分解, plan, tasks |
 | **frontend** | UI実装 | React/Vue コンポーネント作成 | UI, 画面, コンポーネント, フロント, component, screen |
-| **code-reviewer** | 品質チェック | 実装後レビュー、セキュリティ確認 | レビュー, 品質, チェック, review, quality |
+| **code-reviewer** | コード品質チェック | バグ・複雑性・保守性レビュー | レビュー, 品質, チェック, review, quality |
+| **security-reviewer** | セキュリティチェック | OWASP Top 10、脆弱性検出 | セキュリティ, 脆弱性, security, vulnerability |
 | **code-simplifier** | リファクタリング | コード簡素化、保守性向上 | 簡素化, リファクタ, シンプル, simplify, refactor |
 | **researcher** | 外部調査 | ドキュメント調査、ベストプラクティス | 調べて, 使い方, 実装例, research, how to |
 | **advisor** | 戦略判断 | 行き詰まり解消、技術的意思決定 | 相談, アドバイス, 困った, advice, stuck |
@@ -44,7 +45,9 @@
 - frontend, code-simplifier
 
 ### 品質系
-- code-reviewer, document-writer
+- code-reviewer, security-reviewer, document-writer
+
+> **Note**: `code-reviewer` と `security-reviewer` は**並列実行推奨**。品質とセキュリティを同時チェック。
 
 ---
 
