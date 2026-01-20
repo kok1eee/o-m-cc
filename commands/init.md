@@ -51,7 +51,51 @@ sed -i '' "s/\[PROJECT_NAME\]/$PROJECT_NAME/g" CLAUDE.md
 
 ---
 
-## Step 2: 使用言語の確認
+## Step 2: Standards & Steering セットアップ
+
+**AskUserQuestion** で Standards/Steering をセットアップするか確認：
+
+```
+質問: Standards（技術規約）と Steering（プロジェクト文脈）をセットアップしますか？
+multiSelect: false
+
+選択肢:
+1. 両方セットアップ（推奨）
+2. Standards のみ
+3. Steering のみ
+4. スキップ
+```
+
+選択に応じて実行：
+
+```bash
+# 両方セットアップ
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-project.sh" --all
+
+# Standards のみ
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-project.sh" --standards
+
+# Steering のみ
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-project.sh" --steering
+```
+
+**セットアップ後の構造:**
+```
+.claude/
+├── standards/    # 技術規約（実装時に参照）
+│   ├── global/
+│   ├── frontend/
+│   ├── backend/
+│   └── testing/
+└── steering/     # プロジェクト文脈（計画時に参照）
+    ├── product.md
+    ├── tech.md
+    └── structure.md
+```
+
+---
+
+## Step 3: 使用言語の確認
 
 **AskUserQuestion** で使用する言語を確認（複数選択可）：
 
@@ -68,7 +112,7 @@ multiSelect: true
 
 ---
 
-## Step 3: プラグインのインストール
+## Step 4: プラグインのインストール
 
 選択された言語に応じてスクリプトを実行：
 
@@ -87,7 +131,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-plugins.sh" [オプション]
 
 ---
 
-## Step 4: CLAUDE.md に Sisyphus セクション追加
+## Step 5: CLAUDE.md に Sisyphus セクション追加
 
 ```bash
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-claude-md.sh" CLAUDE.md
@@ -95,7 +139,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-claude-md.sh" CLAUDE.md
 
 ---
 
-## Step 5: hooks の確認
+## Step 6: hooks の確認
 
 ```bash
 ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
@@ -113,10 +157,14 @@ ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
 📄 CLAUDE.md: 作成/更新済み
 📦 プラグイン: インストール済み
 🔄 Sisyphus: 有効化済み（タスク完了まで自動継続）
+📐 Standards: .claude/standards/ にセットアップ済み
+📋 Steering: .claude/steering/ にセットアップ済み
 
 🎯 次のステップ:
-   /o-m-cc:plan <task>      - 計画から始める（複雑なタスク）
-   /o-m-cc:ultrawork <task> - 直接実行（シンプルなタスク）
+   1. .claude/steering/ を編集してプロジェクト文脈を設定
+   2. .claude/standards/ を編集して技術規約をカスタマイズ
+   3. /o-m-cc:plan <task> で計画開始（複雑なタスク）
+      または /o-m-cc:ultrawork <task> で直接実行（シンプルなタスク）
 ```
 
 ---

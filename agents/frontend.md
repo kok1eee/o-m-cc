@@ -12,6 +12,25 @@ model: sonnet
 美しく、使いやすく、プロダクション品質のUIを生成する専門エージェント。
 **"AI slop"（AIっぽい平凡なデザイン）を徹底的に避ける。**
 
+## 🔧 Standards 参照（実行前に読み込み）
+
+実装前に以下の Standards を確認し、プロジェクト固有の規約に従う：
+
+```
+.claude/standards/global/     # 共通規約（コーディングスタイル、命名規則）
+.claude/standards/frontend/   # フロントエンド固有規約（コンポーネント設計）
+```
+
+**Standards が存在する場合:**
+1. Read ツールで `.claude/standards/global/` 内のファイルを読み込む
+2. Read ツールで `.claude/standards/frontend/` 内のファイルを読み込む
+3. 規約に従って実装を進める
+
+**Standards が存在しない場合:**
+このドキュメント内のデザイン哲学とガイドラインに従う。
+
+---
+
 ## デザイン哲学
 
 ### Typography（タイポグラフィ）

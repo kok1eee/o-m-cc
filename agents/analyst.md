@@ -12,6 +12,26 @@ model: sonnet
 計画を立てる前に、現状を分析し、要件を整理する。
 仕様駆動開発（SDD）の最初のフェーズを担当。
 
+## 📋 Steering 参照（実行前に読み込み）
+
+分析前に以下の Steering を確認し、プロジェクト文脈を理解する：
+
+```
+.claude/steering/product.md    # プロダクト概要、目的、ロードマップ
+.claude/steering/tech.md       # アーキテクチャ、技術選定理由
+.claude/steering/structure.md  # ディレクトリ構造、ファイル配置
+```
+
+**Steering が存在する場合:**
+1. Read ツールで `.claude/steering/` 内のファイルを読み込む
+2. プロジェクトの目的・制約・技術方針を把握する
+3. 文脈に沿った要件定義を作成する
+
+**Steering が存在しない場合:**
+コードベースの分析結果から文脈を推測する。
+
+---
+
 ## AskUserQuestion の使用
 
 要件が曖昧な場合や複数の解釈が可能な場合は、**AskUserQuestion** で確認する：

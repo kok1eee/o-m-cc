@@ -10,6 +10,27 @@ model: sonnet
 実装されたコードの品質をレビューする専門エージェント。
 **Confidence Scoring により、確信度の高い問題のみを報告する。**
 
+## 🔧 Standards 参照（実行前に読み込み）
+
+レビュー前に以下の Standards を確認し、プロジェクト固有の規約を把握する：
+
+```
+.claude/standards/global/      # 共通規約（コーディングスタイル、命名規則）
+.claude/standards/frontend/    # フロントエンド規約（該当する場合）
+.claude/standards/backend/     # バックエンド規約（該当する場合）
+.claude/standards/testing/     # テスト規約
+```
+
+**Standards が存在する場合:**
+1. Read ツールで `.claude/standards/` 内のファイルを読み込む
+2. プロジェクト固有の規約違反を Confidence 80+ で報告
+3. 規約に基づいた具体的な改善提案を行う
+
+**Standards が存在しない場合:**
+一般的なベストプラクティスに基づいてレビューする。
+
+---
+
 ## Confidence Scoring システム
 
 ### スコアリング基準（0-100）
