@@ -7,9 +7,30 @@ context: fork
 
 # Ultrawork - 最大パフォーマンスモード
 
-## Step 0: バナー表示
+## Step 0: Compact 実行（必須）
 
-**まず以下を実行:**
+**Ultrawork 開始前にコンテキストを最適化します。**
+
+プランファイル（`.plan/`）にすべての情報が保存されているため、会話履歴は不要です。
+
+**ユーザーに以下を依頼:**
+
+```
+🔄 Ultrawork 開始前にコンテキストを最適化します。
+
+以下を実行してください:
+/compact
+
+完了後、このタスクを続行します。
+```
+
+**Compact 完了後、次のステップに進みます。**
+
+---
+
+## Step 1: バナー表示
+
+**以下を実行:**
 
 ```bash
 echo -e "\n\033[1;35m╔══════════════════════════════════╗\033[0m"; echo -e "\033[1;35m║\033[0m  \033[1;36m⚡ ULTRAWORK MODE ENABLED ⚡\033[0m    \033[1;35m║\033[0m"; echo -e "\033[1;35m║\033[0m  \033[1;33mParallel Agent Orchestration\033[0m    \033[1;35m║\033[0m"; echo -e "\033[1;35m╚══════════════════════════════════╝\033[0m\n"
@@ -23,7 +44,7 @@ $ARGUMENTS
 
 ---
 
-## Step 1: Orchestration 設定の確認
+## Step 2: Orchestration 設定の確認
 
 **まず `.plan/orchestration.yml` の存在を確認:**
 
@@ -119,7 +140,7 @@ Task tool (background=true):
 
 ## 実行フロー
 
-### Step 1: 要求分析
+### Step 3: 要求分析
 
 ユーザーのリクエストを分析し、必要な作業を特定：
 
@@ -129,7 +150,7 @@ Task tool (background=true):
 - 並列実行できるタスクは何か
 ```
 
-### Step 2: 並列探索（バックグラウンド）
+### Step 4: 並列探索（バックグラウンド）
 
 **独立した探索タスクを同時起動：**
 
@@ -140,7 +161,7 @@ Task tool で並列実行（すべて background=true）：
 - researcher: 必要なドキュメント調査
 ```
 
-### Step 3: 計画作成
+### Step 5: 計画作成
 
 探索結果を待って、planner agent で作業分解：
 
@@ -151,7 +172,7 @@ Task tool で planner agent を呼び出し：
 - 依存関係と実行順序を決定
 ```
 
-### Step 4: 並列実装
+### Step 6: 並列実装
 
 **独立したタスクは並列で実装：**
 
@@ -161,7 +182,7 @@ Task tool で planner agent を呼び出し：
 - 問題発生時は advisor agent に相談
 ```
 
-### Step 5: 検証と完了
+### Step 7: 検証と完了
 
 ```
 1. 全 TODO が completed か確認
@@ -169,6 +190,39 @@ Task tool で planner agent を呼び出し：
 3. code-reviewer で最終レビュー
 4. Critical なし → 完了
 ```
+
+### Step 8: Handoff 更新
+
+**セッション状態を `.plan/handoff.yaml` に保存：**
+
+```yaml
+# .plan/handoff.yaml
+updated_at: "[現在時刻]"
+status: "completed"  # or "in_progress" if tasks remain
+
+current_task:
+  id: "[最後に取り組んだタスク]"
+  progress: "100%"
+
+discoveries:
+  - type: "pattern"
+    content: "[発見したパターン]"
+  - type: "decision"
+    content: "[決定事項]"
+
+completed_tasks:
+  - "[完了したタスクID一覧]"
+
+next_steps:
+  - "[残タスクがあれば記載]"
+
+context:
+  key_files:
+    - "[重要なファイル]"
+  notes: "[次回セッションへの申し送り]"
+```
+
+**発見したパターンは `.claude/standards/learned/` にも記録。**
 
 ---
 

@@ -1,0 +1,57 @@
+# Handoff - セッション状態の構造化引き継ぎ
+#
+# ultrawork 完了時に .plan/handoff.yaml として保存される
+# 次回セッション開始時にこのファイルを読み込んで状態を復元
+
+# 最終更新
+updated_at: "2026-01-20T14:30:00+09:00"
+
+# 現在の状態
+status: "in_progress"  # in_progress | blocked | completed
+
+# 現在取り組んでいるタスク
+current_task:
+  id: "TASK-003"
+  name: "UserService の実装"
+  progress: "70%"
+
+# ブロッカー（なければ null）
+blocked_by: null
+# blocked_by:
+#   reason: "外部API仕様が未確定"
+#   waiting_for: "API チームからの回答"
+#   since: "2026-01-20"
+
+# セッション中の発見事項
+discoveries:
+  - type: "pattern"
+    content: "このプロジェクトでは Service クラスは必ず interface を先に定義"
+    file: "src/services/AuthService.ts"
+  - type: "decision"
+    content: "認証は JWT ではなく session-based を採用"
+    reason: "既存インフラとの互換性"
+  - type: "issue"
+    content: "UserRepository のテストが不安定"
+    severity: "low"
+
+# 完了したタスク（このセッション）
+completed_tasks:
+  - "TASK-001"
+  - "TASK-002"
+
+# 次のステップ
+next_steps:
+  - "UserService のテスト追加"
+  - "エラーハンドリングの統一"
+  - "API ドキュメント更新"
+
+# コンテキスト情報（次回セッションで役立つ）
+context:
+  key_files:
+    - "src/services/UserService.ts"
+    - "src/repositories/UserRepository.ts"
+  related_docs:
+    - ".plan/design.md#user-service"
+  notes: |
+    UserService は AuthService に依存している。
+    先に AuthService の interface を確認すること。

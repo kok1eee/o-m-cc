@@ -68,11 +68,9 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ```bash
 /o-m-cc:ultrawork "認証機能を実装"
-
-# コンテキスト整理してから実行
-/o-m-cc:ultrawork-compact "大規模リファクタリング"
-/o-m-cc:ultrawork-clear "新機能実装"
 ```
+
+> **Note**: ultrawork 開始時に自動的に `/compact` を実行します。プランファイル（`.plan/`）にすべての情報が保存されているため、会話履歴のクリーンアップが安全に行えます。
 
 ## Commands
 
@@ -97,9 +95,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | コマンド | 説明 | Context |
 |---------|------|---------|
-| `/o-m-cc:ultrawork <task>` | 並列エージェントで最大パフォーマンス実行 | fork |
-| `/o-m-cc:ultrawork-compact <task>` | /compact 後に ultrawork | fork |
-| `/o-m-cc:ultrawork-clear <task>` | /clear 後に ultrawork | fork |
+| `/o-m-cc:ultrawork <task>` | 並列エージェントで最大パフォーマンス実行（自動 /compact） | fork |
 
 ### 品質
 
@@ -363,6 +359,63 @@ bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
 - 人間への表示も簡潔に
 - 詳細は必要時のみ参照可能
 
+## Handoff
+
+セッション状態を構造化して引き継ぐ仕組み。ultrawork 完了時に自動生成。
+
+### 目的
+
+- `/compact` 後も状態を復元可能
+- 次回セッションへのスムーズな引き継ぎ
+- 発見事項の記録
+
+### 構造
+
+```yaml
+# .plan/handoff.yaml
+updated_at: "2026-01-20T14:30:00+09:00"
+status: "in_progress"
+
+current_task:
+  id: "TASK-003"
+  progress: "70%"
+
+discoveries:
+  - type: "pattern"
+    content: "Service クラスは interface を先に定義"
+  - type: "decision"
+    content: "認証は session-based を採用"
+
+next_steps:
+  - "UserService のテスト追加"
+```
+
+## Learned Standards
+
+プロジェクトで発見したパターン・規約を累積記録。
+
+### Static vs Learned
+
+| 種類 | 場所 | 内容 |
+|------|------|------|
+| **Static** | `.claude/standards/global/` etc. | 事前定義の規約 |
+| **Learned** | `.claude/standards/learned/` | 発見したパターン（動的） |
+
+### ファイル構成
+
+```
+.claude/standards/learned/
+├── patterns.md      # 発見したパターン
+├── decisions.md     # 技術的決定
+└── antipatterns.md  # 避けるべきパターン
+```
+
+### 記録タイミング
+
+- コードレビュー時に発見
+- 実装中に気づいた暗黙の規約
+- Handoff の discoveries から転記
+
 ## Structure
 
 ```
@@ -390,21 +443,21 @@ o-m-cc/
 │   ├── tasks.md               # タスク分解
 │   ├── plan.md                # 計画（オーケストレーター）
 │   ├── review.md              # コードレビュー
-│   ├── ultrawork.md           # 並列実行
-│   ├── ultrawork-compact.md
-│   └── ultrawork-clear.md
+│   └── ultrawork.md           # 並列実行（自動 /compact）
 ├── hooks/                     # フック
 │   ├── hooks.json
 │   ├── stop-guard.sh          # Stop Hook（ループ制御）
 │   ├── archive-plans.sh       # プランアーカイブ
 │   ├── block-unnecessary-docs.sh
 │   └── warn-console-log.sh
-├── templates/                 # Standards/Steering テンプレート
+├── templates/                 # Standards/Steering/Handoff テンプレート
+│   ├── handoff.yaml.example   # Handoff テンプレート
 │   ├── standards/
 │   │   ├── global/
 │   │   ├── frontend/
 │   │   ├── backend/
-│   │   └── testing/
+│   │   ├── testing/
+│   │   └── learned/           # 発見したパターン（動的）
 │   └── steering/
 │       ├── product.md
 │       ├── tech.md
