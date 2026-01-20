@@ -79,7 +79,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | コマンド | 説明 |
 |---------|------|
 | `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） |
-| `/o-m-cc:update` | プラグインをクリーンインストール（キャッシュクリア + 再インストール） |
 
 > 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
@@ -534,8 +533,7 @@ o-m-cc/
 │   ├── tasks.md               # タスク分解
 │   ├── plan.md                # 計画（オーケストレーター）
 │   ├── review.md              # コードレビュー
-│   ├── ultrawork.md           # 並列実行（自動 /compact）
-│   └── update.md              # プラグイン更新
+│   └── ultrawork.md           # 並列実行（自動 /compact）
 ├── hooks/                     # フック
 │   ├── hooks.json
 │   ├── stop-guard.sh          # Stop Hook（ループ制御）
@@ -558,8 +556,7 @@ o-m-cc/
 ├── scripts/
 │   ├── install-plugins.sh     # 推奨プラグインのインストール
 │   ├── setup-claude-md.sh     # CLAUDE.md の Sisyphus セクション管理
-│   ├── setup-project.sh       # Standards/Steering セットアップ
-│   └── update.sh              # クリーンインストール
+│   └── setup-project.sh       # Standards/Steering セットアップ
 └── README.md
 ```
 
