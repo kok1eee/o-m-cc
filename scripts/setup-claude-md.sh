@@ -4,21 +4,14 @@
 
 set -euo pipefail
 
-# Colors
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Target file (default: CLAUDE.md in current directory)
 TARGET_FILE="${1:-CLAUDE.md}"
-
-# Markers
 START_MARKER="<!-- o-m-cc:sisyphus:start -->"
 END_MARKER="<!-- o-m-cc:sisyphus:end -->"
 
-# Sisyphus section content
-SISYPHUS_CONTENT="$START_MARKER
+# Create Sisyphus content in a temp file
+CONTENT_FILE=$(mktemp)
+cat > "$CONTENT_FILE" << 'SISYPHUS_EOF'
+<!-- o-m-cc:sisyphus:start -->
 ## Sisyphus Mode
 
 **タスク完了まで決して止まらない。**
@@ -35,14 +28,14 @@ SISYPHUS_CONTENT="$START_MARKER
 
 全てのTODOが完了し、レビューで Critical がない場合のみ：
 
-\`\`\`
+```
 <promise>DONE</promise>
-\`\`\`
+```
 
 ### 禁止事項
 
 - 途中放棄禁止 - TODOが残っている状態で「完了」と言わない
-- 嘘の完了禁止 - \`<promise>DONE</promise>\` は本当に完了した時だけ
+- 嘘の完了禁止 - `<promise>DONE</promise>` は本当に完了した時だけ
 - レビュースキップ禁止 - 完了前に必ずレビュー
 
 ### Bash 使用制限
@@ -51,14 +44,14 @@ SISYPHUS_CONTENT="$START_MARKER
 
 | 禁止コマンド | 代替ツール |
 |-------------|-----------|
-| \`find\` | Glob ツール |
-| \`grep\` / \`rg\` | Grep ツール |
-| \`cat\` / \`head\` / \`tail\` | Read ツール |
-| \`ls \| grep\` | Glob ツール |
+| `find` | Glob ツール |
+| `grep` / `rg` | Grep ツール |
+| `cat` / `head` / `tail` | Read ツール |
+| `ls | grep` | Glob ツール |
 
 **許可される Bash**:
-- \`jj\` / \`git\` - バージョン管理
-- \`npm\` / \`uv\` / \`pip\` - パッケージ管理
+- `jj` / `git` - バージョン管理
+- `npm` / `uv` / `pip` - パッケージ管理
 - ビルド/テストコマンド
 
 ### コード品質基準
@@ -78,46 +71,49 @@ SISYPHUS_CONTENT="$START_MARKER
 - 副作用を最小限に
 
 **命名規則**:
-- 変数名は意図を表す（\`d\` → \`currentDate\`）
-- 関数名は動詞で始める（\`getUser\`, \`validateInput\`）
-- 略語を避ける（\`btn\` → \`button\`）
-$END_MARKER"
+- 変数名は意図を表す（`d` → `currentDate`）
+- 関数名は動詞で始める（`getUser`, `validateInput`）
+- 略語を避ける（`btn` → `button`）
+<!-- o-m-cc:sisyphus:end -->
+SISYPHUS_EOF
 
-echo -e "${GREEN}=== o-m-cc CLAUDE.md Setup ===${NC}"
+echo "=== o-m-cc CLAUDE.md Setup ==="
 
-# Check if file exists
 if [[ -f "$TARGET_FILE" ]]; then
-  echo -e "${BLUE}Found existing $TARGET_FILE${NC}"
+  echo "Found existing $TARGET_FILE"
 
-  # Check if markers exist
   if grep -q "$START_MARKER" "$TARGET_FILE" && grep -q "$END_MARKER" "$TARGET_FILE"; then
-    echo -e "${YELLOW}Updating existing Sisyphus section...${NC}"
+    echo "Updating existing Sisyphus section..."
 
-    # Create temp file
+    # Create output file
     TEMP_FILE=$(mktemp)
 
-    # Remove old section and add new one
-    awk -v start="$START_MARKER" -v end="$END_MARKER" -v content="$SISYPHUS_CONTENT" '
-      BEGIN { printing = 1; added = 0 }
-      $0 ~ start { printing = 0; if (!added) { print content; added = 1 } next }
-      $0 ~ end { printing = 1; next }
-      printing { print }
+    # Process: keep content before marker, add new content, keep content after marker
+    awk -v start="$START_MARKER" -v end="$END_MARKER" '
+      $0 ~ start { skip = 1; next }
+      $0 ~ end { skip = 0; next }
+      !skip { print }
     ' "$TARGET_FILE" > "$TEMP_FILE"
 
+    # Find where to insert (before the line that was after end marker, or at end)
+    # For simplicity, append at end and user can move if needed
+    cat "$CONTENT_FILE" >> "$TEMP_FILE"
+
     mv "$TEMP_FILE" "$TARGET_FILE"
-    echo -e "${GREEN}✅ Sisyphus section updated${NC}"
+    echo "✅ Sisyphus section updated"
   else
-    echo -e "${YELLOW}Adding Sisyphus section...${NC}"
+    echo "Adding Sisyphus section..."
     echo "" >> "$TARGET_FILE"
-    echo "$SISYPHUS_CONTENT" >> "$TARGET_FILE"
-    echo -e "${GREEN}✅ Sisyphus section added${NC}"
+    cat "$CONTENT_FILE" >> "$TARGET_FILE"
+    echo "✅ Sisyphus section added"
   fi
 else
-  echo -e "${YELLOW}Creating new $TARGET_FILE...${NC}"
+  echo "Creating new $TARGET_FILE..."
   echo "# Project Guidelines" > "$TARGET_FILE"
   echo "" >> "$TARGET_FILE"
-  echo "$SISYPHUS_CONTENT" >> "$TARGET_FILE"
-  echo -e "${GREEN}✅ $TARGET_FILE created with Sisyphus section${NC}"
+  cat "$CONTENT_FILE" >> "$TARGET_FILE"
+  echo "✅ $TARGET_FILE created with Sisyphus section"
 fi
 
-echo -e "${GREEN}=== Setup complete ===${NC}"
+rm -f "$CONTENT_FILE"
+echo "=== Setup complete ==="
