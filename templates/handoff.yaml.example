@@ -1,11 +1,11 @@
 # Handoff - セッション状態の構造化引き継ぎ
 #
-# ultrawork 完了時に .plan/handoff.yaml として保存される
+# ultrawork 完了時に spec/plan/handoff.yaml として保存される
 # 次回セッション開始時にこのファイルを読み込んで状態を復元
 #
 # ⚠️ 重要: このファイルは毎回「上書き」される（累積しない）
-# - discoveries → 重要なものは .claude/standards/learned/ に転記
-# - completed_tasks → 完了したらリセット（.plan/tasks.md で追跡）
+# - discoveries → 重要なものは spec/standards/learned/ に転記
+# - completed_tasks → 完了したらリセット（spec/plan/tasks.md で追跡）
 # - 7日以上古い handoff は無視される
 
 # 最終更新
@@ -56,7 +56,7 @@ context:
     - "src/services/UserService.ts"
     - "src/repositories/UserRepository.ts"
   related_docs:
-    - ".plan/design.md#user-service"
+    - "spec/plan/design.md#user-service"
   notes: |
     UserService は AuthService に依存している。
     先に AuthService の interface を確認すること。

@@ -11,7 +11,7 @@ context: fork
 
 **Ultrawork 開始前にコンテキストを最適化します。**
 
-プランファイル（`.plan/`）にすべての情報が保存されているため、会話履歴は不要です。
+プランファイル（`spec/plan/`）にすべての情報が保存されているため、会話履歴は不要です。
 
 **ユーザーに以下を依頼:**
 
@@ -46,18 +46,18 @@ $ARGUMENTS
 
 ## Step 2: Orchestration 設定の確認
 
-**まず `.plan/orchestration.yml` の存在を確認:**
+**まず `spec/plan/orchestration.yml` の存在を確認:**
 
 ```bash
-ls -la .plan/orchestration.yml 2>/dev/null
+ls -la spec/plan/orchestration.yml 2>/dev/null
 ```
 
 ### orchestration.yml が存在する場合（Orchestrated Mode）
 
 YML ファイルを読み込み、定義に従って実行：
 
-1. **Read** で `.plan/orchestration.yml` を読み込む
-2. **Read** で `.plan/tasks.md` を読み込む
+1. **Read** で `spec/plan/orchestration.yml` を読み込む
+2. **Read** で `spec/plan/tasks.md` を読み込む
 3. `parallel_groups` に従って並列実行
 4. `dependencies` に従って順次実行
 5. 各タスクグループで:
@@ -193,10 +193,10 @@ Task tool で planner agent を呼び出し：
 
 ### Step 8: Handoff 更新
 
-**セッション状態を `.plan/handoff.yaml` に保存：**
+**セッション状態を `spec/plan/handoff.yaml` に保存：**
 
 ```yaml
-# .plan/handoff.yaml
+# spec/plan/handoff.yaml
 updated_at: "[現在時刻]"
 status: "completed"  # or "in_progress" if tasks remain
 
@@ -222,7 +222,7 @@ context:
   notes: "[次回セッションへの申し送り]"
 ```
 
-**発見したパターンは `.claude/standards/learned/` にも記録。**
+**発見したパターンは `spec/standards/learned/` にも記録。**
 
 ---
 
@@ -234,7 +234,7 @@ context:
 🚀 ULTRAWORK COMPLETE (Orchestrated Mode)
 
 Orchestration:
-- 設定ファイル: .plan/orchestration.yml
+- 設定ファイル: spec/plan/orchestration.yml
 - タスクグループ: X個
 - 並列実行グループ: X個
 

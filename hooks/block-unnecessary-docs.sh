@@ -3,7 +3,7 @@
 # PreToolUse hook for Write tool
 #
 # Allows: README.md, CLAUDE.md, CONTRIBUTING.md, CHANGELOG.md
-# Also allows: files in .claude/standards/, .claude/steering/, docs/, documentation/ directories
+# Also allows: files in spec/standards/, spec/steering/, docs/, documentation/ directories
 
 set -euo pipefail
 
@@ -44,9 +44,9 @@ done
 
 # Allowed directories (files in these directories are allowed)
 ALLOWED_DIRS=(
-  ".claude/standards/"
-  ".claude/steering/"
-  ".plan/"
+  "spec/standards/"
+  "spec/steering/"
+  "spec/plan/"
   "docs/"
   "documentation/"
   ".github/"
@@ -61,6 +61,6 @@ done
 # Block with warning message
 echo "BLOCKED: Creating ${FILENAME} is not allowed."
 echo "Allowed markdown files: README.md, CLAUDE.md, CONTRIBUTING.md, CHANGELOG.md"
-echo "Allowed directories: .claude/standards/, .claude/steering/, .plan/, docs/, documentation/, .github/"
+echo "Allowed directories: spec/standards/, spec/steering/, spec/plan/, docs/, documentation/, .github/"
 echo "If this is intentional, ask the user for explicit permission."
 exit 2

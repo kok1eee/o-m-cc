@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
 TEMPLATES_DIR="${PLUGIN_ROOT}/templates"
-TARGET_DIR="${PWD}/.claude"
+TARGET_DIR="${PWD}/spec"
 
 # Flags
 SETUP_STANDARDS=false
@@ -63,7 +63,7 @@ echo -e "${GREEN}=== o-m-cc Project Setup ===${NC}"
 echo -e "${BLUE}Target: ${TARGET_DIR}${NC}"
 echo ""
 
-# Ensure .claude directory exists
+# Ensure spec directory exists
 mkdir -p "$TARGET_DIR"
 
 # Setup Standards
@@ -118,6 +118,6 @@ fi
 echo -e "${GREEN}=== Setup complete ===${NC}"
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
-echo -e "  1. Edit files in .claude/standards/ to match your project's coding standards"
-echo -e "  2. Edit files in .claude/steering/ to describe your project context"
+echo -e "  1. Edit files in spec/standards/ to match your project's coding standards"
+echo -e "  2. Edit files in spec/steering/ to describe your project context"
 echo -e "  3. Run '/o-m-cc:init' to enable Sisyphus mode"

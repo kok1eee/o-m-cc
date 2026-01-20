@@ -81,7 +81,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-project.sh" --steering
 
 **セットアップ後の構造:**
 ```
-.claude/
+spec/
 ├── standards/    # 技術規約（実装時に参照）
 │   ├── global/
 │   ├── frontend/
@@ -133,17 +133,48 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-plugins.sh" [オプション]
 
 ## Step 5: Sisyphus ルールを追加
 
-`.claude/rules/sisyphus.md` を作成（verup時は上書き）：
+`spec/rules/sisyphus.md` を作成（verup時は上書き）：
 
 ```bash
-mkdir -p .claude/rules
-cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/sisyphus.md" .claude/rules/sisyphus.md
-echo "✅ Sisyphus ルールを .claude/rules/sisyphus.md に配置"
+mkdir -p spec/rules
+cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/sisyphus.md" spec/rules/sisyphus.md
+echo "✅ Sisyphus ルールを spec/rules/sisyphus.md に配置"
 ```
 
 ---
 
-## Step 6: hooks の確認
+## Step 6: .gitignore の設定
+
+o-m-cc のランタイムファイルを .gitignore に追加：
+
+```bash
+# 追加するエントリ
+GITIGNORE_ENTRIES=(
+  "# Claude Code"
+  ".claude/"
+  ""
+  "# o-m-cc runtime files"
+  "spec/sisyphus-state.json"
+  "spec/plan/logs/"
+  "spec/plan/handoff.yaml"
+)
+
+# .gitignore が存在しない場合は作成
+touch .gitignore
+
+# 各エントリを追加（重複しない場合のみ）
+for entry in "${GITIGNORE_ENTRIES[@]}"; do
+  if ! grep -qF "$entry" .gitignore; then
+    echo "$entry" >> .gitignore
+  fi
+done
+
+echo "✅ .gitignore に o-m-cc ランタイムファイルを追加"
+```
+
+---
+
+## Step 7: hooks の確認
 
 ```bash
 ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
@@ -160,13 +191,13 @@ ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
 
 📄 CLAUDE.md: 作成/更新済み
 📦 プラグイン: インストール済み
-🔄 Sisyphus: .claude/rules/sisyphus.md に配置
-📐 Standards: .claude/standards/ にセットアップ済み
-📋 Steering: .claude/steering/ にセットアップ済み
+🔄 Sisyphus: spec/rules/sisyphus.md に配置
+📐 Standards: spec/standards/ にセットアップ済み
+📋 Steering: spec/steering/ にセットアップ済み
 
 🎯 次のステップ:
-   1. .claude/steering/ を編集してプロジェクト文脈を設定
-   2. .claude/standards/ を編集して技術規約をカスタマイズ
+   1. spec/steering/ を編集してプロジェクト文脈を設定
+   2. spec/standards/ を編集して技術規約をカスタマイズ
    3. /o-m-cc:plan <task> で計画開始（複雑なタスク）
       または /o-m-cc:ultrawork <task> で直接実行（シンプルなタスク）
 ```

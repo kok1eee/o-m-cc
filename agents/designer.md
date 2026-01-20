@@ -18,16 +18,16 @@ model: opus
 
 **Steering（プロジェクト文脈）:**
 ```
-.claude/steering/product.md    # プロダクト概要、目的
-.claude/steering/tech.md       # アーキテクチャ、技術選定理由、ADR
-.claude/steering/structure.md  # ディレクトリ構造
+spec/steering/product.md    # プロダクト概要、目的
+spec/steering/tech.md       # アーキテクチャ、技術選定理由、ADR
+spec/steering/structure.md  # ディレクトリ構造
 ```
 
 **Standards（技術規約）:**
 ```
-.claude/standards/global/      # 共通規約
-.claude/standards/backend/     # バックエンド規約（API設計等）
-.claude/standards/frontend/    # フロントエンド規約（該当する場合）
+spec/standards/global/      # 共通規約
+spec/standards/backend/     # バックエンド規約（API設計等）
+spec/standards/frontend/    # フロントエンド規約（該当する場合）
 ```
 
 **読み込み手順:**
@@ -200,7 +200,7 @@ interface Example {
 
 ## 出力先
 
-`.plan/design.md`
+`spec/plan/design.md`
 
 ## 連携パターン
 

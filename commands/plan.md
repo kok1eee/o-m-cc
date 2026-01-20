@@ -71,7 +71,7 @@ $ARGUMENTS
    - あると良い機能（Nice to have）
    - 将来検討（Future）
 
-4. **出力**: `.plan/brainstorm.md` に保存
+4. **出力**: `spec/plan/brainstorm.md` に保存
 
 ---
 
@@ -117,7 +117,7 @@ $ARGUMENTS
 Task tool で analyst subagent を呼び出し：
 - 現状分析
 - 要件整理（FR/NFR）
-- 出力: .plan/requirements.md
+- 出力: spec/plan/requirements.md
 ```
 
 **完了を待ってから Phase 1.5 へ。**
@@ -153,7 +153,7 @@ Task tool で scout subagent を呼び出し：
 Task tool で designer subagent を呼び出し：
 - requirements.md を読み込み
 - アーキテクチャ設計
-- 出力: .plan/design.md
+- 出力: spec/plan/design.md
 ```
 
 **完了を待ってから Phase 3 へ。**
@@ -168,7 +168,7 @@ Task tool で designer subagent を呼び出し：
 Task tool で planner subagent を呼び出し：
 - design.md を読み込み
 - タスク分解・依存関係整理
-- 出力: .plan/tasks.md
+- 出力: spec/plan/tasks.md
 ```
 
 ---
@@ -188,7 +188,7 @@ Task tool で critic subagent を呼び出し：
 ## 出力ファイル
 
 ```
-.plan/
+spec/plan/
 ├── requirements.md  # 要件定義
 ├── design.md        # 設計書
 └── tasks.md         # 実装タスク
@@ -202,9 +202,9 @@ Task tool で critic subagent を呼び出し：
 
 ```
 ✅ 計画完了
-   📄 .plan/requirements.md
-   📄 .plan/design.md
-   📄 .plan/tasks.md
+   📄 spec/plan/requirements.md
+   📄 spec/plan/design.md
+   📄 spec/plan/tasks.md
 
    - 機能要件: X件
    - コンポーネント: X個

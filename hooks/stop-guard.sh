@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # Configuration
-STATE_FILE=".claude/sisyphus-state.json"
+STATE_FILE="spec/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 
 # Read hook input from stdin

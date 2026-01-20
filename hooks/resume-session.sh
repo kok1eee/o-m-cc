@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-HANDOFF_FILE=".plan/handoff.yaml"
+HANDOFF_FILE="spec/plan/handoff.yaml"
 
 # Skip if no handoff file
 [[ ! -f "$HANDOFF_FILE" ]] && exit 0
@@ -16,7 +16,7 @@ file_age_days=$(( ($(date +%s) - file_mtime) / 86400 ))
 # Display previous session state
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 Previous Session Found (.plan/handoff.yaml)"
+echo "📋 Previous Session Found (spec/plan/handoff.yaml)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 

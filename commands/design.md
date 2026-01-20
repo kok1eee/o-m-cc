@@ -13,7 +13,7 @@ model: opus
 
 ## 前提条件
 
-`.plan/requirements.md` が存在すること。
+`spec/plan/requirements.md` が存在すること。
 
 存在しない場合は、先に `/requirements` を実行してください。
 
@@ -46,7 +46,7 @@ model: opus
 Task tool で designer subagent を呼び出し：
 
 1. 要件の確認
-   - .plan/requirements.md を読み込み
+   - spec/plan/requirements.md を読み込み
    - FR/NFR を把握
 
 2. 設計
@@ -56,14 +56,14 @@ Task tool で designer subagent を呼び出し：
    - API設計（必要な場合）
 
 3. 出力
-   - .plan/design.md を作成
+   - spec/plan/design.md を作成
 ```
 
 ---
 
 ## 出力ファイル
 
-`.plan/design.md`
+`spec/plan/design.md`
 
 ```markdown
 # 設計書: [機能名]
@@ -96,7 +96,7 @@ Task tool で designer subagent を呼び出し：
 
 ```
 ✅ 設計完了
-   📄 .plan/design.md
+   📄 spec/plan/design.md
 
    - コンポーネント: X個
    - API: X個

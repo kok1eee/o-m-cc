@@ -50,14 +50,14 @@ Task tool で analyst subagent を呼び出し：
    - 受け入れ基準
 
 3. 出力
-   - .plan/requirements.md を作成
+   - spec/plan/requirements.md を作成
 ```
 
 ---
 
 ## 出力ファイル
 
-`.plan/requirements.md`
+`spec/plan/requirements.md`
 
 ```markdown
 # 要件定義: [機能名]
@@ -84,7 +84,7 @@ Task tool で analyst subagent を呼び出し：
 
 ```
 ✅ 要件定義完了
-   📄 .plan/requirements.md
+   📄 spec/plan/requirements.md
 
    - 機能要件: X件
    - 非機能要件: X件

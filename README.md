@@ -70,7 +70,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 /o-m-cc:ultrawork "認証機能を実装"
 ```
 
-> **Note**: ultrawork 開始時に自動的に `/compact` を実行します。プランファイル（`.plan/`）にすべての情報が保存されているため、会話履歴のクリーンアップが安全に行えます。
+> **Note**: ultrawork 開始時に自動的に `/compact` を実行します。プランファイル（`spec/plan/`）にすべての情報が保存されているため、会話履歴のクリーンアップが安全に行えます。
 
 ## Commands
 
@@ -223,7 +223,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 計画フェーズで以下のファイルが生成されます：
 
 ```
-.plan/
+spec/plan/
 ├── brainstorm.md       # ブレインストーミング結果（オプション）
 ├── requirements.md     # 要件定義（FR-X, NFR-X）
 ├── design.md           # 設計書（コンポーネント、API）
@@ -275,11 +275,11 @@ dependencies:                    # 依存関係
 
 ## Standards & Steering
 
-プロジェクト固有の規約とコンテキストを `.claude/` 配下で管理：
+プロジェクト固有の規約とコンテキストを `spec/` 配下で管理：
 
 ```bash
 # セットアップ（プロジェクトルートで実行）
-bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
+bash ~/spec/plugins/o-m-cc/scripts/setup-project.sh
 ```
 
 ### Standards（技術規約）
@@ -287,7 +287,7 @@ bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
 実装時にエージェントが参照する技術規約：
 
 ```
-.claude/standards/
+spec/standards/
 ├── global/
 │   ├── coding-style.md   # コーディングスタイル
 │   ├── conventions.md    # 規約（Git、エラーハンドリング等）
@@ -305,7 +305,7 @@ bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
 計画時にエージェントが参照するプロジェクト文脈：
 
 ```
-.claude/steering/
+spec/steering/
 ├── product.md     # プロダクト概要、目的、ロードマップ
 ├── tech.md        # アーキテクチャ、技術選定理由、ADR
 └── structure.md   # ディレクトリ構造、ファイル配置規則
@@ -342,7 +342,7 @@ o-m-cc プラグインの初期トークン消費:
 ```
 サブエージェント
     │
-    ├─ 詳細 → .plan/logs/{agent}-{timestamp}.md に保存
+    ├─ 詳細 → spec/plan/logs/{agent}-{timestamp}.md に保存
     │
     └─ 要約 → メインエージェント（Sisyphus）に返却
 ```
@@ -356,13 +356,13 @@ o-m-cc プラグインの初期トークン消費:
 **変更ファイル**:
 - path/to/file.ts:45-67
 **サマリー**: [1-2文で何をしたか]
-**詳細ログ**: .plan/logs/{agent}-{YYYYMMDD-HHMMSS}.md
+**詳細ログ**: spec/plan/logs/{agent}-{YYYYMMDD-HHMMSS}.md
 ```
 
 ### ログ構造
 
 ```
-.plan/logs/
+spec/plan/logs/
 ├── frontend-20260120-143052.md      # フロントエンド実装詳細
 ├── code-reviewer-20260120-144530.md # レビュー詳細
 └── explore-20260120-142010.md       # 探索結果詳細
@@ -382,7 +382,7 @@ o-m-cc プラグインの初期トークン消費:
 ```
 SessionStart Hook
     │
-    └─ .plan/handoff.yaml を検出
+    └─ spec/plan/handoff.yaml を検出
          │
          ├─ 7日以上古い → スキップ
          │
@@ -396,7 +396,7 @@ SessionStart Hook
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 Previous Session Found (.plan/handoff.yaml)
+📋 Previous Session Found (spec/plan/handoff.yaml)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Status: in_progress
@@ -427,7 +427,7 @@ Next Steps:
 ### 構造
 
 ```yaml
-# .plan/handoff.yaml
+# spec/plan/handoff.yaml
 updated_at: "2026-01-20T14:30:00+09:00"
 status: "in_progress"
 
@@ -453,13 +453,13 @@ next_steps:
 
 | 種類 | 場所 | 内容 |
 |------|------|------|
-| **Static** | `.claude/standards/global/` etc. | 事前定義の規約 |
-| **Learned** | `.claude/standards/learned/` | 発見したパターン（動的） |
+| **Static** | `spec/standards/global/` etc. | 事前定義の規約 |
+| **Learned** | `spec/standards/learned/` | 発見したパターン（動的） |
 
 ### ファイル構成
 
 ```
-.claude/standards/learned/
+spec/standards/learned/
 ├── patterns.md      # 発見したパターン
 ├── decisions.md     # 技術的決定
 └── antipatterns.md  # 避けるべきパターン

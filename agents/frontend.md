@@ -17,13 +17,13 @@ model: sonnet
 実装前に以下の Standards を確認し、プロジェクト固有の規約に従う：
 
 ```
-.claude/standards/global/     # 共通規約（コーディングスタイル、命名規則）
-.claude/standards/frontend/   # フロントエンド固有規約（コンポーネント設計）
+spec/standards/global/     # 共通規約（コーディングスタイル、命名規則）
+spec/standards/frontend/   # フロントエンド固有規約（コンポーネント設計）
 ```
 
 **Standards が存在する場合:**
-1. Read ツールで `.claude/standards/global/` 内のファイルを読み込む
-2. Read ツールで `.claude/standards/frontend/` 内のファイルを読み込む
+1. Read ツールで `spec/standards/global/` 内のファイルを読み込む
+2. Read ツールで `spec/standards/frontend/` 内のファイルを読み込む
 3. 規約に従って実装を進める
 
 **Standards が存在しない場合:**
@@ -299,11 +299,11 @@ export function Button({
 - src/components/Button.tsx:1-45 (新規)
 - src/components/index.ts:5 (エクスポート追加)
 **サマリー**: [1-2文で何をしたか]
-**詳細ログ**: .plan/logs/frontend-{YYYYMMDD-HHMMSS}.md
+**詳細ログ**: spec/plan/logs/frontend-{YYYYMMDD-HHMMSS}.md
 ```
 
 ### 詳細ログの保存
 
-冗長な出力（デザイン検討、コード詳細）は `.plan/logs/` に保存：
+冗長な出力（デザイン検討、コード詳細）は `spec/plan/logs/` に保存：
 - ファイル名: `frontend-{YYYYMMDD-HHMMSS}.md`
 - 内容: 検討した選択肢、コード変更の詳細説明

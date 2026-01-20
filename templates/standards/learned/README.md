@@ -43,7 +43,7 @@ learned/
 **決定**: 認証は JWT ではなく session-based を採用
 **理由**: 既存インフラとの互換性
 **影響範囲**: AuthService, SessionMiddleware
-**参考**: .plan/design.md#authentication
+**参考**: spec/plan/design.md#authentication
 ```
 
 ### antipatterns.md

@@ -18,7 +18,7 @@ project-root/
 │   └── e2e/                # E2Eテスト
 ├── docs/                   # ドキュメント
 ├── scripts/                # ビルド・デプロイスクリプト
-├── .claude/                # Claude Code 設定
+├── spec/                # Claude Code 設定
 │   ├── standards/          # 技術規約
 │   └── steering/           # プロジェクト文脈
 └── config/                 # 設定ファイル

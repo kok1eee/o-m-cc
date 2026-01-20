@@ -202,11 +202,11 @@ ultrawork 実行時:
 - src/api/auth.ts
 - src/utils/crypto.ts
 **サマリー**: SQLインジェクション1件検出。即時修正が必要。
-**詳細ログ**: .plan/logs/security-reviewer-{YYYYMMDD-HHMMSS}.md
+**詳細ログ**: spec/plan/logs/security-reviewer-{YYYYMMDD-HHMMSS}.md
 ```
 
 ### 詳細ログの保存
 
-レビュー詳細は `.plan/logs/` に保存：
+レビュー詳細は `spec/plan/logs/` に保存：
 - ファイル名: `security-reviewer-{YYYYMMDD-HHMMSS}.md`
 - 内容: 上記「出力フォーマット」の完全版

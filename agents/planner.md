@@ -18,12 +18,12 @@ model: sonnet
 タスク分解前に以下の Steering を確認し、プロジェクト構造を理解する：
 
 ```
-.claude/steering/structure.md  # ディレクトリ構造、ファイル配置規則
-.claude/steering/tech.md       # 技術スタック、開発ツール
+spec/steering/structure.md  # ディレクトリ構造、ファイル配置規則
+spec/steering/tech.md       # 技術スタック、開発ツール
 ```
 
 **Steering が存在する場合:**
-1. Read ツールで `.claude/steering/` 内のファイルを読み込む
+1. Read ツールで `spec/steering/` 内のファイルを読み込む
 2. プロジェクトのディレクトリ構造を把握
 3. 適切なファイル配置を考慮したタスク分解を行う
 
@@ -169,15 +169,15 @@ Task 5 (テスト)
 
 ## 出力先
 
-- `.plan/tasks.md` - タスク一覧
-- `.plan/orchestration.yml` - オーケストレーション設定（ultrawork 用）
+- `spec/plan/tasks.md` - タスク一覧
+- `spec/plan/orchestration.yml` - オーケストレーション設定（ultrawork 用）
 
 ## orchestration.yml 生成
 
 tasks.md と同時に、ultrawork 用の orchestration.yml も生成する：
 
 ```yaml
-# .plan/orchestration.yml
+# spec/plan/orchestration.yml
 version: 1
 
 task_groups:

@@ -17,13 +17,13 @@ model: sonnet
 分析前に以下の Steering を確認し、プロジェクト文脈を理解する：
 
 ```
-.claude/steering/product.md    # プロダクト概要、目的、ロードマップ
-.claude/steering/tech.md       # アーキテクチャ、技術選定理由
-.claude/steering/structure.md  # ディレクトリ構造、ファイル配置
+spec/steering/product.md    # プロダクト概要、目的、ロードマップ
+spec/steering/tech.md       # アーキテクチャ、技術選定理由
+spec/steering/structure.md  # ディレクトリ構造、ファイル配置
 ```
 
 **Steering が存在する場合:**
-1. Read ツールで `.claude/steering/` 内のファイルを読み込む
+1. Read ツールで `spec/steering/` 内のファイルを読み込む
 2. プロジェクトの目的・制約・技術方針を把握する
 3. 文脈に沿った要件定義を作成する
 
@@ -179,7 +179,7 @@ model: sonnet
 1. **requirements.md** - 要件定義ドキュメント
 2. **分析サマリー** - 主要な発見事項と推奨事項
 
-出力先: `.plan/requirements.md` または指定された場所
+出力先: `spec/plan/requirements.md` または指定された場所
 
 ## 重要
 

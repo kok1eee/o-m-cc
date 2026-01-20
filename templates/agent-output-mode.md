@@ -20,7 +20,7 @@
 - path/to/file1.ts:45-67
 - path/to/file2.ts:12-30
 **サマリー**: [1-2文で何をしたか]
-**詳細ログ**: .plan/logs/{agent}-{YYYYMMDD-HHMMSS}.md
+**詳細ログ**: spec/plan/logs/{agent}-{YYYYMMDD-HHMMSS}.md
 ```
 
 ### 詳細ログの保存
@@ -29,7 +29,7 @@
 
 ```bash
 # ログファイルパス
-.plan/logs/{agent-name}-{YYYYMMDD-HHMMSS}.md
+spec/plan/logs/{agent-name}-{YYYYMMDD-HHMMSS}.md
 ```
 
 **ログに含める内容:**
@@ -65,5 +65,5 @@ O_M_CC_OUTPUT_MODE=concise
 - src/components/Button.tsx:1-45 (新規)
 - src/components/index.ts:5 (エクスポート追加)
 **サマリー**: Button コンポーネントを作成。variant と size props をサポート。
-**詳細ログ**: .plan/logs/frontend-20260120-143052.md
+**詳細ログ**: spec/plan/logs/frontend-20260120-143052.md
 ```

@@ -84,11 +84,11 @@ directory/
 - src/services/ - ビジネスロジック層
 - src/utils/validation.ts - バリデーション関数
 **サマリー**: [1文で何を見つけたか]
-**詳細ログ**: .plan/logs/explore-{YYYYMMDD-HHMMSS}.md
+**詳細ログ**: spec/plan/logs/explore-{YYYYMMDD-HHMMSS}.md
 ```
 
 ### 詳細ログの保存
 
-探索詳細（ファイル一覧、コードスニペット）は `.plan/logs/` に保存：
+探索詳細（ファイル一覧、コードスニペット）は `spec/plan/logs/` に保存：
 - ファイル名: `explore-{YYYYMMDD-HHMMSS}.md`
 - 内容: 上記「回答フォーマット」の完全版

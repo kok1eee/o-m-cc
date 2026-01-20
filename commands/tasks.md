@@ -13,7 +13,7 @@ model: sonnet
 
 ## 前提条件
 
-`.plan/design.md` が存在すること。
+`spec/plan/design.md` が存在すること。
 
 存在しない場合は、先に `/design` を実行してください。
 
@@ -27,7 +27,7 @@ model: sonnet
 Task tool で planner subagent を呼び出し：
 
 1. 設計の確認
-   - .plan/design.md を読み込み
+   - spec/plan/design.md を読み込み
    - コンポーネント構成を把握
 
 2. タスク分解
@@ -37,14 +37,14 @@ Task tool で planner subagent を呼び出し：
    - 見積もり（S/M/L）
 
 3. 出力
-   - .plan/tasks.md を作成
+   - spec/plan/tasks.md を作成
 ```
 
 ---
 
 ## 出力ファイル
 
-`.plan/tasks.md`
+`spec/plan/tasks.md`
 
 ```markdown
 # 実装タスク: [機能名]
@@ -75,7 +75,7 @@ Task tool で planner subagent を呼び出し：
 
 ```
 ✅ タスク分解完了
-   📄 .plan/tasks.md
+   📄 spec/plan/tasks.md
 
    - 総タスク数: X件
    - 見積: S:X, M:X, L:X

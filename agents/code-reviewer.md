@@ -18,14 +18,14 @@ model: sonnet
 レビュー前に以下の Standards を確認し、プロジェクト固有の規約を把握する：
 
 ```
-.claude/standards/global/      # 共通規約（コーディングスタイル、命名規則）
-.claude/standards/frontend/    # フロントエンド規約（該当する場合）
-.claude/standards/backend/     # バックエンド規約（該当する場合）
-.claude/standards/testing/     # テスト規約
+spec/standards/global/      # 共通規約（コーディングスタイル、命名規則）
+spec/standards/frontend/    # フロントエンド規約（該当する場合）
+spec/standards/backend/     # バックエンド規約（該当する場合）
+spec/standards/testing/     # テスト規約
 ```
 
 **Standards が存在する場合:**
-1. Read ツールで `.claude/standards/` 内のファイルを読み込む
+1. Read ツールで `spec/standards/` 内のファイルを読み込む
 2. プロジェクト固有の規約違反を Confidence 80+ で報告
 3. 規約に基づいた具体的な改善提案を行う
 
@@ -238,11 +238,11 @@ model: sonnet
 - src/services/UserService.ts
 - src/utils/validation.ts
 **サマリー**: セキュリティ問題なし。複雑度の警告2件。
-**詳細ログ**: .plan/logs/code-reviewer-{YYYYMMDD-HHMMSS}.md
+**詳細ログ**: spec/plan/logs/code-reviewer-{YYYYMMDD-HHMMSS}.md
 ```
 
 ### 詳細ログの保存
 
-レビュー詳細（各問題の説明、修正案）は `.plan/logs/` に保存：
+レビュー詳細（各問題の説明、修正案）は `spec/plan/logs/` に保存：
 - ファイル名: `code-reviewer-{YYYYMMDD-HHMMSS}.md`
 - 内容: 上記「出力フォーマット」の完全版
