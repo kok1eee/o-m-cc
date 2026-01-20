@@ -359,6 +359,47 @@ bash ~/.claude/plugins/o-m-cc/scripts/setup-project.sh
 - 人間への表示も簡潔に
 - 詳細は必要時のみ参照可能
 
+## Cross-Session Restoration
+
+セッション開始時に前回の状態を自動表示。`/compact` 後も継続作業可能。
+
+### 仕組み
+
+```
+SessionStart Hook
+    │
+    └─ .plan/handoff.yaml を検出
+         │
+         ├─ 7日以上古い → スキップ
+         │
+         └─ 有効 → 前回の状態を表示
+              ├─ Status
+              ├─ Current Task
+              └─ Next Steps
+```
+
+### 表示例
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 Previous Session Found (.plan/handoff.yaml)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Status: in_progress
+
+Current Task:
+  - ID: TASK-003
+  - Name: UserService の実装
+
+Next Steps:
+  - UserService のテスト追加
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 To continue: describe what you want to work on
+💡 To start fresh: /clear
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
 ## Handoff
 
 セッション状態を構造化して引き継ぐ仕組み。ultrawork 完了時に自動生成。
@@ -441,6 +482,28 @@ next_steps:
 
 **詳細**: `agents/capabilities.md` を参照
 
+## Research Depth Levels
+
+`@researcher` エージェントは、リクエストのキーワードから調査深度を自動判断。
+
+### 深度レベル
+
+| 深度 | 検索回数 | ソース数 | トリガーキーワード |
+|------|---------|---------|------------------|
+| **quick** | 1-2回 | 3-5 | ざっくり、簡単に、概要 |
+| **standard** | 3-5回 | 10-15 | （デフォルト） |
+| **deep** | 5-10回 | 20-30 | 詳しく、比較して、深掘り |
+| **exhaustive** | 10+回 | 30+ | 徹底的に、網羅的に、全部 |
+
+### 使用例
+
+```
+「React Hooks の使い方をざっくり教えて」     → quick
+「JWT認証の実装方法を調べて」               → standard
+「Prisma vs TypeORM を詳しく比較して」      → deep
+「GraphQL の全機能を徹底的に調査して」      → exhaustive
+```
+
 ## Structure
 
 ```
@@ -475,6 +538,7 @@ o-m-cc/
 │   ├── hooks.json
 │   ├── stop-guard.sh          # Stop Hook（ループ制御）
 │   ├── archive-plans.sh       # プランアーカイブ
+│   ├── resume-session.sh      # セッション復元（handoff.yaml 表示）
 │   ├── block-unnecessary-docs.sh
 │   └── warn-console-log.sh
 ├── templates/                 # Standards/Steering/Handoff テンプレート
