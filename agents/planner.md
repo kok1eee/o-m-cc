@@ -169,7 +169,68 @@ Task 5 (テスト)
 
 ## 出力先
 
-`.plan/tasks.md`
+- `.plan/tasks.md` - タスク一覧
+- `.plan/orchestration.yml` - オーケストレーション設定（ultrawork 用）
+
+## orchestration.yml 生成
+
+tasks.md と同時に、ultrawork 用の orchestration.yml も生成する：
+
+```yaml
+# .plan/orchestration.yml
+version: 1
+
+task_groups:
+  - name: "Phase 1: 基盤構築"
+    agent: "general-purpose"
+    standards:
+      - "global/*"
+    tasks:
+      - "TASK-001"
+
+  - name: "Phase 2: 機能実装"
+    agent: "frontend"              # or "general-purpose"
+    standards:
+      - "global/*"
+      - "frontend/*"               # or "backend/*"
+    tasks:
+      - "TASK-002"
+      - "TASK-003"
+
+  - name: "Phase 3: テスト"
+    agent: "code-reviewer"
+    standards:
+      - "testing/*"
+    tasks:
+      - "TASK-004"
+
+# 並列実行可能なグループ
+parallel_groups:
+  - ["Phase 2 の並列可能タスク群"]
+
+# 依存関係
+dependencies:
+  "Phase 3: テスト":
+    - "Phase 2: 機能実装"
+```
+
+### エージェント選択ガイド
+
+| タスク種別 | 推奨エージェント |
+|-----------|----------------|
+| UI/フロントエンド | `frontend` |
+| API/バックエンド | `general-purpose` |
+| テスト/検証 | `code-reviewer` |
+| ドキュメント | `document-writer` |
+
+### Standards 選択ガイド
+
+| タスク種別 | 読み込む Standards |
+|-----------|-------------------|
+| 全般 | `global/*` |
+| フロントエンド | `frontend/*` |
+| バックエンド | `backend/*` |
+| テスト | `testing/*` |
 
 ## 連携パターン
 

@@ -1,0 +1,58 @@
+# Orchestration Configuration
+# ultrawork がこのファイルを読み込み、タスクグループごとに実行
+#
+# 生成: /o-m-cc:tasks で tasks.md と同時に生成
+# 使用: /o-m-cc:ultrawork で自動読み込み
+
+version: 1
+
+# タスクグループ定義
+# - name: グループ名（tasks.md のセクションに対応）
+# - agent: 実行するエージェント
+# - standards: 読み込む Standards（.claude/standards/ 配下）
+# - tasks: タスクID（tasks.md の TASK-XXX に対応）
+task_groups:
+  - name: "Backend API Implementation"
+    agent: "general-purpose"      # backend-specialist が無ければ general-purpose
+    standards:
+      - "global/*"
+      - "backend/*"
+    tasks:
+      - "TASK-001"
+      - "TASK-002"
+      - "TASK-003"
+
+  - name: "Frontend Components"
+    agent: "frontend"
+    standards:
+      - "global/*"
+      - "frontend/*"
+    tasks:
+      - "TASK-004"
+      - "TASK-005"
+
+  - name: "Integration & Testing"
+    agent: "code-reviewer"
+    standards:
+      - "testing/*"
+    tasks:
+      - "TASK-006"
+      - "TASK-007"
+
+# 並列実行可能なグループ
+# 同じ配列内のグループは並列実行される
+parallel_groups:
+  - ["Backend API Implementation", "Frontend Components"]
+
+# 依存関係
+# キーのグループは、値のグループが完了してから実行
+dependencies:
+  "Integration & Testing":
+    - "Backend API Implementation"
+    - "Frontend Components"
+
+# エージェントマッピング（オプション）
+# カスタムエージェントを使う場合に定義
+agent_mapping:
+  backend-specialist: "general-purpose"  # 存在しない場合のフォールバック
+  test-engineer: "code-reviewer"

@@ -228,11 +228,54 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ```
 .plan/
-├── brainstorm.md    # ブレインストーミング結果（オプション）
-├── requirements.md  # 要件定義（FR-X, NFR-X）
-├── design.md        # 設計書（コンポーネント、API）
-└── tasks.md         # 実装タスク（依存関係、見積もり）
+├── brainstorm.md       # ブレインストーミング結果（オプション）
+├── requirements.md     # 要件定義（FR-X, NFR-X）
+├── design.md           # 設計書（コンポーネント、API）
+├── tasks.md            # 実装タスク（依存関係、見積もり）
+└── orchestration.yml   # オーケストレーション設定（ultrawork用）
 ```
+
+## Orchestration
+
+`/o-m-cc:tasks` で tasks.md と同時に `orchestration.yml` が生成されます。
+`/o-m-cc:ultrawork` はこのファイルを読み込み、構造化された実行を行います。
+
+### orchestration.yml 構造
+
+```yaml
+version: 1
+
+task_groups:
+  - name: "Phase 1: 基盤構築"
+    agent: "general-purpose"     # 使用するエージェント
+    standards:                   # 読み込む Standards
+      - "global/*"
+    tasks:                       # 実行するタスクID
+      - "TASK-001"
+
+  - name: "Phase 2: 機能実装"
+    agent: "frontend"
+    standards:
+      - "global/*"
+      - "frontend/*"
+    tasks:
+      - "TASK-002"
+      - "TASK-003"
+
+parallel_groups:                 # 並列実行可能なグループ
+  - ["Phase 1", "Phase 2"]
+
+dependencies:                    # 依存関係
+  "Phase 3: テスト":
+    - "Phase 2: 機能実装"
+```
+
+### 実行モード
+
+| モード | 条件 | 動作 |
+|--------|------|------|
+| **Orchestrated** | `orchestration.yml` あり | YML定義に従って構造化実行 |
+| **Free** | `orchestration.yml` なし | 従来の自由形式で実行 |
 
 ## Standards & Steering
 

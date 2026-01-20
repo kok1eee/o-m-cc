@@ -23,6 +23,52 @@ $ARGUMENTS
 
 ---
 
+## Step 1: Orchestration 設定の確認
+
+**まず `.plan/orchestration.yml` の存在を確認:**
+
+```bash
+ls -la .plan/orchestration.yml 2>/dev/null
+```
+
+### orchestration.yml が存在する場合（Orchestrated Mode）
+
+YML ファイルを読み込み、定義に従って実行：
+
+1. **Read** で `.plan/orchestration.yml` を読み込む
+2. **Read** で `.plan/tasks.md` を読み込む
+3. `parallel_groups` に従って並列実行
+4. `dependencies` に従って順次実行
+5. 各タスクグループで:
+   - 指定された `agent` を起動
+   - 指定された `standards` を読み込む
+   - `tasks` を実行
+
+```yaml
+# orchestration.yml 構造
+task_groups:
+  - name: "グループ名"
+    agent: "frontend"        # 使用するエージェント
+    standards:               # 読み込む Standards
+      - "global/*"
+      - "frontend/*"
+    tasks:                   # 実行するタスクID
+      - "TASK-001"
+      - "TASK-002"
+
+parallel_groups:             # 並列実行可能なグループ
+  - ["Group A", "Group B"]
+
+dependencies:                # 依存関係
+  "Group C": ["Group A", "Group B"]
+```
+
+### orchestration.yml が存在しない場合（Free Mode）
+
+従来の自由形式で実行。以下の Ultrawork 原則に従う。
+
+---
+
 ## Ultrawork 原則
 
 ### 1. 並列エージェント活用（PARALLEL FIRST）
@@ -128,10 +174,43 @@ Task tool で planner agent を呼び出し：
 
 ## 出力
 
-作業完了時：
+### Orchestrated Mode の完了時：
 
 ```
-🚀 ULTRAWORK COMPLETE
+🚀 ULTRAWORK COMPLETE (Orchestrated Mode)
+
+Orchestration:
+- 設定ファイル: .plan/orchestration.yml
+- タスクグループ: X個
+- 並列実行グループ: X個
+
+実行サマリー:
+┌─────────────────────────────┬──────────────┬──────────────┐
+│ タスクグループ              │ エージェント │ ステータス   │
+├─────────────────────────────┼──────────────┼──────────────┤
+│ Phase 1: 基盤構築           │ general      │ ✅ 完了      │
+│ Phase 2: 機能実装           │ frontend     │ ✅ 完了      │
+│ Phase 3: テスト             │ code-reviewer│ ✅ 完了      │
+└─────────────────────────────┴──────────────┴──────────────┘
+
+Standards 適用:
+- global/*: 全グループ
+- frontend/*: Phase 2
+- testing/*: Phase 3
+
+レビュー結果:
+- Critical: なし
+- Warning: X件
+
+✅ 全要件達成
+
+<promise>DONE</promise>
+```
+
+### Free Mode の完了時：
+
+```
+🚀 ULTRAWORK COMPLETE (Free Mode)
 
 実行サマリー:
 - 起動エージェント: X個
