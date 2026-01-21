@@ -647,6 +647,23 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **成功基準が曖昧** - 「いい感じに」「きれいに」
 - **本番環境のデバッグ** - 繊細な調査が必要
 
+## Changelog
+
+### 0.6.0 (Breaking Change)
+
+- **ディレクトリ構造変更**: `.claude/` → `spec/` に移行
+  - `spec/standards/` - 技術規約
+  - `spec/steering/` - プロジェクト文脈
+  - `spec/rules/` - Sisyphus ルール
+  - `spec/plan/` - 計画ファイル（requirements, design, tasks）
+- `.claude/` 全体を gitignore 推奨（Claude Code 内部用）
+- Token Efficiency セクションに初期読み込みコストを追加
+
+### 0.5.x
+
+- 初期リリース
+- Sisyphus Loop、SDD フロー、13 エージェント
+
 ## Inspired By
 
 - [cc-sdd](https://github.com/gotalab/cc-sdd)
