@@ -1,7 +1,7 @@
 ---
 description: "新規プロジェクトの初期化 + Sisyphusモード有効化"
 argument-hint: "[project-name]"
-allowed-tools: [Read, Bash, Write, Edit, AskUserQuestion]
+allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion, Task]
 model: sonnet
 ---
 
@@ -13,7 +13,26 @@ model: sonnet
 
 ---
 
-## Step 1: CLAUDE.md の存在確認
+## Step 1: プロジェクトタイプの判定
+
+ソースコードの存在を確認して、既存/新規を判定：
+
+```bash
+# ソースコードの存在チェック
+if ls *.py *.js *.ts *.go *.rs *.java src/ lib/ app/ 2>/dev/null | head -1 > /dev/null; then
+  echo "📁 既存プロジェクトを検出"
+  PROJECT_TYPE="existing"
+else
+  echo "📁 新規プロジェクトとして初期化"
+  PROJECT_TYPE="new"
+fi
+```
+
+判定結果を記憶して、以降のステップで分岐。
+
+---
+
+## Step 2: CLAUDE.md の存在確認
 
 ```bash
 if [ -f "CLAUDE.md" ]; then
@@ -51,7 +70,40 @@ sed -i '' "s/\[PROJECT_NAME\]/$PROJECT_NAME/g" CLAUDE.md
 
 ---
 
-## Step 2: Standards & Steering セットアップ
+## Step 3: Spec セットアップ（プロジェクトタイプで分岐）
+
+### 既存プロジェクトの場合: 自動分析
+
+コードベースを分析して `spec/` を自動生成：
+
+```
+以下を自動で分析・生成します：
+
+1. 技術スタック検出
+   - package.json / pyproject.toml / go.mod / Cargo.toml を解析
+   - フレームワーク・ライブラリを特定
+
+2. ディレクトリ構造マッピング
+   - src/, lib/, app/ などの構造を分析
+   - 命名規則を推測
+
+3. コーディングパターン抽出
+   - 既存コードからパターンを学習
+   - 規約を推測
+
+生成ファイル:
+  spec/steering/product.md   ← README.md から推測
+  spec/steering/tech.md      ← 依存関係から生成
+  spec/steering/structure.md ← ディレクトリ構造
+  spec/standards/learned/patterns.md ← 既存コードから抽出
+```
+
+**実行方法:**
+1. Glob で主要ファイルを検出（package.json, README.md, src/ など）
+2. Read で内容を取得
+3. 分析結果を spec/ 配下に Write
+
+### 新規プロジェクトの場合: テンプレートセットアップ
 
 **AskUserQuestion** で Standards/Steering をセットアップするか確認：
 
@@ -95,7 +147,7 @@ spec/
 
 ---
 
-## Step 3: 使用言語の確認
+## Step 4: 使用言語の確認
 
 **AskUserQuestion** で使用する言語を確認（複数選択可）：
 
@@ -112,7 +164,7 @@ multiSelect: true
 
 ---
 
-## Step 4: プラグインのインストール
+## Step 5: プラグインのインストール
 
 選択された言語に応じてスクリプトを実行：
 
@@ -131,7 +183,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-plugins.sh" [オプション]
 
 ---
 
-## Step 5: Sisyphus ルールを追加
+## Step 6: Sisyphus ルールを追加
 
 `spec/rules/sisyphus.md` を作成（verup時は上書き）：
 
@@ -143,7 +195,7 @@ echo "✅ Sisyphus ルールを spec/rules/sisyphus.md に配置"
 
 ---
 
-## Step 6: .gitignore の設定
+## Step 7: .gitignore の設定
 
 o-m-cc のランタイムファイルを .gitignore に追加：
 
@@ -174,7 +226,7 @@ echo "✅ .gitignore に o-m-cc ランタイムファイルを追加"
 
 ---
 
-## Step 7: hooks の確認
+## Step 8: hooks の確認
 
 ```bash
 ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
