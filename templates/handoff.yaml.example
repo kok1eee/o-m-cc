@@ -16,7 +16,8 @@ status: "in_progress"  # in_progress | blocked | completed
 
 # 現在取り組んでいるタスク
 current_task:
-  id: "TASK-003"
+  phase: "Phase 2: 機能実装"
+  task: "2-1"
   name: "UserService の実装"
   progress: "70%"
 
@@ -41,8 +42,12 @@ discoveries:
 
 # 完了したタスク（このセッション）
 completed_tasks:
-  - "TASK-001"
-  - "TASK-002"
+  - "1-1"
+  - "1-2"
+
+# 完了したフェーズ
+completed_phases:
+  - "Phase 1: 基盤構築"
 
 # 次のステップ
 next_steps:

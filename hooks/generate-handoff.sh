@@ -18,16 +18,49 @@ if [[ ! -f "$TASKS_FILE" ]]; then
   exit 0
 fi
 
-# 現在のタスク状態を解析
-# IN_PROGRESS のタスクを検出
-CURRENT_TASK=""
-if grep -qiE '^\s*-\s*\[.\]\s*.*IN.PROGRESS|status.*in.progress|🔄' "$TASKS_FILE" 2>/dev/null; then
-  CURRENT_TASK=$(grep -iE '^\s*-\s*\[.\]\s*.*IN.PROGRESS|status.*in.progress|🔄|TASK-[0-9]+.*進行' "$TASKS_FILE" | head -1 | sed 's/^[[:space:]]*//')
-fi
+# タスク状態を解析
+COMPLETED=$(grep -cE '^\s*-\s*\[x\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+TOTAL=$(grep -cE '^\s*-\s*\[[ x]\]' "$TASKS_FILE" 2>/dev/null || echo "0")
 
-# 完了タスクをカウント
-COMPLETED=$(grep -ciE '^\s*-\s*\[x\]|status.*completed|✅.*TASK' "$TASKS_FILE" 2>/dev/null || echo "0")
-TOTAL=$(grep -ciE '^\s*-\s*\[.\]|TASK-[0-9]+' "$TASKS_FILE" 2>/dev/null || echo "0")
+# 現在のフェーズを検出（未完了タスクがある最初のフェーズ）
+CURRENT_PHASE=""
+CURRENT_TASK=""
+while IFS= read -r line; do
+  if echo "$line" | grep -qE '^##\s+Phase'; then
+    CURRENT_PHASE=$(echo "$line" | sed 's/^##[[:space:]]*//')
+  fi
+  if echo "$line" | grep -qE '^\s*-\s*\[ \]'; then
+    if [[ -z "$CURRENT_TASK" ]]; then
+      CURRENT_TASK=$(echo "$line" | sed 's/^[[:space:]]*-[[:space:]]*\[ \][[:space:]]*//')
+    fi
+  fi
+done < "$TASKS_FILE"
+
+# 完了フェーズをリスト
+COMPLETED_PHASES=""
+PHASE_NAME=""
+PHASE_TOTAL=0
+PHASE_DONE=0
+while IFS= read -r line; do
+  if echo "$line" | grep -qE '^##\s+Phase'; then
+    if [[ -n "$PHASE_NAME" && "$PHASE_TOTAL" -gt 0 && "$PHASE_DONE" -eq "$PHASE_TOTAL" ]]; then
+      COMPLETED_PHASES="${COMPLETED_PHASES}  - \"${PHASE_NAME}\"\n"
+    fi
+    PHASE_NAME=$(echo "$line" | sed 's/^##[[:space:]]*//')
+    PHASE_TOTAL=0
+    PHASE_DONE=0
+  fi
+  if echo "$line" | grep -qE '^\s*-\s*\[[ x]\]'; then
+    PHASE_TOTAL=$((PHASE_TOTAL + 1))
+    if echo "$line" | grep -qE '^\s*-\s*\[x\]'; then
+      PHASE_DONE=$((PHASE_DONE + 1))
+    fi
+  fi
+done < "$TASKS_FILE"
+# 最後のフェーズ
+if [[ -n "$PHASE_NAME" && "$PHASE_TOTAL" -gt 0 && "$PHASE_DONE" -eq "$PHASE_TOTAL" ]]; then
+  COMPLETED_PHASES="${COMPLETED_PHASES}  - \"${PHASE_NAME}\"\n"
+fi
 
 # 進捗率計算
 if [[ "$TOTAL" -gt 0 ]]; then
@@ -47,7 +80,12 @@ progress:
   total: ${TOTAL}
   percentage: "${PROGRESS}%"
 
-current_task: "${CURRENT_TASK:-none}"
+current_task:
+  phase: "${CURRENT_PHASE:-none}"
+  task: "${CURRENT_TASK:-none}"
+
+completed_phases:
+$(echo -e "${COMPLETED_PHASES:-  []}")
 
 plan_files:
   requirements: $([ -f "${PLAN_DIR}/requirements.md" ] && echo "true" || echo "false")

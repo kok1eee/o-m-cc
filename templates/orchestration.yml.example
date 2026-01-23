@@ -7,49 +7,49 @@
 version: 1
 
 # タスクグループ定義
-# - name: グループ名（tasks.md のセクションに対応）
+# - name: Phase 名（tasks.md の ## Phase N: に対応）
 # - agent: 実行するエージェント
 # - standards: 読み込む Standards（spec/standards/ 配下）
-# - tasks: タスクID（tasks.md の TASK-XXX に対応）
+# - tasks: タスクID（tasks.md の "- [ ] N-M:" に対応）
 task_groups:
-  - name: "Backend API Implementation"
-    agent: "general-purpose"      # backend-specialist が無ければ general-purpose
+  - name: "Phase 1: Backend API Implementation"
+    agent: "general-purpose"
     standards:
       - "global/*"
       - "backend/*"
     tasks:
-      - "TASK-001"
-      - "TASK-002"
-      - "TASK-003"
+      - "1-1"
+      - "1-2"
+      - "1-3"
 
-  - name: "Frontend Components"
+  - name: "Phase 2: Frontend Components"
     agent: "frontend"
     standards:
       - "global/*"
       - "frontend/*"
     tasks:
-      - "TASK-004"
-      - "TASK-005"
+      - "2-1"
+      - "2-2"
 
-  - name: "Integration & Testing"
+  - name: "Phase 3: Integration & Testing"
     agent: "code-reviewer"
     standards:
       - "testing/*"
     tasks:
-      - "TASK-006"
-      - "TASK-007"
+      - "3-1"
+      - "3-2"
 
 # 並列実行可能なグループ
 # 同じ配列内のグループは並列実行される
 parallel_groups:
-  - ["Backend API Implementation", "Frontend Components"]
+  - ["Phase 1: Backend API Implementation", "Phase 2: Frontend Components"]
 
 # 依存関係
 # キーのグループは、値のグループが完了してから実行
 dependencies:
-  "Integration & Testing":
-    - "Backend API Implementation"
-    - "Frontend Components"
+  "Phase 3: Integration & Testing":
+    - "Phase 1: Backend API Implementation"
+    - "Phase 2: Frontend Components"
 
 # エージェントマッピング（オプション）
 # カスタムエージェントを使う場合に定義

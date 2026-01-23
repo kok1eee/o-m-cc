@@ -68,20 +68,19 @@ YML ファイルを読み込み、定義に従って実行：
 ```yaml
 # orchestration.yml 構造
 task_groups:
-  - name: "グループ名"
-    agent: "frontend"        # 使用するエージェント
-    standards:               # 読み込む Standards
+  - name: "Phase 1: 基盤構築"
+    agent: "general-purpose"
+    standards:
       - "global/*"
-      - "frontend/*"
-    tasks:                   # 実行するタスクID
-      - "TASK-001"
-      - "TASK-002"
+    tasks:
+      - "1-1"
+      - "1-2"
 
 parallel_groups:             # 並列実行可能なグループ
-  - ["Group A", "Group B"]
+  - ["1-1", "1-2"]
 
 dependencies:                # 依存関係
-  "Group C": ["Group A", "Group B"]
+  "Phase 2: 機能実装": ["Phase 1: 基盤構築"]
 ```
 
 ### orchestration.yml が存在しない場合（Free Mode）

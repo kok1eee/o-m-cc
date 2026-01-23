@@ -13,4 +13,4 @@
 spec/sisyphus-state.json
 spec/plan/logs/
 spec/plan/handoff.yaml
-spec/.completed-tasks
+spec/.completed-phases

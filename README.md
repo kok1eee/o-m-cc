@@ -243,11 +243,11 @@ version: 1
 
 task_groups:
   - name: "Phase 1: 基盤構築"
-    agent: "general-purpose"     # 使用するエージェント
-    standards:                   # 読み込む Standards
+    agent: "general-purpose"
+    standards:
       - "global/*"
-    tasks:                       # 実行するタスクID
-      - "TASK-001"
+    tasks:
+      - "1-1"
 
   - name: "Phase 2: 機能実装"
     agent: "frontend"
@@ -255,13 +255,13 @@ task_groups:
       - "global/*"
       - "frontend/*"
     tasks:
-      - "TASK-002"
-      - "TASK-003"
+      - "2-1"
+      - "2-2"
 
-parallel_groups:                 # 並列実行可能なグループ
-  - ["Phase 1", "Phase 2"]
+parallel_groups:
+  - ["Phase 1: 基盤構築", "Phase 2: 機能実装"]
 
-dependencies:                    # 依存関係
+dependencies:
   "Phase 3: テスト":
     - "Phase 2: 機能実装"
 ```
@@ -402,8 +402,8 @@ SessionStart Hook
 Status: in_progress
 
 Current Task:
-  - ID: TASK-003
-  - Name: UserService の実装
+  - Phase: Phase 2: 機能実装
+  - Task: 2-1 - UserService の実装
 
 Next Steps:
   - UserService のテスト追加
@@ -432,7 +432,8 @@ updated_at: "2026-01-20T14:30:00+09:00"
 status: "in_progress"
 
 current_task:
-  id: "TASK-003"
+  phase: "Phase 2: 機能実装"
+  task: "2-1"
   progress: "70%"
 
 discoveries:
