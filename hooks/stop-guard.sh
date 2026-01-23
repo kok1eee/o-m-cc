@@ -8,6 +8,7 @@ set -euo pipefail
 # Configuration
 STATE_FILE="spec/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
+MAX_SAME_REASON="${SISYPHUS_MAX_SAME_REASON:-3}"
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
@@ -19,7 +20,7 @@ TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path' 2>/dev/null || e
 init_state() {
   if [[ ! -f "$STATE_FILE" ]]; then
     mkdir -p "$(dirname "$STATE_FILE")"
-    echo '{"iteration": 0, "started_at": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}' > "$STATE_FILE"
+    echo '{"iteration": 0, "started_at": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'", "last_reasons": []}' > "$STATE_FILE"
   fi
 }
 
@@ -27,22 +28,50 @@ get_iteration() {
   jq -r '.iteration // 0' "$STATE_FILE" 2>/dev/null || echo "0"
 }
 
-increment_iteration() {
+increment_iteration_with_reason() {
+  local reason="${1:-unknown}"
   local current
   current=$(get_iteration)
   local next=$((current + 1))
   local started_at
   started_at=$(jq -r '.started_at' "$STATE_FILE" 2>/dev/null || date -u +%Y-%m-%dT%H:%M:%SZ)
-  echo '{"iteration": '"$next"', "started_at": "'"$started_at"'"}' > "$STATE_FILE"
+  # 最新3件の理由を保持
+  jq --arg reason "$reason" --arg next "$next" --arg started_at "$started_at" '
+    .iteration = ($next | tonumber) |
+    .started_at = $started_at |
+    .last_reasons = ((.last_reasons // []) + [$reason] | .[-3:])
+  ' "$STATE_FILE" > "${STATE_FILE}.tmp" && mv "${STATE_FILE}.tmp" "$STATE_FILE"
   echo "$next"
+}
+
+# スロットリング: 同じ理由で MAX_SAME_REASON 回連続ブロックしたら強制停止
+check_throttle() {
+  local reason_count
+  reason_count=$(jq -r '.last_reasons | if length >= '"$MAX_SAME_REASON"' then (group_by(.) | map(select(length >= '"$MAX_SAME_REASON"')) | length) else 0 end' "$STATE_FILE" 2>/dev/null || echo "0")
+  if [[ "$reason_count" -gt 0 ]]; then
+    local repeated_reason
+    repeated_reason=$(jq -r '.last_reasons[-1]' "$STATE_FILE" 2>/dev/null || echo "unknown")
+    echo ""
+    echo "════════════════════════════════════════════════════════"
+    echo "  🔁 SISYPHUS GUARD: 同じ問題で ${MAX_SAME_REASON} 回ループ検出"
+    echo "════════════════════════════════════════════════════════"
+    echo ""
+    echo "  理由: ${repeated_reason}"
+    echo "  同じ問題が解決されていません。"
+    echo "  アプローチを変えるか、人間の判断が必要です。"
+    echo ""
+    cleanup_state
+    exit 0
+  fi
 }
 
 cleanup_state() {
   rm -f "$STATE_FILE"
 }
 
-# Check max iterations
+# Check max iterations and throttle
 init_state
+check_throttle
 CURRENT_ITERATION=$(get_iteration)
 
 if [[ $CURRENT_ITERATION -ge $MAX_ITERATIONS ]]; then
@@ -91,7 +120,7 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
     echo ""
     echo "════════════════════════════════════════════════════════"
 
-    increment_iteration
+    increment_iteration_with_reason "critical_issues"
     jq -n '{
       "decision": "block",
       "reason": "code-reviewer が Critical な問題を検出しました。問題を修正し、再度 code-reviewer subagent でレビューしてから <promise>DONE</promise> を出力してください。",
@@ -132,7 +161,7 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
   echo ""
   echo "════════════════════════════════════════════════════════"
 
-  increment_iteration
+  increment_iteration_with_reason "no_code_review"
   jq -n '{
     "decision": "block",
     "reason": "code-reviewer subagent で変更をレビューしてください。レビュー結果を出力し、Critical な問題がないことを確認してから <promise>DONE</promise> を出力してください。",

@@ -207,6 +207,7 @@ GITIGNORE_ENTRIES=(
   ""
   "# o-m-cc runtime files"
   "spec/sisyphus-state.json"
+  "spec/.edit-counter"
   "spec/plan/logs/"
   "spec/plan/handoff.yaml"
 )

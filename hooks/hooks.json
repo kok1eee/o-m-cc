@@ -26,6 +26,11 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/stop-guard.sh",
             "timeout": 10000
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/generate-handoff.sh",
+            "timeout": 5000
           }
         ]
       }
@@ -65,6 +70,11 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/warn-console-log.sh",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/suggest-review.sh",
+            "timeout": 3000
           }
         ]
       }
