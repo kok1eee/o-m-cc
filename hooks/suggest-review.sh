@@ -1,34 +1,41 @@
 #!/bin/bash
-# Auto-suggest code review after N file edits
+# Auto-suggest code review after task completion
 # PostToolUse (Write|Edit) で実行
-# 一定回数の編集後にレビューを提案
+# tasks.md のタスク完了を検知してレビューを提案
 
 set -euo pipefail
 
-COUNTER_FILE="spec/.edit-counter"
-REVIEW_THRESHOLD="${SISYPHUS_REVIEW_THRESHOLD:-15}"
+TASKS_FILE="spec/plan/tasks.md"
+COUNTER_FILE="spec/.completed-tasks"
+
+# tasks.md が存在しない場合はスキップ
+if [[ ! -f "$TASKS_FILE" ]]; then
+  exit 0
+fi
 
 # Read hook input
 HOOK_INPUT=$(cat)
 
-# カウンターファイルを初期化
-if [[ ! -f "$COUNTER_FILE" ]]; then
+# 現在の完了タスク数をカウント
+CURRENT_COMPLETED=$(grep -ciE '^\s*-\s*\[x\]|status.*completed|✅.*TASK|TASK-[0-9]+.*完了|TASK-[0-9]+.*done' "$TASKS_FILE" 2>/dev/null || echo "0")
+
+# 前回の完了タスク数を取得
+if [[ -f "$COUNTER_FILE" ]]; then
+  PREV_COMPLETED=$(cat "$COUNTER_FILE" 2>/dev/null || echo "0")
+else
   mkdir -p "$(dirname "$COUNTER_FILE")"
-  echo "0" > "$COUNTER_FILE"
+  PREV_COMPLETED=0
 fi
 
-# カウントをインクリメント
-CURRENT=$(cat "$COUNTER_FILE" 2>/dev/null || echo "0")
-NEXT=$((CURRENT + 1))
-echo "$NEXT" > "$COUNTER_FILE"
-
-# しきい値に達したらリマインダー出力
-if [[ $NEXT -eq $REVIEW_THRESHOLD ]]; then
+# 新しいタスク完了を検知
+if [[ "$CURRENT_COMPLETED" -gt "$PREV_COMPLETED" ]]; then
+  NEW_COMPLETIONS=$((CURRENT_COMPLETED - PREV_COMPLETED))
   echo ""
-  echo "💡 ${NEXT} ファイル編集済み - code-reviewer の実行を検討してください"
+  echo "💡 タスク ${NEW_COMPLETIONS} 件完了 - 次のタスクに進む前に code-reviewer の実行を検討してください"
   echo ""
-  # リセット（次のしきい値まで黙る）
-  echo "0" > "$COUNTER_FILE"
 fi
+
+# 現在の状態を保存
+echo "$CURRENT_COMPLETED" > "$COUNTER_FILE"
 
 exit 0
