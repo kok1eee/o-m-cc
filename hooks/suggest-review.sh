@@ -89,8 +89,9 @@ fi
 
 # tasks.json 生成
 mkdir -p "$(dirname "$TASKS_JSON")"
+ESCAPED_CWD=$(pwd | sed 's/"/\\"/g')
 cat > "$TASKS_JSON" << EOF
-{"phase":"${ACTIVE_PHASE:-completed}","progress":${PROGRESS},"completed":${TOTAL_DONE},"total":${TOTAL_TASKS},"tasks":[${TASKS_JSON_ARRAY}]}
+{"cwd":"${ESCAPED_CWD}","phase":"${ACTIVE_PHASE:-completed}","progress":${PROGRESS},"completed":${TOTAL_DONE},"total":${TOTAL_TASKS},"tasks":[${TASKS_JSON_ARRAY}]}
 EOF
 
 # --- レビュートリガー ---
