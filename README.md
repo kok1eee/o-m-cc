@@ -666,7 +666,6 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 ## Inspired By
 
-- [cc-sdd](https://github.com/gotalab/cc-sdd)
 - [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode)
 - [ralph-wiggum](https://ghuntley.com/ralph/)
 
