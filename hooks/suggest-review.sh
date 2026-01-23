@@ -1,7 +1,7 @@
 #!/bin/bash
-# Auto-suggest code review after task completion
+# Auto-trigger code review after task completion
 # PostToolUse (Write|Edit) で実行
-# tasks.md のタスク完了を検知してレビューを提案
+# tasks.md のタスク完了を検知して code-reviewer 実行を指示
 
 set -euo pipefail
 
@@ -27,11 +27,11 @@ else
   PREV_COMPLETED=0
 fi
 
-# 新しいタスク完了を検知
+# 新しいタスク完了を検知 → code-reviewer 実行を指示
 if [[ "$CURRENT_COMPLETED" -gt "$PREV_COMPLETED" ]]; then
   NEW_COMPLETIONS=$((CURRENT_COMPLETED - PREV_COMPLETED))
   echo ""
-  echo "💡 タスク ${NEW_COMPLETIONS} 件完了 - 次のタスクに進む前に code-reviewer の実行を検討してください"
+  echo "🔍 タスク ${NEW_COMPLETIONS} 件完了 - code-reviewer subagent で変更をレビューしてから次のタスクに進んでください。止まらずに継続すること。"
   echo ""
 fi
 
