@@ -1,7 +1,7 @@
 ---
 description: "仕様駆動の計画フロー（要件 → 設計 → タスク 一括実行）"
 argument-hint: "<feature description>"
-allowed-tools: [Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, AskUserQuestion]
+allowed-tools: [Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion]
 model: opus
 context: fork
 ---

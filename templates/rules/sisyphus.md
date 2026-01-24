@@ -4,7 +4,7 @@
 
 ## 原則
 
-1. **TODO First** - 作業開始時に TodoWrite でタスクリストを作成
+1. **Task First** - 作業開始時に TaskCreate でタスクを登録し依存関係を設定
 2. **One at a Time** - 同時に in_progress は1つだけ
 3. **Complete Honestly** - 本当に完了したタスクのみ completed に
 4. **Never Abandon** - 途中で止まらない

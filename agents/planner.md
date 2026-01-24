@@ -1,7 +1,7 @@
 ---
 name: planner
 description: タスク分解。設計書に基づいて実装タスクを洗い出し、依存関係と実行順序を整理する。
-tools: Read, Glob, Grep, Write, TodoWrite, TaskCreate, TaskUpdate
+tools: Read, Glob, Grep, Write, TaskCreate, TaskUpdate
 model: sonnet
 ---
 
