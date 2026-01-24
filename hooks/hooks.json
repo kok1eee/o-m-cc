@@ -14,6 +14,11 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/resume-session.sh",
             "timeout": 5000
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/reset-tasks.sh",
+            "timeout": 3000
           }
         ]
       }
