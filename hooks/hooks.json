@@ -77,6 +77,16 @@
             "timeout": 3000
           }
         ]
+      },
+      {
+        "matcher": "TaskCreate|TaskUpdate",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/sync-tasks.sh",
+            "timeout": 3000
+          }
+        ]
       }
     ]
   }
