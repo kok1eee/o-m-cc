@@ -1,7 +1,7 @@
 ---
 name: planner
 description: タスク分解。設計書に基づいて実装タスクを洗い出し、依存関係と実行順序を整理する。
-tools: Read, Glob, Grep, Write, TodoWrite
+tools: Read, Glob, Grep, Write, TodoWrite, TaskCreate, TaskUpdate
 model: sonnet
 ---
 
@@ -136,10 +136,25 @@ design.md の情報からタスクを分解する。
 - フェーズ内の全タスクが `[x]` → フェーズ完了 → code-reviewer 自動トリガー
 - フェーズは依存順に並べる（Phase 1 → Phase 2 → ...）
 
+## ネイティブタスク登録（TaskCreate）
+
+tasks.md 書き出し後、Claude Code のネイティブタスクシステムにも登録する：
+
+1. 各タスクを `TaskCreate` で作成（subject: `N-M: タスク名`）
+2. `TaskUpdate` で依存関係を設定:
+   - `**依存**:` フィールドに記載されたタスクを `addBlockedBy` に設定
+   - 明示的な依存がない場合、前フェーズの全タスクが完了しないと着手不可
+3. 依存設定例:
+   - `2-1` が `1-1, 1-2` に依存 → `addBlockedBy: [1-1のtaskId, 1-2のtaskId]`
+   - `3-1` が `2-1` に依存 → `addBlockedBy: [2-1のtaskId]`
+
+**注意:** TaskCreate の返却 ID（#1, #2, ...）はセッション内の自動採番。tasks.md の `N-M` ID と別物。依存設定時は TaskCreate 返却 ID を使う。
+
 ## 出力先
 
-- `spec/plan/tasks.md` - タスク一覧
+- `spec/plan/tasks.md` - タスク一覧（永続・セッション横断）
 - `spec/plan/orchestration.yml` - オーケストレーション設定（ultrawork 用）
+- ネイティブタスク - セッション内の依存関係追跡・進捗表示
 
 ## orchestration.yml 生成
 

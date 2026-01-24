@@ -1,6 +1,6 @@
 ---
 description: "Ultraworkモード - 並列エージェントオーケストレーションによる最大パフォーマンス"
-allowed-tools: Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, AskUserQuestion
+allowed-tools: Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TodoWrite, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
 model: opus
 context: fork
 ---
@@ -105,13 +105,18 @@ Task tool (background=true):
 
 **10個以上の並列タスクも躊躇なく起動。**
 
-### 2. TODO 厳密トラッキング
+### 2. タスクトラッキング（依存関係対応）
 
 ```
-- 作業開始時に TodoWrite で全タスクを登録
-- 各ステップ完了時に即座に completed に更新
-- 同時に in_progress は1つだけ
+- TaskList で未着手タスクを確認（blockedBy が空のものが着手可能）
+- 着手時: TaskUpdate で status を in_progress に変更
+- 完了時: TaskUpdate で status を completed に変更
+  → ブロック解除されたタスクが自動的に着手可能になる
+- tasks.md の対応行も [x] に更新（suggest-review.sh が cc-sidebar に同期）
 ```
+
+**TaskList が空の場合（初回起動時）:**
+tasks.md から TaskCreate で登録し、TaskUpdate で依存関係を設定する。
 
 ### 3. エージェント委任（DELEGATE）
 
