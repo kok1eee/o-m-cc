@@ -50,6 +50,8 @@ ALLOWED_DIRS=(
   "docs/"
   "documentation/"
   ".github/"
+  ".claude/rules/"
+  "zenn-content/articles/"
 )
 
 for dir in "${ALLOWED_DIRS[@]}"; do
