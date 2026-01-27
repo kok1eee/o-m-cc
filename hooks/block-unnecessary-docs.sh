@@ -51,6 +51,7 @@ ALLOWED_DIRS=(
   "documentation/"
   ".github/"
   ".claude/rules/"
+  ".claude/plans/"
   "zenn-content/articles/"
 )
 
