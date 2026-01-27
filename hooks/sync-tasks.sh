@@ -58,6 +58,10 @@ case "$TOOL_NAME" in
         # Mark as done and remove active marker
         sed -i '' "s/- \[ \] \(.*\)<!-- task:${TASK_ID}\( status:active\)\{0,1\} -->/- [x] \1<!-- task:${TASK_ID} -->/" "$TASKS_FILE"
         ;;
+      deleted)
+        # Remove the task line entirely
+        sed -i '' "/<!-- task:${TASK_ID}/d" "$TASKS_FILE"
+        ;;
     esac
     ;;
 esac
