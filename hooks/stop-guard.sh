@@ -5,6 +5,23 @@
 
 set -euo pipefail
 
+# 共通ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${SCRIPT_DIR}/lib/common.sh"
+else
+  check_command() { command -v "$1" >/dev/null 2>&1; }
+  log_debug() { :; }
+  log_error() { echo "❌ $1" >&2; }
+fi
+
+# jq がない場合はスキップ
+if ! check_command jq; then
+  log_error "jq がインストールされていないため stop-guard をスキップ"
+  exit 0
+fi
+
 # Configuration
 STATE_FILE="spec/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"

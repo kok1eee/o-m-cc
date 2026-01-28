@@ -127,9 +127,32 @@ def check_content(content: str, file_path: str) -> list:
     return findings
 
 
+def log_error(message: str) -> None:
+    """エラーログを出力（spec/hooks-error.log に追記）"""
+    import os
+    from datetime import datetime
+
+    log_file = os.environ.get("O_M_CC_LOG_FILE", "spec/hooks-error.log")
+    try:
+        log_dir = os.path.dirname(log_file)
+        if log_dir and not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(log_file, "a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] [security_reminder_hook] [ERROR] {message}\n")
+    except Exception:
+        pass  # ログ失敗は無視
+
+
 def main():
     try:
         input_data = sys.stdin.read()
+    except Exception as e:
+        log_error(f"stdin読み込み失敗: {e}")
+        sys.exit(0)
+
+    try:
         data = json.loads(input_data)
     except json.JSONDecodeError:
         data = {}
@@ -153,13 +176,18 @@ def main():
     if not content and path.exists():
         try:
             content = path.read_text(encoding="utf-8")
-        except Exception:
-            pass
+        except Exception as e:
+            log_error(f"ファイル読み込み失敗: {file_path}: {e}")
+            sys.exit(0)
 
     if not content:
         sys.exit(0)
 
-    findings = check_content(content, file_path)
+    try:
+        findings = check_content(content, file_path)
+    except Exception as e:
+        log_error(f"パターンチェック失敗: {e}")
+        sys.exit(0)
 
     if not findings:
         sys.exit(0)
@@ -168,29 +196,34 @@ def main():
     warnings = [f for f in findings if f["severity"] == "WARNING"]
 
     print("\n" + "=" * 60)
-    print("SECURITY CHECK - Potential issues detected")
+    print("🔒 セキュリティチェック - 潜在的な問題を検出")
     print("=" * 60)
 
     if critical:
-        print("\n[CRITICAL] - Review required:")
+        print("\n[CRITICAL] - 確認必須:")
         for f in critical[:5]:
             print(f"  Line {f['line']}: {f['description']}")
 
     if warnings:
-        print("\n[WARNING] - Please verify:")
+        print("\n[WARNING] - 確認推奨:")
         for f in warnings[:5]:
             print(f"  Line {f['line']}: {f['description']}")
 
     total = len(critical) + len(warnings)
     if total > 10:
-        print(f"\n  ... and {total - 10} more issues")
+        print(f"\n  ... 他 {total - 10} 件")
 
     print("\n" + "=" * 60)
-    print("Review these findings before proceeding.")
+    print("上記の問題を確認してから続行してください。")
     print("=" * 60 + "\n")
 
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        # 予期しないエラーでもクラッシュしない
+        log_error(f"予期しないエラー: {e}")
+        sys.exit(0)

@@ -4,6 +4,17 @@
 
 set -euo pipefail
 
+# 共通ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${SCRIPT_DIR}/lib/common.sh"
+else
+  log_debug() { :; }
+  log_error() { echo "❌ $1" >&2; }
+  to_number() { local v="$1"; [[ "$v" =~ ^[0-9]+$ ]] && echo "$v" || echo "${2:-0}"; }
+fi
+
 PLAN_DIR="spec/plan"
 HANDOFF_FILE="${PLAN_DIR}/handoff.yaml"
 TASKS_FILE="${PLAN_DIR}/tasks.md"

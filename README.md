@@ -519,6 +519,44 @@ spec/standards/learned/
 「GraphQL の全機能を徹底的に調査して」      → exhaustive
 ```
 
+## Hooks
+
+o-m-cc は hooks を使って以下の自動化を提供します。
+
+### 概要
+
+| イベント | Hook | 説明 |
+|---------|------|------|
+| SessionStart | `check-dependencies.sh` | 依存コマンド（jq, python3）の確認 |
+| SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
+| SessionStart | `resume-session.sh` | 前回のセッション状態を表示 |
+| Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
+| Stop | `generate-handoff.sh` | セッション状態を保存 |
+| PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
+| PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
+| PostToolUse | `sync-tasks.sh` | タスクを tasks.md に同期 |
+
+### デバッグモード
+
+```bash
+export O_M_CC_DEBUG=1
+claude
+```
+
+### エラーログ
+
+hooks のエラーは `spec/hooks-error.log` に記録されます。
+
+### 状態リセット
+
+問題が発生した場合:
+
+```bash
+bash hooks/reset-state.sh
+```
+
+**詳細**: [docs/hooks-guide.md](docs/hooks-guide.md), [docs/hooks-errors.md](docs/hooks-errors.md)
+
 ## Structure
 
 ```
@@ -550,12 +588,23 @@ o-m-cc/
 │   ├── review.md              # コードレビュー
 │   └── ultrawork.md           # 並列実行（自動 /compact）
 ├── hooks/                     # フック
-│   ├── hooks.json
-│   ├── stop-guard.sh          # Stop Hook（ループ制御）
+│   ├── hooks.json             # フック設定
+│   ├── lib/
+│   │   └── common.sh          # 共通ライブラリ
+│   ├── check-dependencies.sh  # 依存コマンド確認
 │   ├── archive-plans.sh       # プランアーカイブ
-│   ├── resume-session.sh      # セッション復元（handoff.yaml 表示）
-│   ├── block-unnecessary-docs.sh
-│   └── warn-console-log.sh
+│   ├── resume-session.sh      # セッション復元
+│   ├── reset-tasks.sh         # タスクカウンターリセット
+│   ├── stop-guard.sh          # Sisyphus ガード
+│   ├── generate-handoff.sh    # セッション状態保存
+│   ├── auto-verify.sh         # フェーズ完了時の自動検証
+│   ├── sync-tasks.sh          # タスク同期
+│   ├── warn-console-log.sh    # console.log 警告
+│   ├── security_reminder_hook.py  # セキュリティチェック
+│   └── reset-state.sh         # 状態リセットツール
+├── docs/                      # ドキュメント
+│   ├── hooks-guide.md         # Hooks 使い方ガイド
+│   └── hooks-errors.md        # エラーリファレンス
 ├── templates/                 # Standards/Steering/Handoff テンプレート
 │   ├── handoff.yaml.example   # Handoff テンプレート
 │   ├── standards/

@@ -5,11 +5,29 @@
 
 set -euo pipefail
 
+# 共通ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${SCRIPT_DIR}/lib/common.sh"
+else
+  sed_inplace() { sed -i '' "$1" "$2" 2>/dev/null || sed -i "$1" "$2"; }
+  log_debug() { :; }
+  log_error() { echo "❌ $1" >&2; }
+  check_command() { command -v "$1" >/dev/null 2>&1; }
+fi
+
 TASKS_FILE="spec/plan/tasks.md"
 COUNTER_FILE="spec/.task-counter"
 
 # Read hook input
 HOOK_INPUT=$(cat)
+
+# jq がない場合はスキップ
+if ! check_command jq; then
+  log_debug "jq がインストールされていないためスキップ"
+  exit 0
+fi
 
 # Extract tool name and input
 TOOL_NAME=$(echo "$HOOK_INPUT" | jq -r '.tool_name // empty' 2>/dev/null || true)
@@ -29,7 +47,8 @@ case "$TOOL_NAME" in
     mkdir -p "$(dirname "$TASKS_FILE")"
     mkdir -p "$(dirname "$COUNTER_FILE")"
     if [[ -f "$COUNTER_FILE" ]]; then
-      TASK_ID=$(( $(cat "$COUNTER_FILE") + 1 ))
+      TASK_ID=$(cat "$COUNTER_FILE")
+      TASK_ID=$((TASK_ID + 1))
     else
       TASK_ID=1
     fi
@@ -37,6 +56,7 @@ case "$TOOL_NAME" in
 
     # Append task to tasks.md
     echo "- [ ] ${SUBJECT} <!-- task:${TASK_ID} -->" >> "$TASKS_FILE"
+    log_debug "タスク追加: ${SUBJECT} (ID: ${TASK_ID})"
     ;;
 
   TaskUpdate)
@@ -50,17 +70,20 @@ case "$TOOL_NAME" in
     case "$STATUS" in
       in_progress)
         # Remove existing active markers
-        sed -i '' 's/ status:active//g' "$TASKS_FILE"
+        sed_inplace 's/ status:active//g' "$TASKS_FILE"
         # Add active marker to this task
-        sed -i '' "s/<!-- task:${TASK_ID} -->/<!-- task:${TASK_ID} status:active -->/" "$TASKS_FILE"
+        sed_inplace "s/<!-- task:${TASK_ID} -->/<!-- task:${TASK_ID} status:active -->/" "$TASKS_FILE"
+        log_debug "タスク開始: ID ${TASK_ID}"
         ;;
       completed)
         # Mark as done and remove active marker
-        sed -i '' "s/- \[ \] \(.*\)<!-- task:${TASK_ID}\( status:active\)\{0,1\} -->/- [x] \1<!-- task:${TASK_ID} -->/" "$TASKS_FILE"
+        sed_inplace "s/- \[ \] \(.*\)<!-- task:${TASK_ID}\( status:active\)\{0,1\} -->/- [x] \1<!-- task:${TASK_ID} -->/" "$TASKS_FILE"
+        log_debug "タスク完了: ID ${TASK_ID}"
         ;;
       deleted)
         # Remove the task line entirely
-        sed -i '' "/<!-- task:${TASK_ID}/d" "$TASKS_FILE"
+        sed_inplace "/<!-- task:${TASK_ID}/d" "$TASKS_FILE"
+        log_debug "タスク削除: ID ${TASK_ID}"
         ;;
     esac
     ;;

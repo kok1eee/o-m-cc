@@ -7,6 +7,15 @@
 
 set -euo pipefail
 
+# 共通ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${SCRIPT_DIR}/lib/common.sh"
+else
+  log_debug() { :; }
+fi
+
 # Read tool output from stdin
 INPUT=$(cat)
 

@@ -5,6 +5,17 @@
 
 set -euo pipefail
 
+# 共通ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${SCRIPT_DIR}/lib/common.sh"
+else
+  check_command() { command -v "$1" >/dev/null 2>&1; }
+  log_debug() { :; }
+  log_error() { echo "❌ $1" >&2; }
+fi
+
 TASKS_FILE="spec/plan/tasks.md"
 COUNTER_FILE="spec/.completed-phases"
 VERIFY_CONFIG="spec/steering/verify.json"

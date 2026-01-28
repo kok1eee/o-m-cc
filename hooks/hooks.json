@@ -7,8 +7,13 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/check-dependencies.sh",
+            "timeout": 3000
+          },
+          {
+            "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/archive-plans.sh",
-            "timeout": 10000
+            "timeout": 5000
           },
           {
             "type": "command",
@@ -35,7 +40,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/generate-handoff.sh",
-            "timeout": 5000
+            "timeout": 10000
           }
         ]
       }
@@ -64,7 +69,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/auto-verify.sh",
-            "timeout": 60000
+            "timeout": 120000
           }
         ]
       },

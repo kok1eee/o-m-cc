@@ -3,50 +3,68 @@
 
 set -euo pipefail
 
+# 共通ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
+  # shellcheck source=lib/common.sh
+  source "${SCRIPT_DIR}/lib/common.sh"
+else
+  # common.sh がない場合のフォールバック
+  get_file_mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null || echo "0"; }
+  log_debug() { :; }
+  log_error() { echo "❌ $1" >&2; }
+fi
+
 HANDOFF_FILE="spec/plan/handoff.yaml"
 
 # Skip if no handoff file
-[[ ! -f "$HANDOFF_FILE" ]] && exit 0
+if [[ ! -f "$HANDOFF_FILE" ]]; then
+  log_debug "handoff.yaml が見つかりません、スキップ"
+  exit 0
+fi
 
 # Check file age (skip if older than 7 days)
-file_mtime=$(stat -f %m "$HANDOFF_FILE" 2>/dev/null || stat -c %Y "$HANDOFF_FILE" 2>/dev/null)
-file_age_days=$(( ($(date +%s) - file_mtime) / 86400 ))
-[[ $file_age_days -gt 7 ]] && exit 0
+file_mtime=$(get_file_mtime "$HANDOFF_FILE")
+file_mtime=$(( file_mtime + 0 ))  # 数値化
+current_time=$(date +%s)
+file_age_days=$(( (current_time - file_mtime) / 86400 ))
+
+if [[ $file_age_days -gt 7 ]]; then
+  log_debug "handoff.yaml が7日以上古いためスキップ"
+  exit 0
+fi
 
 # Display previous session state
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 Previous Session Found (spec/plan/handoff.yaml)"
+echo "📋 前回のセッション情報 (spec/plan/handoff.yaml)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
 # Extract key information using grep/sed (lightweight parsing)
-if grep -q "status:" "$HANDOFF_FILE"; then
+if grep -q "status:" "$HANDOFF_FILE" 2>/dev/null; then
   status=$(grep "^status:" "$HANDOFF_FILE" | head -1 | sed 's/status: *//' | tr -d '"')
-  echo "Status: $status"
+  echo "ステータス: $status"
 fi
 
-if grep -q "current_task:" "$HANDOFF_FILE"; then
-  echo ""
-  echo "Current Task:"
-  # Extract task id if exists
-  task_id=$(grep -A1 "current_task:" "$HANDOFF_FILE" | grep "id:" | head -1 | sed 's/.*id: *//' | tr -d '"' || echo "")
-  task_name=$(grep -A2 "current_task:" "$HANDOFF_FILE" | grep "name:" | head -1 | sed 's/.*name: *//' | tr -d '"' || echo "")
-  [[ -n "$task_id" ]] && echo "  - ID: $task_id"
-  [[ -n "$task_name" ]] && echo "  - Name: $task_name"
+if grep -q "progress:" "$HANDOFF_FILE" 2>/dev/null; then
+  percentage=$(grep "percentage:" "$HANDOFF_FILE" | head -1 | sed 's/.*percentage: *//' | tr -d '"' || echo "")
+  [[ -n "$percentage" ]] && echo "進捗: $percentage"
 fi
 
-if grep -q "next_steps:" "$HANDOFF_FILE"; then
+if grep -q "current_task:" "$HANDOFF_FILE" 2>/dev/null; then
   echo ""
-  echo "Next Steps:"
-  # Extract next steps (lines starting with - after next_steps:)
-  sed -n '/^next_steps:/,/^[a-z_]*:/p' "$HANDOFF_FILE" | grep "^  - " | head -5 | sed 's/^  //'
+  echo "現在のタスク:"
+  phase=$(grep -A1 "current_task:" "$HANDOFF_FILE" | grep "phase:" | head -1 | sed 's/.*phase: *//' | tr -d '"' || echo "")
+  task=$(grep -A2 "current_task:" "$HANDOFF_FILE" | grep "task:" | head -1 | sed 's/.*task: *//' | tr -d '"' || echo "")
+  [[ -n "$phase" ]] && echo "  - フェーズ: $phase"
+  [[ -n "$task" ]] && echo "  - タスク: $task"
 fi
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "💡 To continue: describe what you want to work on"
-echo "💡 To start fresh: /clear"
+echo "💡 続行: 作業内容を説明してください"
+echo "💡 リセット: /clear"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
