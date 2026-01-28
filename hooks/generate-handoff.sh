@@ -19,8 +19,13 @@ if [[ ! -f "$TASKS_FILE" ]]; then
 fi
 
 # タスク状態を解析
-COMPLETED=$(grep -cE '^\s*-\s*\[x\]' "$TASKS_FILE" 2>/dev/null || echo "0")
-TOTAL=$(grep -cE '^\s*-\s*\[[ x]\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+COMPLETED=$(grep -cE '^\s*-\s*\[x\]' "$TASKS_FILE" 2>/dev/null || true)
+COMPLETED=${COMPLETED:-0}
+COMPLETED=$((COMPLETED + 0))  # 数値化
+
+TOTAL=$(grep -cE '^\s*-\s*\[[ x]\]' "$TASKS_FILE" 2>/dev/null || true)
+TOTAL=${TOTAL:-0}
+TOTAL=$((TOTAL + 0))  # 数値化
 
 # 現在のフェーズを検出（未完了タスクがある最初のフェーズ）
 CURRENT_PHASE=""
@@ -63,10 +68,9 @@ if [[ -n "$PHASE_NAME" && "$PHASE_TOTAL" -gt 0 && "$PHASE_DONE" -eq "$PHASE_TOTA
 fi
 
 # 進捗率計算
+PROGRESS=0
 if [[ "$TOTAL" -gt 0 ]]; then
-  PROGRESS=$(( (COMPLETED * 100) / TOTAL ))
-else
-  PROGRESS=0
+  PROGRESS=$(( (COMPLETED * 100) / TOTAL )) || PROGRESS=0
 fi
 
 # handoff.yaml 生成

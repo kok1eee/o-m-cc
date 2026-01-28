@@ -11,6 +11,6 @@
 
 # Runtime state
 spec/sisyphus-state.json
-spec/plan/logs/
-spec/plan/handoff.yaml
+spec/plan/
 spec/.completed-phases
+spec/.task-counter
