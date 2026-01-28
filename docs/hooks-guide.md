@@ -8,6 +8,7 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 
 - **セッション管理**: 前回の作業状態の復元、プランファイルのアーカイブ
 - **品質チェック**: セキュリティ警告、自動検証
+- **フォーカス維持**: タスク進行中の脱線防止
 - **Sisyphus モード**: タスク完了時のコードレビュー強制
 
 ## Hook 一覧
@@ -26,6 +27,16 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 |------|------|------------|
 | `stop-guard.sh` | Sisyphus ガード（DONE 検知時のレビュー確認） | 10秒 |
 | `generate-handoff.sh` | セッション状態を handoff.yaml に保存 | 10秒 |
+
+### UserPromptSubmit (ユーザー入力時)
+
+| Hook | 説明 | タイムアウト |
+|------|------|------------|
+| `focus-guard.sh` | タスク進行中の脱線防止（systemMessage 注入） | 3秒 |
+
+タスク進行中（`spec/plan/tasks.md` に未完了タスクがある）の場合、以下のルールを systemMessage として注入します:
+- 現在の作業に関連する修正・方向転換 → 反映する
+- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答
 
 ### PreToolUse (ツール実行前)
 
@@ -50,6 +61,7 @@ hooks の設定は `hooks/hooks.json` で管理されています。
   "hooks": {
     "SessionStart": [...],
     "Stop": [...],
+    "UserPromptSubmit": [...],
     "PreToolUse": [...],
     "PostToolUse": [...]
   }

@@ -532,6 +532,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | `resume-session.sh` | 前回のセッション状態を表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
 | Stop | `generate-handoff.sh` | セッション状態を保存 |
+| UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
 
@@ -596,6 +597,7 @@ o-m-cc/
 │   ├── stop-guard.sh          # Sisyphus ガード
 │   ├── generate-handoff.sh    # セッション状態保存
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
+│   ├── focus-guard.sh         # タスク進行中の脱線防止
 │   ├── security_reminder_hook.py  # セキュリティチェック
 │   └── reset-state.sh         # 状態リセットツール
 ├── docs/                      # ドキュメント
