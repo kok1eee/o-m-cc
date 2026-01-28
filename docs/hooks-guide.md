@@ -19,7 +19,6 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 | `check-dependencies.sh` | 依存コマンド（jq, python3）の存在確認 | 3秒 |
 | `archive-plans.sh` | 1時間以上前のプランファイルをアーカイブ | 5秒 |
 | `resume-session.sh` | 前回のセッション状態を表示 | 5秒 |
-| `reset-tasks.sh` | タスクカウンターをリセット | 3秒 |
 
 ### Stop (セッション終了時)
 
@@ -40,7 +39,6 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 |------|-----------|------|------------|
 | `warn-console-log.sh` | Write, Edit | JS/TS ファイルの console.log 検出 | 5秒 |
 | `auto-verify.sh` | Write, Edit | フェーズ完了時の自動検証 | 120秒 |
-| `sync-tasks.sh` | TaskCreate, TaskUpdate | タスクを tasks.md に同期 | 3秒 |
 
 ## 設定
 
@@ -95,7 +93,6 @@ bash hooks/reset-state.sh
 
 削除されるファイル:
 - `spec/sisyphus-state.json`
-- `spec/.task-counter`
 - `spec/.completed-phases`
 - `spec/plan/handoff.yaml`
 - `spec/hooks-error.log`

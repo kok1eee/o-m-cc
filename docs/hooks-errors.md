@@ -115,14 +115,6 @@ mkdir -p spec/plan
 }
 ```
 
-### HOOK-106: sync-tasks.sh の sed エラー
-
-**症状**: tasks.md の更新に失敗
-
-**原因**: macOS と Linux の sed の違い
-
-**対処法**: 最新版にアップデート（v0.8.0 以降で修正済み）
-
 ## PreToolUse 関連
 
 ### HOOK-107: セキュリティチェックの失敗
@@ -148,7 +140,6 @@ bash hooks/reset-state.sh
 
 ```bash
 rm -f spec/sisyphus-state.json
-rm -f spec/.task-counter
 rm -f spec/.completed-phases
 rm -f spec/plan/handoff.yaml
 rm -f spec/hooks-error.log

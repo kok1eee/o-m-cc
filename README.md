@@ -534,7 +534,6 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | Stop | `generate-handoff.sh` | セッション状態を保存 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
-| PostToolUse | `sync-tasks.sh` | タスクを tasks.md に同期 |
 
 ### デバッグモード
 
@@ -594,11 +593,9 @@ o-m-cc/
 │   ├── check-dependencies.sh  # 依存コマンド確認
 │   ├── archive-plans.sh       # プランアーカイブ
 │   ├── resume-session.sh      # セッション復元
-│   ├── reset-tasks.sh         # タスクカウンターリセット
 │   ├── stop-guard.sh          # Sisyphus ガード
 │   ├── generate-handoff.sh    # セッション状態保存
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
-│   ├── sync-tasks.sh          # タスク同期
 │   ├── warn-console-log.sh    # console.log 警告
 │   ├── security_reminder_hook.py  # セキュリティチェック
 │   └── reset-state.sh         # 状態リセットツール

@@ -19,11 +19,6 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/resume-session.sh",
             "timeout": 5000
-          },
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/reset-tasks.sh",
-            "timeout": 3000
           }
         ]
       }
@@ -70,16 +65,6 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/auto-verify.sh",
             "timeout": 120000
-          }
-        ]
-      },
-      {
-        "matcher": "TaskCreate|TaskUpdate",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/sync-tasks.sh",
-            "timeout": 3000
           }
         ]
       }

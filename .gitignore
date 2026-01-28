@@ -13,4 +13,3 @@
 spec/sisyphus-state.json
 spec/plan/
 spec/.completed-phases
-spec/.task-counter
