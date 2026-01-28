@@ -150,7 +150,10 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
   # エラーがあっても hooks は exit 0 で終了（Claude に修正を促す）
   exit 0
 else
-  echo "✅ 検証成功 - 次のフェーズに進んでください"
+  echo "✅ 検証成功"
+  echo ""
+  echo "🔍 code-reviewer subagent でレビューすること"
+  echo "💾 レビュー完了後、/compact を実行すること"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 fi
 
