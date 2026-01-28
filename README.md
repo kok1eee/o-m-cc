@@ -596,7 +596,6 @@ o-m-cc/
 │   ├── stop-guard.sh          # Sisyphus ガード
 │   ├── generate-handoff.sh    # セッション状態保存
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
-│   ├── warn-console-log.sh    # console.log 警告
 │   ├── security_reminder_hook.py  # セキュリティチェック
 │   └── reset-state.sh         # 状態リセットツール
 ├── docs/                      # ドキュメント

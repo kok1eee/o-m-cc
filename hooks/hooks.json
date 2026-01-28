@@ -58,11 +58,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/warn-console-log.sh",
-            "timeout": 5000
-          },
-          {
-            "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/auto-verify.sh",
             "timeout": 120000
           }
