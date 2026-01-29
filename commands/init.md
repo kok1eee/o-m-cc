@@ -235,6 +235,49 @@ ls -la "${CLAUDE_PLUGIN_ROOT}/hooks/"
 
 ---
 
+## Step 9: Sisyphus スピナーの設定
+
+**AskUserQuestion** で Sisyphus スピナーを設定するか確認：
+
+```
+質問: Sisyphus スピナーを設定しますか？（処理中の表示が「岩を押し上げ中...」などに変わります）
+header: "Spinner"
+multiSelect: false
+
+選択肢:
+1. 設定する（推奨） - Sisyphus の世界観を体験
+2. スキップ - デフォルトのまま
+```
+
+「設定する」を選んだ場合のみ実行：
+
+```bash
+SETTINGS_FILE="$HOME/.claude/settings.json"
+
+# settings.json が存在し、spinnerVerbs が未設定の場合のみ追加
+if [ -f "$SETTINGS_FILE" ]; then
+  if ! jq -e '.spinnerVerbs' "$SETTINGS_FILE" > /dev/null 2>&1; then
+    jq '.spinnerVerbs = [
+      "岩を押し上げ",
+      "山頂を目指し",
+      "また麓から登り",
+      "永遠に繰り返し",
+      "岩を転がし",
+      "頂上まであと少し",
+      "神々に抗い",
+      "不屈の意志で",
+      "岩と格闘し",
+      "運命に立ち向かい"
+    ]' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    echo "✅ Sisyphus スピナーを設定しました"
+  else
+    echo "ℹ️  spinnerVerbs は既に設定済みです（スキップ）"
+  fi
+fi
+```
+
+---
+
 ## 完了時の出力
 
 プロジェクトの状態に応じて次のステップを提案：
