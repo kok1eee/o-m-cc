@@ -257,18 +257,21 @@ SETTINGS_FILE="$HOME/.claude/settings.json"
 # settings.json が存在し、spinnerVerbs が未設定の場合のみ追加
 if [ -f "$SETTINGS_FILE" ]; then
   if ! jq -e '.spinnerVerbs' "$SETTINGS_FILE" > /dev/null 2>&1; then
-    jq '.spinnerVerbs = [
-      "岩を押し上げ",
-      "山頂を目指し",
-      "また麓から登り",
-      "永遠に繰り返し",
-      "岩を転がし",
-      "頂上まで押し上げ",
-      "神々に抗い",
-      "不屈の意志で格闘",
-      "岩と格闘",
-      "運命に立ち向かい"
-    ]' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    jq '.spinnerVerbs = {
+      "mode": "replace",
+      "verbs": [
+        "岩を押し上げています",
+        "山頂を目指しています",
+        "また麓から登っています",
+        "永遠に繰り返しています",
+        "岩を転がしています",
+        "頂上まで押し上げています",
+        "神々に抗っています",
+        "不屈の意志で格闘しています",
+        "岩と格闘しています",
+        "運命に立ち向かっています"
+      ]
+    }' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
     echo "✅ Sisyphus スピナーを設定しました"
   else
     echo "ℹ️  spinnerVerbs は既に設定済みです（スキップ）"
