@@ -263,10 +263,10 @@ if [ -f "$SETTINGS_FILE" ]; then
       "また麓から登り",
       "永遠に繰り返し",
       "岩を転がし",
-      "頂上まであと少し",
+      "頂上まで押し上げ",
       "神々に抗い",
-      "不屈の意志で",
-      "岩と格闘し",
+      "不屈の意志で格闘",
+      "岩と格闘",
       "運命に立ち向かい"
     ]' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
     echo "✅ Sisyphus スピナーを設定しました"
