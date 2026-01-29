@@ -59,7 +59,7 @@ fi
 
 # systemMessage を注入
 jq -n --arg pending "$PENDING_COUNT" --arg phase "$CURRENT_PHASE" --arg task "$CURRENT_TASK" '{
-  "systemMessage": ("📋 タスク進行中 (残り " + $pending + " 件: " + $phase + ")\n\n作業中の割り込み対応:\n- 現在の作業に関連する修正・方向転換 → 反映する\n- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答し、必要ならメモを残す")
+  "systemMessage": ("📋 タスク進行中 (残り " + $pending + " 件: " + $phase + ")\n\nSisyphus原則: タスク完了まで止まらない。完了時は code-reviewer でレビューしてから DONE。\n\n作業中の割り込み対応:\n- 現在の作業に関連する修正・方向転換 → 反映する\n- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答し、必要ならメモを残す")
 }'
 
 exit 0
