@@ -1,6 +1,6 @@
 ---
 name: planner
-description: タスク分解。設計書に基づいて実装タスクを洗い出し、依存関係と実行順序を整理する。
+description: タスク分解。設計書が完成した後、実装に入る前にタスクを洗い出し依存関係と実行順序を整理するときに使う。
 tools: Read, Glob, Grep, Write, TaskCreate, TaskUpdate
 model: sonnet
 ---
@@ -264,11 +264,49 @@ dependencies:
 | **Achievable** | 外部ブロッカーなし、実行に必要な情報が完備 |
 | **Small** | S サイズ（5-30分）を基本に、M は分割不可の場合のみ。L は禁止 |
 
+## Bite-Sized Steps — How の書き方
+
+**How は「1ステップ = 1アクション」に分解する。**
+
+各ステップは以下のいずれか1つだけ：
+- テストを書く
+- テストが失敗することを確認する
+- 最小限のコードを書いて通す
+- テストが通ることを確認する
+- コミットする
+
+### 良い例
+
+```markdown
+- [ ] 2-1: UserService の作成
+  - **What**: ユーザー取得ロジックの実装
+  - **Where**: `src/services/UserService.ts`
+  - **How**:
+    1. `tests/services/UserService.test.ts` に `getById` のテストを書く
+    2. テスト実行 → 失敗を確認（UserService が存在しない）
+    3. `src/services/UserService.ts` に `getById` を実装
+    4. テスト実行 → 通過を確認
+    5. コミット: `feat: add UserService.getById`
+  - **Why**: FR-1 ユーザー情報の取得
+  - **Verify**: `npm test -- UserService` → 0 failures
+  - **見積**: S
+```
+
+### 悪い例
+
+```markdown
+- [ ] 2-1: UserService の作成
+  - **How**: UserService を実装してテストを書く
+```
+
+→ 何をどの順で行うか不明。テスト先行かどうかも不明。
+
 **アンチパターン:**
 - ❌ 「実装する」だけで How がない
 - ❌ ファイルパスが曖昧（「適切な場所に」）
 - ❌ Verify がない・曖昧（「動作確認」だけ）
 - ❌ 1タスクで複数の責任を持つ
+- ❌ How が1行（ステップに分解されていない）
 
 ## 重要
 

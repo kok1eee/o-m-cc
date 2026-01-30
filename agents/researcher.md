@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: 公式ドキュメント、実装例、ベストプラクティスの調査。「〜の使い方」「〜の実装例」で呼び出す。
+description: 公式ドキュメント、実装例、ベストプラクティスの調査。ライブラリの使い方がわからないとき、実装パターンを調べたいとき、最新の API 仕様を確認したいときに使う。
 tools: Read, Glob, Grep, WebSearch, WebFetch
 model: sonnet
 permissionMode: plan

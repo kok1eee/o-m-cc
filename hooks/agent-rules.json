@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "description": "ユーザー入力から適切なエージェント/コマンドを自動提案するルール",
+  "agents": {
+    "debugger": {
+      "priority": "high",
+      "keywords": ["バグ", "bug", "エラー", "error", "失敗", "fail", "壊れ", "broken", "動かない", "クラッシュ", "crash", "例外", "exception", "不具合"],
+      "patterns": ["(直し|修正|fix|debug|デバッグ).*(バグ|エラー|問題|不具合)", "(なぜ|why).*(動かない|失敗|エラー)", "テスト.*(失敗|落ち|fail)"]
+    },
+    "code-reviewer": {
+      "priority": "high",
+      "keywords": ["レビュー", "review", "チェック", "check"],
+      "patterns": ["(コード|code).*(レビュー|review|チェック)", "レビュー.*(して|お願い)", "(PR|プルリク).*(確認|チェック)"]
+    },
+    "security-reviewer": {
+      "priority": "high",
+      "keywords": ["セキュリティ", "security", "脆弱性", "vulnerability", "XSS", "SQL injection", "CSRF"],
+      "patterns": ["セキュリティ.*(レビュー|チェック|確認)", "(安全|secure).*(確認|チェック)"]
+    },
+    "researcher": {
+      "priority": "medium",
+      "keywords": [],
+      "patterns": ["(使い方|やり方|方法).*(教えて|知りたい)", "(ライブラリ|API|SDK).*(調べ|調査|検索)", "(ベストプラクティス|best practice)", "(ドキュメント|docs).*(確認|調べ)"]
+    },
+    "advisor": {
+      "priority": "medium",
+      "keywords": [],
+      "patterns": ["(設計|アーキテクチャ|architecture).*(相談|アドバイス|迷)", "(どちら|どっち|選択).*(すべき|良い)", "行き詰ま", "詰まっ"]
+    },
+    "learnings-researcher": {
+      "priority": "low",
+      "keywords": [],
+      "patterns": ["(過去|前回|以前).*(学び|パターン|失敗)", "同じ.*(ミス|間違い|失敗)"]
+    }
+  },
+  "commands": {
+    "/o-m-cc:plan": {
+      "priority": "high",
+      "keywords": ["計画", "plan", "設計"],
+      "patterns": ["(新機能|feature).*(追加|実装|作)", "(計画|plan).*(立て|作|始め)", "ゼロから.*(作|実装|構築)"]
+    },
+    "/o-m-cc:review": {
+      "priority": "high",
+      "keywords": [],
+      "patterns": ["(全体|まとめて).*(レビュー|review)", "(変更|diff).*(確認|チェック)"]
+    },
+    "/o-m-cc:learn": {
+      "priority": "low",
+      "keywords": ["学び", "学んだ", "教訓"],
+      "patterns": ["(記録|メモ).*(パターン|学び|教訓)", "(今回|この).*(学んだ|わかった|気づ)"]
+    }
+  }
+}

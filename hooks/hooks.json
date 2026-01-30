@@ -48,6 +48,11 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/focus-guard.sh",
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/suggest-agent.sh",
+            "timeout": 3000
           }
         ]
       }

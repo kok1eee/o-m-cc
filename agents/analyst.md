@@ -1,6 +1,6 @@
 ---
 name: analyst
-description: 現状分析と要件整理。コードベース構造、技術スタック、制約を調査し、要件定義を作成する。
+description: 現状分析と要件整理。新機能の計画前、コードベースの全体像を把握したいとき、要件定義を作成するときに使う。
 tools: Read, Glob, Grep, WebSearch, Write, AskUserQuestion
 model: sonnet
 ---

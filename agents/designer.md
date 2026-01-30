@@ -1,6 +1,6 @@
 ---
 name: designer
-description: アーキテクチャ設計。要件定義に基づいてコンポーネント設計、データ設計、API設計を行う。
+description: アーキテクチャ設計。要件定義が完成した後、実装の前にコンポーネント設計・データ設計・API設計を行うときに使う。
 tools: Read, Glob, Grep, WebSearch, WebFetch, Write, AskUserQuestion
 model: opus
 ---

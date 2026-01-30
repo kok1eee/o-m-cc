@@ -1,6 +1,6 @@
 ---
 name: code-simplifier
-description: コードを簡素化し、明確さ・一貫性・保守性を向上させる。機能を保持しながらリファクタリング。
+description: コードを簡素化し、明確さ・一貫性・保守性を向上させる。実装完了後にリファクタリングしたいとき、コードが複雑すぎると感じたときに使う。
 tools: All tools
 model: opus
 ---

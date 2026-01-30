@@ -111,4 +111,41 @@ plan_files:
 next_steps: []
 EOF
 
+# --- 追加コンテキスト: 変更ファイル一覧 ---
+# jj または git の変更ファイルを収集
+CHANGED_FILES=""
+if command -v jj >/dev/null 2>&1 && [ -d ".jj" ]; then
+  CHANGED_FILES=$(jj diff --stat 2>/dev/null | grep -E '^\s' | awk '{print $1}' | head -20)
+elif command -v git >/dev/null 2>&1 && [ -d ".git" ]; then
+  CHANGED_FILES=$(git diff --name-only HEAD 2>/dev/null | head -20)
+fi
+
+if [[ -n "$CHANGED_FILES" ]]; then
+  {
+    echo ""
+    echo "modified_files:"
+    echo "$CHANGED_FILES" | while IFS= read -r f; do
+      [[ -n "$f" ]] && echo "  - \"$f\""
+    done
+  } >> "$HANDOFF_FILE"
+fi
+
+# --- 追加コンテキスト: 直近のコミット ---
+RECENT_COMMITS=""
+if command -v jj >/dev/null 2>&1 && [ -d ".jj" ]; then
+  RECENT_COMMITS=$(jj log --no-graph -r 'heads(trunk()..@)' -T 'description.first_line() ++ "\n"' 2>/dev/null | head -5)
+elif command -v git >/dev/null 2>&1 && [ -d ".git" ]; then
+  RECENT_COMMITS=$(git log --oneline -5 2>/dev/null)
+fi
+
+if [[ -n "$RECENT_COMMITS" ]]; then
+  {
+    echo ""
+    echo "recent_commits:"
+    echo "$RECENT_COMMITS" | while IFS= read -r c; do
+      [[ -n "$c" ]] && echo "  - \"$c\""
+    done
+  } >> "$HANDOFF_FILE"
+fi
+
 exit 0

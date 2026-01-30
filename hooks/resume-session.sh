@@ -61,6 +61,24 @@ if grep -q "current_task:" "$HANDOFF_FILE" 2>/dev/null; then
   [[ -n "$task" ]] && echo "  - タスク: $task"
 fi
 
+# 変更ファイル一覧を表示
+if grep -q "modified_files:" "$HANDOFF_FILE" 2>/dev/null; then
+  echo ""
+  echo "変更ファイル:"
+  sed -n '/^modified_files:/,/^[a-z]/p' "$HANDOFF_FILE" | grep -E '^\s+-' | sed 's/.*- "/  - /' | sed 's/"$//' | head -10
+  MOD_COUNT=$(grep -c '^\s*-' <<< "$(sed -n '/^modified_files:/,/^[a-z]/p' "$HANDOFF_FILE" | grep -E '^\s+-')" 2>/dev/null || echo "0")
+  if [[ "$MOD_COUNT" -gt 10 ]]; then
+    echo "  ... 他 $((MOD_COUNT - 10)) ファイル"
+  fi
+fi
+
+# 直近のコミットを表示
+if grep -q "recent_commits:" "$HANDOFF_FILE" 2>/dev/null; then
+  echo ""
+  echo "直近のコミット:"
+  sed -n '/^recent_commits:/,/^[a-z]/p' "$HANDOFF_FILE" | grep -E '^\s+-' | sed 's/.*- "/  - /' | sed 's/"$//' | head -5
+fi
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "💡 続行: 作業内容を説明してください"

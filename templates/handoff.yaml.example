@@ -65,3 +65,15 @@ context:
   notes: |
     UserService は AuthService に依存している。
     先に AuthService の interface を確認すること。
+
+# 変更ファイル一覧（自動生成: jj diff / git diff から）
+modified_files:
+  - "src/services/UserService.ts"
+  - "src/repositories/UserRepository.ts"
+  - "tests/services/UserService.test.ts"
+
+# 直近のコミット（自動生成: jj log / git log から）
+recent_commits:
+  - "feat: add UserService.getById"
+  - "test: add UserService unit tests"
+  - "refactor: extract UserRepository interface"

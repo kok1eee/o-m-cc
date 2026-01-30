@@ -1,6 +1,6 @@
 ---
 name: critic
-description: 策定された計画の妥当性を厳しく検証。スコープ、リスク、実現可能性をレビューする。
+description: 策定された計画の妥当性を厳しく検証。設計書やタスク分解が完成した後、実装に入る前に使う。スコープ、リスク、実現可能性をレビュー。
 tools: Read, Glob, Grep
 model: sonnet
 permissionMode: plan

@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: コード品質レビュー。バグ、複雑性、保守性の観点でチェック。Confidence Scoring で高優先度の問題のみ報告。
+description: コード品質レビュー（バグ、複雑性、保守性）。タスク完了後、マージ前、大きな変更を加えた後に使う。Confidence Scoring で高優先度の問題のみ報告。
 tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
 model: sonnet
 ---
@@ -122,7 +122,18 @@ spec/standards/testing/     # テスト規約
    - 変更されたファイルを Read で確認
    - 関連ファイルもコンテキストとして確認
 
-3. **Confidence Scoring**
+3. **Blast Radius 分析**（変更の影響範囲）
+   - 変更された関数/クラスの呼び出し元を Grep で特定
+   - 影響範囲が大きい変更（呼び出し元 10+ 箇所）は Critical の Confidence を引き上げ
+   - public API の変更は影響範囲を必ず確認
+
+   | 呼び出し元数 | 影響度 | 対応 |
+   |-------------|--------|------|
+   | 1-5 | 低 | 通常レビュー |
+   | 6-20 | 中 | 関連テストの存在を確認 |
+   | 20+ | 高 | 破壊的変更がないか重点チェック |
+
+4. **Confidence Scoring**
    - 各問題に対してスコアを算出
    - 80以上のみをリストアップ
 
