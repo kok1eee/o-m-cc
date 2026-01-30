@@ -1,4 +1,4 @@
-# o-m-cc
+# o-m-cc v0.7.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -79,6 +79,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | コマンド | 説明 |
 |---------|------|
 | `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） |
+| `/o-m-cc:install` | グローバル設定（プラグイン・スピナー・hooks）- 一度だけ |
 
 > 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
@@ -102,6 +103,9 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | コマンド | 説明 | Context |
 |---------|------|---------|
 | `/o-m-cc:review [files]` | コードレビュー（security-guidance連携 + code-simplifier提案） | fork |
+| `/o-m-cc:audit [target]` | エージェント・コマンドの品質監査 | - |
+| `/o-m-cc:learn [概要]` | 学びを構造化記録（パターン / アンチパターン / 決定） | - |
+| `/o-m-cc:promote [keyword]` | 繰り返す学びをスキルに昇格 | - |
 
 > **Context: fork** - サブエージェント実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
 
@@ -139,9 +143,8 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 **Phase 1.5 (scout) の特徴:**
 - Prometheus式インタビュー
-- **必ず質問で終わる**（パッシブ終了禁止）
 - 要件の漏れ・曖昧さを発見
-- Critical な質問が解決するまで続行
+- Critical な曖昧点は質問、回答がなければ仮定を記録して続行
 
 ### 実装フェーズ
 
@@ -186,7 +189,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | Agent | 役割 | Model | Permission |
 |-------|------|-------|------------|
 | @analyst | 現状分析・要件定義 | sonnet | write |
-| @scout | ギャップ分析・追加質問（必ず質問で終わる） | sonnet | **plan** |
+| @scout | ギャップ分析・追加質問（仮定で進む） | sonnet | **plan** |
 | @designer | アーキテクチャ設計 | opus | write |
 | @planner | タスク分解 | sonnet | write |
 | @critic | 計画レビュー | sonnet | **plan** |
@@ -197,6 +200,8 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|
 | @advisor | デバッグ・戦略相談 | opus | **plan** |
 | @researcher | ドキュメント調査 | sonnet | **plan** |
+| @learnings-researcher | 過去の学び検索 | haiku | **plan** |
+| @debugger | 体系的デバッグ | sonnet | default |
 | @explore | 高速コード探索 | haiku | **plan** |
 | @vision | PDF/画像分析 | sonnet | **plan** |
 
@@ -577,10 +582,16 @@ o-m-cc/
 │   ├── frontend.md            # UI/UXエンジニア
 │   ├── document-writer.md     # テクニカルライター
 │   ├── vision.md              # マルチモーダル分析
+│   ├── debugger.md             # 体系的デバッグ
+│   ├── learnings-researcher.md # 過去の学び検索
 │   ├── code-reviewer.md       # コード品質レビュー
 │   └── security-reviewer.md   # セキュリティレビュー（並列実行推奨）
 ├── commands/                  # スラッシュコマンド
 │   ├── init.md                # プロジェクト初期化
+│   ├── install.md             # グローバル設定
+│   ├── audit.md               # 品質監査
+│   ├── learn.md               # 学び記録
+│   ├── promote.md             # スキル昇格
 │   ├── requirements.md        # 要件定義
 │   ├── design.md              # 設計
 │   ├── tasks.md               # タスク分解
@@ -696,6 +707,16 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.7.0
+
+- **新エージェント**: debugger（体系的デバッグ）、learnings-researcher（過去の学び検索）
+- **新コマンド**: `/install`（グローバル設定）、`/audit`（品質監査）、`/learn`（学び記録）、`/promote`（スキル昇格）
+- **新hooks**: agent-rules.json（エージェント自動提案）、suggest-agent.sh
+- **security-reviewer 強化**: Trail of Bits パターン（Rationalizations、Insecure Defaults、Sharp Edges）
+- **code-reviewer 強化**: Blast Radius 分析（変更の影響範囲定量化）
+- **ワンショット改善**: scout の「必ず質問で終わる」を廃止、plan/init/audit の不要な確認を削除
+- **plan 簡素化**: Step 0-2（コンテキスト管理・ブレインストーミング・実行方式確認）を削除、一括実行がデフォルト
 
 ### 0.6.0 (Breaking Change)
 
