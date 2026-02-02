@@ -1,5 +1,5 @@
 ---
-description: "学びを構造化して記録（パターン / アンチパターン / 技術的決定）"
+description: "レビュー・バグ修正・実装で得た学びをspec/standards/learned/に記録。「これ覚えて」「パターンを記録して」で使用。"
 argument-hint: "[学びの概要]"
 allowed-tools: [Read, Write, Edit, Glob, Grep, AskUserQuestion]
 model: sonnet

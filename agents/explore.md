@@ -1,6 +1,6 @@
 ---
 name: explore
-description: 高速なコードベース探索。ファイル検索、コード検索、構造分析。読み取り専用。
+description: 高速なコードベース探索。コードの場所を調べたいとき、構造を把握したいときに使う。ファイル検索、コード検索、構造分析。読み取り専用。
 tools: Read, Glob, Grep
 model: haiku
 permissionMode: plan

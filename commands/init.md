@@ -1,5 +1,5 @@
 ---
-description: "プロジェクト固有の初期化（CLAUDE.md, spec/, Sisyphusルール）"
+description: "プロジェクト固有の初期化（CLAUDE.md, spec/, Sisyphusルール）。新規プロジェクト開始時や既存プロジェクトにo-m-ccを導入する際に使用。"
 argument-hint: "[project-name]"
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion, Task]
 model: sonnet

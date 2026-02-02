@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: フロントエンド実装、UI設計、コンポーネント作成。React/Vue/Tailwindでモダンなプロダクション品質のUIを生成。
+description: フロントエンド実装、UI設計、コンポーネント作成。画面を作りたいとき、UIコンポーネントを実装したいときに使う。React/Vue/Tailwindでモダンなプロダクション品質のUIを生成。
 tools: Read, Write, Edit, Glob, Grep
 model: sonnet
 ---

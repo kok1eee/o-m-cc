@@ -1,5 +1,5 @@
 ---
-description: エージェント・コマンドの品質監査
+description: "エージェント・コマンド・フックの品質を監査しレポート生成。「品質チェックして」「監査して」で使用。"
 allowed-tools: [Task, Read, Glob, Grep, AskUserQuestion]
 ---
 

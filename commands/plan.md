@@ -1,5 +1,5 @@
 ---
-description: "仕様駆動の計画フロー（要件 → 設計 → タスク 一括実行）"
+description: "要件→設計→タスクを一括実行する仕様駆動開発フロー。「計画して」「設計から始めて」「この機能を実装したい」で使用。"
 argument-hint: "<feature description>"
 allowed-tools: [Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion]
 model: opus

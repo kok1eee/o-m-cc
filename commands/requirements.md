@@ -1,5 +1,5 @@
 ---
-description: "要件定義を作成（SDD Phase 1）"
+description: "機能の要件を整理しrequirements.mdを作成。「要件をまとめて」「何を作るか整理して」で使用。"
 argument-hint: "<feature description>"
 allowed-tools: [Task, Read, Write, Glob, Grep, WebSearch, AskUserQuestion]
 model: sonnet

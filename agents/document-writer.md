@@ -1,6 +1,6 @@
 ---
 name: document-writer
-description: 技術ドキュメント、API仕様、ユーザーガイドの作成。読み手に合わせた適切な粒度で執筆。
+description: 技術ドキュメント、API仕様、ユーザーガイドの作成。ドキュメントを書きたいとき、READMEを更新したいときに使う。読み手に合わせた適切な粒度で執筆。
 tools: Read, Write, Edit, Glob, Grep
 model: sonnet
 ---

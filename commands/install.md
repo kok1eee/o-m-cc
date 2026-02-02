@@ -1,5 +1,5 @@
 ---
-description: "グローバル設定（プラグイン・スピナー・hooks）- 一度だけ実行"
+description: "プラグイン・スピナー・hooksのグローバル環境セットアップ。初回インストール後に一度だけ使用。"
 argument-hint: ""
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion]
 model: sonnet

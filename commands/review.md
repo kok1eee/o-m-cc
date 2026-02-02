@@ -1,5 +1,5 @@
 ---
-description: "コード変更をレビュー（code-reviewer + security-reviewer 並列実行）"
+description: "code-reviewerとsecurity-reviewerを並列実行してコード品質・セキュリティをチェック。「レビューして」「コードを確認して」で使用。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Task, Read, Glob, Grep, Bash, AskUserQuestion]
 model: sonnet

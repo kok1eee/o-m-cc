@@ -1,5 +1,5 @@
 ---
-description: "タスク分解（SDD Phase 3）"
+description: "design.mdに基づき実装タスクを分解・依存関係整理。「タスクに分けて」「実装計画を作って」で使用。"
 argument-hint: ""
 allowed-tools: [Task, Read, Write, Glob, Grep, AskUserQuestion]
 model: sonnet

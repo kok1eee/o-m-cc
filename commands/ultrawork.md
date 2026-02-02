@@ -1,5 +1,5 @@
 ---
-description: "Ultraworkモード - 並列エージェントオーケストレーションによる最大パフォーマンス"
+description: "並列エージェントオーケストレーションで最大パフォーマンス実装。「並列で実装して」「最速で作って」で使用。"
 allowed-tools: Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
 model: opus
 context: fork

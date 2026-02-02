@@ -1,6 +1,6 @@
 ---
 name: vision
-description: PDF・画像・スクリーンショットを分析。デザインモック、エラー画面、仕様書から情報を抽出。
+description: PDF・画像・スクリーンショットを分析。デザインモックを読み取りたいとき、エラー画面を解析したいとき、仕様書から情報を抽出したいときに使う。
 tools: Read, Glob
 model: sonnet
 permissionMode: plan

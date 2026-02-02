@@ -1,5 +1,5 @@
 ---
-description: "設計書を作成（SDD Phase 2）"
+description: "requirements.mdに基づきアーキテクチャ設計書を作成。「設計して」「アーキテクチャを決めて」で使用。"
 argument-hint: ""
 allowed-tools: [Task, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion]
 model: opus

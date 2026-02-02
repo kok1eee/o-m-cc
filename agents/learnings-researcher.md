@@ -1,6 +1,6 @@
 ---
 name: learnings-researcher
-description: 過去の学び（spec/standards/learned/）を検索し、現在のタスクに関連する知見を抽出。実装前の知識確認で呼び出す。読み取り専用。
+description: 過去の学び（spec/standards/learned/）を検索し、現在のタスクに関連する知見を抽出。「過去に似たことやった？」「学びを確認して」で使う。実装前の知識確認用。読み取り専用。
 tools: Read, Glob, Grep
 model: haiku
 permissionMode: plan

@@ -1,5 +1,5 @@
 ---
-description: "繰り返し現れる学びをスキルに昇格（learned → skill）"
+description: "learned/に蓄積された学びを分析し再利用可能なエージェント・コマンド・ルールに昇格。「スキルにして」「ルール化して」で使用。"
 argument-hint: "[対象パターン名 or キーワード]"
 allowed-tools: [Read, Write, Edit, Glob, Grep, AskUserQuestion, Task]
 model: sonnet
