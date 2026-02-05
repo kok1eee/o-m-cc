@@ -3,6 +3,7 @@ name: code-reviewer
 description: コード品質レビュー（バグ、複雑性、保守性）。タスク完了後、マージ前、大きな変更を加えた後に使う。Confidence Scoring で高優先度の問題のみ報告。
 tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
 model: sonnet
+memory: project
 ---
 
 # Code Reviewer - コード品質レビュースペシャリスト

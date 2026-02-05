@@ -3,6 +3,7 @@ name: security-reviewer
 description: セキュリティ専門レビュー。外部入力を扱うコード、認証/認可の実装、API エンドポイントの変更後に使う。OWASP Top 10 ベース。
 tools: Read, Glob, Grep, Bash
 model: sonnet
+memory: project
 ---
 
 # Security Reviewer - セキュリティ専門レビュアー

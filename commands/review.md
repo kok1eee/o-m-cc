@@ -1,14 +1,14 @@
 ---
-description: "code-reviewerとsecurity-reviewerを並列実行してコード品質・セキュリティをチェック。「レビューして」「コードを確認して」で使用。"
+description: "Agent Teams で code-reviewer と security-reviewer を並列実行してコード品質・セキュリティをチェック。「レビューして」「コードを確認して」で使用。"
 argument-hint: "[specific files or 'all']"
-allowed-tools: [Task, Read, Glob, Grep, Bash, AskUserQuestion]
+allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool]
 model: sonnet
 context: fork
 ---
 
-# Review Command - コードレビュー（並列実行）
+# Review Command - コードレビュー（Agent Teams 並列実行）
 
-コード品質とセキュリティを**同時にチェック**します。
+コード品質とセキュリティを **Agent Teams** で**同時にチェック**します。
 
 ## 対象
 
@@ -27,38 +27,75 @@ $ARGUMENTS
 jj diff  # または git diff
 ```
 
-### Step 2: 並列レビュー実行
+### Step 2: レビューチーム作成
 
-**code-reviewer** と **security-reviewer** を Task tool で**同時に**呼び出し：
+**TeammateTool の spawnTeam でレビューチームを作成：**
 
 ```
-Task tool で並列実行（両方 background=true）：
-
-1. code-reviewer subagent
-   - 変更差分を共有
-   - バグ、複雑性、保守性をチェック
-   - 発見したパターンを learned/ に記録
-
-2. security-reviewer subagent
-   - 変更差分を共有
-   - OWASP Top 10 ベースのセキュリティチェック
-   - 脆弱性、認証/認可、機密データをチェック
+TeammateTool: spawnTeam
+  teamName: "review"
 ```
 
-**重要**: 両方のレビュアーを並列で起動してレビュー時間を短縮。
+### Step 3: Reviewer Teammates Spawn
 
-### Step 3: 結果の集約
+**2つの teammate を同時に spawn：**
 
-両方のレビューが完了したら結果を集約：
+```
+1. TeammateTool: spawnTeammate
+   teamName: "review"
+   name: "code-reviewer"
+   prompt: |
+     agents/code-reviewer.md の指示に従い、以下の変更差分をレビューしてください。
+
+     ## レビュー対象
+     [変更差分を含める]
+
+     ## チェック項目
+     - バグ、ロジックエラー
+     - コード複雑性、保守性
+     - プロジェクト規約への準拠
+     - Confidence Scoring で高優先度の問題のみ報告
+
+     ## チーム連携
+     - 発見した問題を security-reviewer teammate にもメッセージで共有
+     - セキュリティに関連する発見があれば security-reviewer に相談
+     - 完了したら Lead に結果サマリーをメッセージ送信
+
+2. TeammateTool: spawnTeammate
+   teamName: "review"
+   name: "security-reviewer"
+   prompt: |
+     agents/security-reviewer.md の指示に従い、以下の変更差分のセキュリティをチェックしてください。
+
+     ## レビュー対象
+     [変更差分を含める]
+
+     ## チェック項目
+     - OWASP Top 10 ベースのセキュリティチェック
+     - 脆弱性、認証/認可、機密データ
+     - Trail of Bits パターン（Rationalizations, Insecure Defaults, Sharp Edges）
+
+     ## チーム連携
+     - 発見した問題を code-reviewer teammate にもメッセージで共有
+     - コード品質に関連する発見があれば code-reviewer に相談
+     - 完了したら Lead に結果サマリーをメッセージ送信
+```
+
+**重要**: 両方の teammate を同時に spawn してレビュー時間を短縮。
+Teammates は互いの発見をメッセージで共有・議論できます。
+
+### Step 4: 結果の集約
+
+両方の teammate からの報告を集約：
 
 ```markdown
 # 統合レビュー結果
 
-## コード品質（code-reviewer）
+## コード品質（code-reviewer teammate）
 - Critical: X件
 - Warning: X件
 
-## セキュリティ（security-reviewer）
+## セキュリティ（security-reviewer teammate）
 - Critical: X件
 - Warning: X件
 
@@ -67,7 +104,7 @@ Task tool で並列実行（両方 background=true）：
 → いずれか Critical あり: 修正必須
 ```
 
-### Step 4: Critical 発見時の対応確認
+### Step 5: Critical 発見時の対応確認
 
 Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 
@@ -88,7 +125,7 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 ### Critical なしの場合
 
 ```
-✅ コードレビュー完了（並列実行）
+✅ コードレビュー完了（Agent Teams 並列実行）
 
 📊 コード品質
    🟢 Critical: なし
@@ -119,7 +156,7 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 ### Critical ありの場合
 
 ```
-⚠️ コードレビュー完了（並列実行）
+⚠️ コードレビュー完了（Agent Teams 並列実行）
 
 📊 コード品質
    🔴 Critical: X件 ← 要修正
@@ -136,4 +173,4 @@ Critical がある場合は、問題点と修正方法を具体的に提案し�
 
 ---
 
-**レビューを開始します。変更差分を確認し、code-reviewer と security-reviewer を並列で起動してください。**
+**レビューを開始します。変更差分を確認し、Agent Teams で code-reviewer と security-reviewer を並列 spawn してください。**

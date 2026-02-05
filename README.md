@@ -1,4 +1,4 @@
-# o-m-cc v0.7.0
+# o-m-cc v0.8.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -6,6 +6,7 @@
 
 o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注入するプラグインです。
 
+- **Agent Teams**: TeammateTool による peer-to-peer マルチエージェント協調
 - **Sisyphus哲学**: タスク完了まで決して止まらない
 - **TODOドリブン**: 明確なタスクリストに基づいて作業
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
@@ -14,6 +15,9 @@ o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注�
 ## Quick Start
 
 ```bash
+# 0. Agent Teams を有効化（必須）
+export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+
 # 1. marketplace 追加
 claude plugin marketplace add kok1eee/o-m-cc
 
@@ -64,7 +68,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ### 最大パフォーマンスモード
 
-並列エージェントで最速実行：
+Agent Teams で teammate を並列 spawn して最速実行：
 
 ```bash
 /o-m-cc:ultrawork "認証機能を実装"
@@ -90,31 +94,31 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | `/o-m-cc:requirements <task>` | 要件定義（SDD Phase 1） | - |
 | `/o-m-cc:design` | 設計書作成（SDD Phase 2） | - |
 | `/o-m-cc:tasks` | タスク分解（SDD Phase 3） | - |
-| `/o-m-cc:plan <task>` | 上記を一括実行（scout によるギャップ分析含む） | fork |
+| `/o-m-cc:plan <task>` | 上記を一括実行（Agent Teams で並列化 + scout ギャップ分析） | fork |
 
 ### 実行
 
 | コマンド | 説明 | Context |
 |---------|------|---------|
-| `/o-m-cc:ultrawork <task>` | 並列エージェントで最大パフォーマンス実行（自動 /compact） | fork |
+| `/o-m-cc:ultrawork <task>` | Agent Teams で teammate 並列 spawn、最大パフォーマンス実行（自動 /compact） | fork |
 
 ### 品質
 
 | コマンド | 説明 | Context |
 |---------|------|---------|
-| `/o-m-cc:review [files]` | コードレビュー（security-guidance連携 + code-simplifier提案） | fork |
+| `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論 + code-simplifier提案） | fork |
 | `/o-m-cc:audit [target]` | エージェント・コマンドの品質監査 | - |
 | `/o-m-cc:learn [概要]` | 学びを構造化記録（パターン / アンチパターン / 決定） | - |
 | `/o-m-cc:promote [keyword]` | 繰り返す学びをスキルに昇格 | - |
 
-> **Context: fork** - サブエージェント実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
+> **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
 
 ## Workflow
 
 ### 初回セットアップ
 
 ```
-/o-m-cc:sisyphus
+/o-m-cc:init
   → 依存プラグイン確認・インストール
   → CLAUDE.md に Sisyphus 原則を追加
   → hooks 設定（<promise>DONE</promise> までループ）
@@ -130,32 +134,30 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ### 複雑なタスク（/o-m-cc:plan）
 
 ```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  Phase 1     │───▶│  Phase 1.5   │───▶│  Phase 2     │───▶│  Phase 3     │───▶│  Phase 4     │
-│  要件定義    │    │  ギャップ    │    │  設計        │    │  タスク分解  │    │  レビュー    │
-│  (analyst)   │    │  (scout)     │    │  (designer)  │    │  (planner)   │    │  (critic)    │
-└──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘    └──────────────┘
-       │                   │                   │                   │                   │
-       ▼                   ▼                   ▼                   ▼                   ▼
- requirements.md     追加質問で          design.md          tasks.md           計画の検証
-                     要件を補完
+Agent Teams:
+┌──────────────┐ ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  Phase 0.5   │ │  Phase 1     │───▶│  Phase 1.5   │───▶│  Phase 2     │───▶│  Phase 3     │
+│  学び検索    │ │  要件定義    │    │  ギャップ    │    │  設計        │    │  タスク分解  │
+│  (learnings) │ │  (analyst)   │    │  (scout)     │    │  (designer)  │    │  (planner)   │
+└──────┬───────┘ └──────┬───────┘    └──────────────┘    └──────────────┘    └──────────────┘
+       │                │                   │                   │                   │
+       └── 並列 spawn ──┘                   ▼                   ▼                   ▼
+                                       追加質問で          design.md          tasks.md
+                                       要件を補完
 ```
 
-**Phase 1.5 (scout) の特徴:**
-- Prometheus式インタビュー
-- 要件の漏れ・曖昧さを発見
-- Critical な曖昧点は質問、回答がなければ仮定を記録して続行
+**Phase 0.5 + 1 は並列 teammates、Phase 1.5 以降は依存タスクで順序制御**
 
 ### 実装フェーズ
 
 ```
 「実装開始して」または /o-m-cc:ultrawork
-  → TODO → 並列実装 → レビュー → 簡素化提案 → 完了
+  → Agent Teams → teammate 並列 spawn → レビュー → 簡素化提案 → 完了
 ```
 
 ## Dependencies
 
-`/o-m-cc:sisyphus` 実行時に推奨プラグインをインストール。
+`/o-m-cc:init` 実行時に推奨プラグインをインストール。
 
 ```bash
 # マーケットプレイス追加（初回のみ）
@@ -186,42 +188,46 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ### Planning Agents（計画系）
 
-| Agent | 役割 | Model | Permission |
-|-------|------|-------|------------|
-| @analyst | 現状分析・要件定義 | sonnet | write |
-| @scout | ギャップ分析・追加質問（仮定で進む） | sonnet | **plan** |
-| @designer | アーキテクチャ設計 | opus | write |
-| @planner | タスク分解 | sonnet | write |
-| @critic | 計画レビュー | sonnet | **plan** |
+| Agent | 役割 | Model | Permission | Memory |
+|-------|------|-------|------------|--------|
+| @analyst | 現状分析・要件定義 | sonnet | write | project |
+| @scout | ギャップ分析・追加質問（仮定で進む） | sonnet | **plan** | - |
+| @designer | アーキテクチャ設計 | opus | write | project |
+| @planner | タスク分解 | sonnet | write | project |
+| @critic | 計画レビュー | sonnet | **plan** | - |
 
 ### Analysis Agents（分析系）
 
-| Agent | 役割 | Model | Permission |
-|-------|------|-------|------------|
-| @advisor | デバッグ・戦略相談 | opus | **plan** |
-| @researcher | ドキュメント調査 | sonnet | **plan** |
-| @learnings-researcher | 過去の学び検索 | haiku | **plan** |
-| @debugger | 体系的デバッグ | sonnet | default |
-| @explore | 高速コード探索 | haiku | **plan** |
-| @vision | PDF/画像分析 | sonnet | **plan** |
+| Agent | 役割 | Model | Permission | Memory |
+|-------|------|-------|------------|--------|
+| @advisor | デバッグ・戦略相談 | opus | **plan** | project |
+| @researcher | ドキュメント調査 | sonnet | **plan** | - |
+| @learnings-researcher | 過去の学び検索 | haiku | **plan** | - |
+| @debugger | 体系的デバッグ | sonnet | default | project |
+| @explore | 高速コード探索 | haiku | **plan** | - |
+| @vision | PDF/画像分析 | sonnet | **plan** | - |
 
 ### Implementation Agents（実装系）
 
-| Agent | 役割 | Model | Permission |
-|-------|------|-------|------------|
-| @frontend | UI/UXコンポーネント作成 | sonnet | write |
-| @document-writer | ドキュメント作成 | sonnet | write |
+| Agent | 役割 | Model | Permission | Memory |
+|-------|------|-------|------------|--------|
+| @frontend | UI/UXコンポーネント作成 | sonnet | write | project |
+| @document-writer | ドキュメント作成 | sonnet | write | - |
 
 ### Quality Agents（品質系）
 
-| Agent | 役割 | Model | Permission |
-|-------|------|-------|------------|
-| @code-reviewer | コードレビュー | sonnet | default |
+| Agent | 役割 | Model | Permission | Memory |
+|-------|------|-------|------------|--------|
+| @code-reviewer | コードレビュー | sonnet | default | project |
+| @security-reviewer | セキュリティレビュー | sonnet | default | project |
+| @code-simplifier | コード簡素化・リファクタリング | sonnet | write | - |
 
 > **Permission**:
 > - `plan`: 読み取り専用モード（permissionMode: plan）。権限確認なしで高速動作
 > - `write`: 書き込み可能（Write/Edit ツール使用）
 > - `default`: Bashなど特殊ツール使用のため標準権限
+>
+> **Memory**: `project` スコープのエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を永続的に記憶
 
 ## Output Files
 
@@ -239,7 +245,7 @@ spec/plan/
 ## Orchestration
 
 `/o-m-cc:tasks` で tasks.md と同時に `orchestration.yml` が生成されます。
-`/o-m-cc:ultrawork` はこのファイルを読み込み、構造化された実行を行います。
+`/o-m-cc:ultrawork` はこのファイルを読み込み、Agent Teams で構造化された実行を行います。
 
 ### orchestration.yml 構造
 
@@ -275,8 +281,8 @@ dependencies:
 
 | モード | 条件 | 動作 |
 |--------|------|------|
-| **Orchestrated** | `orchestration.yml` あり | YML定義に従って構造化実行 |
-| **Free** | `orchestration.yml` なし | 従来の自由形式で実行 |
+| **Orchestrated** | `orchestration.yml` あり | YML定義に従って teammate を spawn して構造化実行 |
+| **Free** | `orchestration.yml` なし | Lead がタスク分解 → teammate に割り当て |
 
 ## Standards & Steering
 
@@ -332,9 +338,9 @@ o-m-cc プラグインの初期トークン消費:
 
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
-| エージェント | ~830 | 15 エージェント定義 |
-| スキル | ~80 | 7 コマンド定義 |
-| **合計** | **~910** | Opus 200k の約 **0.5%** |
+| エージェント | ~880 | 16 エージェント定義 |
+| スキル | ~130 | 11 コマンド定義 |
+| **合計** | **~1010** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
 
@@ -345,11 +351,11 @@ o-m-cc プラグインの初期トークン消費:
 ### 仕組み
 
 ```
-サブエージェント
+Teammate
     │
     ├─ 詳細 → spec/plan/logs/{agent}-{timestamp}.md に保存
     │
-    └─ 要約 → メインエージェント（Sisyphus）に返却
+    └─ 要約 → Lead にメッセージで返却
 ```
 
 ### エージェント出力フォーマット
@@ -485,8 +491,8 @@ spec/standards/learned/
 
 | シナリオ | 選択方法 |
 |---------|---------|
-| **小タスク**（plan なし） | キーワードでマッチ |
-| **plan あり** | 得意分野・使用場面で選択 |
+| **小タスク**（plan なし） | キーワードでマッチ → teammate spawn |
+| **plan あり** | 得意分野・使用場面で選択 → teammate spawn |
 
 ### サマリーテーブル（抜粋）
 
@@ -498,7 +504,7 @@ spec/standards/learned/
 | code-reviewer | コード品質 | レビュー, 品質, review |
 | security-reviewer | セキュリティ | セキュリティ, 脆弱性, security |
 
-> **Note**: `code-reviewer` と `security-reviewer` は**並列実行推奨**
+> **Note**: `code-reviewer` と `security-reviewer` は **Agent Teams で並列 spawn 推奨**
 
 **詳細**: `agents/capabilities.md` を参照
 
@@ -540,6 +546,8 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
+| TeammateIdle | `teammate-idle.sh` | idle teammate への残タスク再割り当て示唆 |
+| TaskCompleted | `task-completed.sh` | タスク完了時の進捗表示・依存タスクアンブロック |
 
 ### デバッグモード
 
@@ -569,7 +577,7 @@ o-m-cc/
 ├── .claude-plugin/
 │   ├── plugin.json
 │   └── marketplace.json
-├── agents/                    # サブエージェント定義
+├── agents/                    # エージェント定義（teammate spawn 時に参照）
 │   ├── capabilities.md        # エージェント能力サマリー + キーワード
 │   ├── analyst.md             # 要件定義
 │   ├── scout.md               # ギャップ分析（Prometheus式）
@@ -585,7 +593,8 @@ o-m-cc/
 │   ├── debugger.md             # 体系的デバッグ
 │   ├── learnings-researcher.md # 過去の学び検索
 │   ├── code-reviewer.md       # コード品質レビュー
-│   └── security-reviewer.md   # セキュリティレビュー（並列実行推奨）
+│   ├── security-reviewer.md   # セキュリティレビュー（並列 spawn 推奨）
+│   └── code-simplifier.md     # コード簡素化・リファクタリング
 ├── commands/                  # スラッシュコマンド
 │   ├── init.md                # プロジェクト初期化
 │   ├── install.md             # グローバル設定
@@ -595,9 +604,9 @@ o-m-cc/
 │   ├── requirements.md        # 要件定義
 │   ├── design.md              # 設計
 │   ├── tasks.md               # タスク分解
-│   ├── plan.md                # 計画（オーケストレーター）
-│   ├── review.md              # コードレビュー
-│   └── ultrawork.md           # 並列実行（自動 /compact）
+│   ├── plan.md                # 計画（Agent Teams オーケストレーター）
+│   ├── review.md              # コードレビュー（Agent Teams 並列）
+│   └── ultrawork.md           # Agent Teams 並列実行（自動 /compact）
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
 │   ├── lib/
@@ -609,6 +618,8 @@ o-m-cc/
 │   ├── generate-handoff.sh    # セッション状態保存
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
 │   ├── focus-guard.sh         # タスク進行中の脱線防止
+│   ├── teammate-idle.sh       # Teammate idle 時の再割り当て（Agent Teams）
+│   ├── task-completed.sh      # タスク完了時の進捗・アンブロック（Agent Teams）
 │   ├── security_reminder_hook.py  # セキュリティチェック
 │   └── reset-state.sh         # 状態リセットツール
 ├── docs/                      # ドキュメント
@@ -707,6 +718,17 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.8.0
+
+- **Agent Teams 全面移行**: Task tool subagent → TeammateTool (spawnTeam + teammates) に移行
+- **peer-to-peer 通信**: teammates 間でメッセージ交換による自律的協調
+- **Token Efficiency**: Opus 1M 対応（0.5% → 0.1%）
+- **ultrawork**: Agent Teams による teammate 並列 spawn
+- **review**: code-reviewer + security-reviewer が peer-to-peer で議論
+- **plan**: Phase 0.5 + 1 を並列 teammates で実行
+- **新 hooks**: TeammateIdle（idle teammate への再割り当て）、TaskCompleted（進捗・アンブロック通知）
+- **agent memory**: 8 エージェントに `memory: project` 追加（プロジェクト知見の永続記憶）
 
 ### 0.7.0
 

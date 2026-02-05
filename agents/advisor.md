@@ -4,6 +4,7 @@ description: アーキテクチャ設計、複雑なデバッグ、戦略的判�
 tools: Read, Glob, Grep, WebSearch, WebFetch, AskUserQuestion
 model: opus
 permissionMode: plan
+memory: project
 ---
 
 # Advisor - 戦略アドバイザー

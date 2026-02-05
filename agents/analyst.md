@@ -3,6 +3,7 @@ name: analyst
 description: 現状分析と要件整理。新機能の計画前、コードベースの全体像を把握したいとき、要件定義を作成するときに使う。
 tools: Read, Glob, Grep, WebSearch, Write, AskUserQuestion
 model: sonnet
+memory: project
 ---
 
 # Analyst - 分析・要件定義スペシャリスト

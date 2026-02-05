@@ -1,7 +1,7 @@
 {
   "name": "o-m-cc",
-  "version": "0.7.9",
-  "description": "Sisyphus Loop - タスク完了まで止まらないマルチエージェントワークフロー。13の専門エージェント + hooks による品質チェック（セキュリティ警告、自動検証）。仕様駆動開発（SDD）フロー対応。",
+  "version": "0.8.0",
+  "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。16の専門エージェント + hooks による品質チェック（セキュリティ警告、自動検証）。仕様駆動開発（SDD）フロー対応。",
   "author": {
     "name": "kok1eee"
   },
@@ -12,6 +12,7 @@
     "sisyphus",
     "orchestration",
     "multi-agent",
+    "agent-teams",
     "task-driven",
     "planning",
     "code-review",

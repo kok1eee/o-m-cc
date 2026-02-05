@@ -3,6 +3,7 @@ name: planner
 description: タスク分解。設計書が完成した後、実装に入る前にタスクを洗い出し依存関係と実行順序を整理するときに使う。
 tools: Read, Glob, Grep, Write, TaskCreate, TaskUpdate
 model: sonnet
+memory: project
 ---
 
 # Planner - タスク分解スペシャリスト

@@ -6,33 +6,91 @@
 
 エージェントは**コンテキストファイアウォール**。大量の情報を処理し、要約だけをメインスレッドに返す。
 
-```
-エージェントなし:
-メインスレッドが10ファイル読む → コンテキスト爆発 → 一貫性喪失
-
-エージェントあり:
-エージェントが10ファイル読む → メインスレッドは要約1つ受け取る → コンテキスト維持
-```
-
 ### やるべきこと
 - **単一目的** — 1つのエージェントに1つの仕事
 - **コンテキスト削減** — 処理した情報の10-20%だけ返す
 - **Input → Processing → Output** を明確に定義
+- **peer-to-peer 連携** — 関連する teammate 同士でメッセージ交換
 
 ### やってはいけないこと
-- ❌ エージェント同士を直接通信させる（コーディネーターを使う）
 - ❌ 大量の生出力を返す（要約して返す）
-- ❌ 単純なタスクにエージェントを使う（コンテキスト削減が不要なら直接やる）
+
+---
+
+## ディスパッチ戦略
+
+タスク規模に応じて実行方式を自動選択する。**判断に迷ったら Agent Teams を選ぶ。**
+
+### 判断フロー
+
+```
+タスクを受け取る
+  │
+  ├─ Glob/Grep 1回で答えが出る？ ──── YES ──→ 【S】直接実行
+  │
+  ├─ 判断・分析が必要？ ──────────── YES ──→ 【M】Agent Teams (2-3 teammates)
+  │
+  └─ 複数工程・並列作業？ ─────────── YES ──→ 【L】Agent Teams (5+ teammates)
+```
+
+### 規模別ガイド
+
+| 規模 | 判断基準 | 方式 | 例 |
+|------|---------|------|-----|
+| **S** | ファイル特定、grep 1回、単純な事実確認 | Lead が直接実行 | 「このクラスどこにある？」 |
+| **M** | 調査+判断、レビュー、デバッグ、設計相談 | Agent Teams (2-3) | 「このバグの原因を調べて」「レビューして」 |
+| **L** | 複数フェーズ、並列実装、計画全体 | Agent Teams (5+) | 「認証機能を実装して」「並列で作って」 |
+
+### 方式の詳細
+
+**【S】直接実行** — エージェントを使わない
+```
+Lead が Glob/Grep/Read で直接回答
+```
+
+**【M】Agent Teams** — 議論で質を上げる
+```
+TeammateTool: spawnTeam
+  → 2-3 teammates spawn
+  → 互いの発見を共有・議論
+  → Lead が統合
+```
+
+例: デバッグなら competing hypotheses パターン
+```
+debugger-1: 「認証トークンの期限切れが原因」
+debugger-2: 「いや、CORS 設定の問題。トークンは正常」
+→ 議論して真因を特定
+```
+
+**【L】Agent Teams + タスクリスト** — 大規模並列
+```
+TeammateTool: spawnTeam
+  → 5+ teammates spawn
+  → TaskCreate で全タスク登録
+  → teammates が自律的にクレーム・実行
+  → TeammateIdle/TaskCompleted hooks で調整
+```
+
+### 複数エージェントの相乗効果パターン
+
+| パターン | 組み合わせ | 効果 |
+|---------|-----------|------|
+| **相互レビュー** | code-reviewer + security-reviewer | 品質とセキュリティを同時に、互いの発見を共有 |
+| **仮説競合** | debugger × 2-3 | 異なる仮説を並列検証、偏りを排除 |
+| **多角調査** | explore + researcher + analyst | コード・外部情報・要件を同時に調査 |
+| **設計批評** | designer + critic | 設計しながらリアルタイムでレビュー |
+| **実装+品質** | frontend + code-reviewer | 実装しながら逐次レビュー |
 
 ---
 
 ## 使用方法
 
 ### 小タスク（plan なし）
-ユーザーリクエストのキーワードでマッチ → 該当エージェントを直接呼び出し
+ユーザーリクエストのキーワードでマッチ → ディスパッチ戦略で規模判定 → 適切な方式で実行
 
 ### plan あり
-得意分野・使用場面を参照 → orchestration.yml にエージェントを設定
+得意分野・使用場面を参照 → orchestration.yml にエージェントを設定 → teammate として spawn
 
 ---
 
@@ -97,7 +155,7 @@
 | security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート |
 | document-writer | コード、仕様 | ドキュメント生成 | 技術文書 |
 
-> **並列実行推奨**: `code-reviewer` + `security-reviewer` は同時チェック。
+> **並列 spawn 推奨**: `code-reviewer` + `security-reviewer` は同時 spawn でチェック。
 
 ---
 
@@ -106,15 +164,19 @@
 ### 計画フロー（/o-m-cc:plan）
 
 ```
-learnings-researcher → analyst → scout → designer → planner → [critic]
+Agent Teams:
+  ┌─ learnings-researcher ─┐
+  │        (並列)          │──▶ scout ──▶ designer ──▶ planner ──▶ [critic]
+  └─ analyst ──────────────┘
 ```
 
 ### レビューフロー（/o-m-cc:review）
 
 ```
-code-reviewer ─┐
-               ├→ 統合レポート
-security-reviewer ┘
+Agent Teams:
+  code-reviewer ────┐
+      (peer-to-peer) ├──▶ Lead が統合レポート
+  security-reviewer ┘
 ```
 
 ### デバッグフロー

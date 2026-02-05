@@ -27,12 +27,15 @@ if [[ ! -f "$TASKS_FILE" ]]; then
   exit 0
 fi
 
-# 未完了タスクをカウント
+# 未完了タスクをカウント（in_progress + pending）
+IN_PROGRESS_COUNT=$(grep -cE '^\s*-\s*\[🔄\]|^\s*-\s*\[⏳\]' "$TASKS_FILE" 2>/dev/null || echo "0")
+IN_PROGRESS_COUNT=$((IN_PROGRESS_COUNT + 0))
 PENDING_COUNT=$(grep -cE '^\s*-\s*\[ \]' "$TASKS_FILE" 2>/dev/null || echo "0")
-PENDING_COUNT=$((PENDING_COUNT + 0))  # 数値化
+PENDING_COUNT=$((PENDING_COUNT + 0))
+TOTAL_REMAINING=$((IN_PROGRESS_COUNT + PENDING_COUNT))
 
 # 未完了タスクがない場合はスキップ
-if [[ "$PENDING_COUNT" -eq 0 ]]; then
+if [[ "$TOTAL_REMAINING" -eq 0 ]]; then
   exit 0
 fi
 
@@ -53,13 +56,13 @@ done < "$TASKS_FILE"
 # jq がない場合はプレーンテキストで出力
 if ! check_command jq; then
   echo ""
-  echo "📋 タスク進行中 (残り ${PENDING_COUNT} 件)"
+  echo "📋 タスク進行中 (残り ${TOTAL_REMAINING} 件)"
   exit 0
 fi
 
 # systemMessage を注入
-jq -n --arg pending "$PENDING_COUNT" --arg phase "$CURRENT_PHASE" --arg task "$CURRENT_TASK" '{
-  "systemMessage": ("📋 タスク進行中 (残り " + $pending + " 件: " + $phase + ")\n\nSisyphus原則: タスク完了まで止まらない。完了時は code-reviewer でレビューしてから DONE。\n\n作業中の割り込み対応:\n- 現在の作業に関連する修正・方向転換 → 反映する\n- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答し、必要ならメモを残す")
+jq -n --arg remaining "$TOTAL_REMAINING" --arg phase "$CURRENT_PHASE" --arg task "$CURRENT_TASK" '{
+  "systemMessage": ("📋 タスク進行中 (残り " + $remaining + " 件" + (if $phase != "" then ": " + $phase else "" end) + ")" + (if $task != "" then "\n   → 次: " + $task else "" end) + "\n\nSisyphus原則: タスク完了まで止まらない。完了時は code-reviewer でレビューしてから DONE。\n\n作業中の割り込み対応:\n- 現在の作業に関連する修正・方向転換 → 反映する\n- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答し、必要ならメモを残す")
 }'
 
 exit 0

@@ -1,11 +1,11 @@
 ---
-description: "並列エージェントオーケストレーションで最大パフォーマンス実装。「並列で実装して」「最速で作って」で使用。"
-allowed-tools: Task, Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
+description: "Agent Teams による並列エージェントオーケストレーションで最大パフォーマンス実装。「並列で実装して」「最速で作って」で使用。"
+allowed-tools: Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion, TeammateTool
 model: opus
 context: fork
 ---
 
-# Ultrawork - 最大パフォーマンスモード
+# Ultrawork - 最大パフォーマンスモード（Agent Teams）
 
 ## Step 0: Compact 実行（必須）
 
@@ -33,7 +33,7 @@ context: fork
 **以下を実行:**
 
 ```bash
-echo -e "\n\033[1;35m╔══════════════════════════════════╗\033[0m"; echo -e "\033[1;35m║\033[0m  \033[1;36m⚡ ULTRAWORK MODE ENABLED ⚡\033[0m    \033[1;35m║\033[0m"; echo -e "\033[1;35m║\033[0m  \033[1;33mParallel Agent Orchestration\033[0m    \033[1;35m║\033[0m"; echo -e "\033[1;35m╚══════════════════════════════════╝\033[0m\n"
+echo -e "\n\033[1;35m╔══════════════════════════════════╗\033[0m"; echo -e "\033[1;35m║\033[0m  \033[1;36m⚡ ULTRAWORK MODE ENABLED ⚡\033[0m    \033[1;35m║\033[0m"; echo -e "\033[1;35m║\033[0m  \033[1;33mAgent Teams Orchestration\033[0m      \033[1;35m║\033[0m"; echo -e "\033[1;35m╚══════════════════════════════════╝\033[0m\n"
 ```
 
 ---
@@ -44,7 +44,18 @@ $ARGUMENTS
 
 ---
 
-## Step 2: Orchestration 設定の確認
+## Step 2: チーム作成
+
+**TeammateTool の spawnTeam で ultrawork チームを作成:**
+
+```
+TeammateTool: spawnTeam
+  teamName: "ultrawork"
+```
+
+---
+
+## Step 3: Orchestration 設定の確認
 
 **まず `spec/plan/orchestration.yml` の存在を確認:**
 
@@ -58,12 +69,9 @@ YML ファイルを読み込み、定義に従って実行：
 
 1. **Read** で `spec/plan/orchestration.yml` を読み込む
 2. **Read** で `spec/plan/tasks.md` を読み込む
-3. `parallel_groups` に従って並列実行
-4. `dependencies` に従って順次実行
-5. 各タスクグループで:
-   - 指定された `agent` を起動
-   - 指定された `standards` を読み込む
-   - `tasks` を実行
+3. 各タスクグループに対して **teammate を spawn**
+4. `parallel_groups` のグループは同時に spawn
+5. `dependencies` に従って後続 teammate を spawn
 
 ```yaml
 # orchestration.yml 構造
@@ -83,52 +91,74 @@ dependencies:                # 依存関係
   "Phase 2: 機能実装": ["Phase 1: 基盤構築"]
 ```
 
+**各 teammate の spawn prompt:**
+
+```
+TeammateTool: spawnTeammate
+  teamName: "ultrawork"
+  name: "[agent-name]-[phase]"
+  prompt: |
+    agents/{agent-name}.md の指示に従って作業してください。
+
+    ## 担当タスク
+    [tasks.md から該当タスクの詳細]
+
+    ## 参照 Standards
+    [spec/standards/{standards-path} を読み込んで従ってください]
+
+    ## 作業対象
+    [対象ファイル/ディレクトリ]
+
+    ## チーム連携
+    - 問題を発見したら Lead にメッセージで報告
+    - 他の teammate の作業に影響する変更は事前に共有
+    - 完了したら結果サマリーを Lead にメッセージ送信
+```
+
 ### orchestration.yml が存在しない場合（Free Mode）
 
-従来の自由形式で実行。以下の Ultrawork 原則に従う。
+従来の自由形式で実行。Lead がタスクを分解し teammate に割り当て。
 
 ---
 
 ## Ultrawork 原則
 
-### 1. 並列エージェント活用（PARALLEL FIRST）
+### 1. Agent Teams 並列活用（PARALLEL FIRST）
 
-**独立したタスクは必ず並列実行：**
+**独立したタスクは teammate を同時 spawn：**
 
 ```
-# 同時に複数のバックグラウンドエージェントを起動
-Task tool (background=true):
-  - explore agent: コードベース構造を探索
-  - explore agent: 関連ファイルを検索
-  - researcher agent: 外部ドキュメントを調査
+TeammateTool で並列 spawn：
+  - explore teammate: コードベース構造を探索
+  - explore teammate: 関連ファイルを検索
+  - researcher teammate: 外部ドキュメントを調査
 ```
 
-**10個以上の並列タスクも躊躇なく起動。**
+**10個以上の teammate も躊躇なく spawn。**
 
-### 2. タスクトラッキング（依存関係対応）
+### 2. 共有タスクリスト（依存関係対応）
 
 ```
 - TaskList で未着手タスクを確認（blockedBy が空のものが着手可能）
-- 着手時: TaskUpdate で status を in_progress に変更
-- 完了時: TaskUpdate で status を completed に変更
-  → ブロック解除されたタスクが自動的に着手可能になる
+- TaskCreate で全タスクを登録、TaskUpdate で依存関係を設定
+- Teammates が自律的にタスクをクレーム → 実行 → 完了報告
 - tasks.md の対応行も [x] に更新（suggest-review.sh が cc-sidebar に同期）
 ```
 
 **TaskList が空の場合（初回起動時）:**
 tasks.md から TaskCreate で登録し、TaskUpdate で依存関係を設定する。
 
-### 3. エージェント委任（DELEGATE）
+### 3. Teammate 委任（DELEGATE）
 
-**自分でやらない、専門エージェントに委任：**
+**自分でやらない、専門 teammate に委任：**
 
-| タスク種別 | 委任先 |
-|-----------|--------|
-| コード探索 | explore agent (background) |
-| ドキュメント調査 | researcher agent (background) |
-| 設計判断 | advisor agent |
-| 計画作成 | planner agent |
-| コードレビュー | code-reviewer agent |
+| タスク種別 | 委任先 teammate |
+|-----------|----------------|
+| コード探索 | explore teammate |
+| ドキュメント調査 | researcher teammate |
+| 設計判断 | advisor teammate |
+| 計画作成 | planner teammate |
+| コードレビュー | code-reviewer teammate |
 
 ### 4. 検証保証（VERIFY）
 
@@ -136,7 +166,7 @@ tasks.md から TaskCreate で登録し、TaskUpdate で依存関係を設定す
 完了前に必ず：
 1. 元のリクエストを再読
 2. 全要件が満たされているか確認
-3. code-reviewer でレビュー
+3. code-reviewer teammate でレビュー
 4. 漏れがあれば追加タスク
 ```
 
@@ -144,58 +174,72 @@ tasks.md から TaskCreate で登録し、TaskUpdate で依存関係を設定す
 
 ## 実行フロー
 
-### Step 3: 要求分析
+### Step 4: 要求分析
 
 ユーザーのリクエストを分析し、必要な作業を特定：
 
 ```
 - 何を達成するか
-- どのエージェントが必要か
-- 並列実行できるタスクは何か
+- どの teammate が必要か
+- 並列 spawn できるタスクは何か
 ```
 
-### Step 4: 並列探索（バックグラウンド）
+### Step 5: 並列探索（Teammates Spawn）
 
-**独立した探索タスクを同時起動：**
-
-```
-Task tool で並列実行（すべて background=true）：
-- explore: プロジェクト構造の把握
-- explore: 関連コードの検索
-- researcher: 必要なドキュメント調査
-```
-
-### Step 5: 計画作成
-
-探索結果を待って、planner agent で作業分解：
+**独立した探索タスクの teammate を同時 spawn：**
 
 ```
-Task tool で planner agent を呼び出し：
-- 収集したコンテキストを共有
-- 詳細なタスクリストを作成
-- 依存関係と実行順序を決定
+TeammateTool で並列 spawn：
+  - explore teammate: プロジェクト構造の把握
+  - explore teammate: 関連コードの検索
+  - researcher teammate: 必要なドキュメント調査
 ```
 
-### Step 6: 並列実装
+### Step 6: 計画作成
 
-**独立したタスクは並列で実装：**
+探索 teammate の結果を受けて、planner teammate を spawn：
 
 ```
-- 依存関係のないタスクは同時実行
-- 各タスク完了時に即座に TODO 更新
-- 問題発生時は advisor agent に相談
+TeammateTool: spawnTeammate
+  teamName: "ultrawork"
+  name: "planner"
+  prompt: |
+    agents/planner.md の指示に従ってください。
+    収集したコンテキストを基に：
+    - 詳細なタスクリストを作成
+    - 依存関係と実行順序を決定
 ```
 
-### Step 7: 検証と完了
+### Step 7: 並列実装
+
+**独立したタスクの teammate を並列 spawn：**
+
+```
+- 依存関係のないタスクは同時に teammate spawn
+- 各 teammate 完了時に Lead へメッセージで報告
+- Lead が TaskUpdate で TODO 更新
+- 問題発生時は advisor teammate を spawn して相談
+```
+
+### Step 8: 監視・調整
+
+**Lead は定期的に：**
+
+- teammates の進捗をメッセージで確認
+- 問題があれば teammate にメッセージでリダイレクト
+- 完了した teammate に追加タスクをメッセージで割り当て
+- ブロックされた teammate を支援
+
+### Step 9: 検証と完了
 
 ```
 1. 全 TODO が completed か確認
 2. 元のリクエストと照合
-3. code-reviewer で最終レビュー
+3. code-reviewer teammate で最終レビュー
 4. Critical なし → 完了
 ```
 
-### Step 8: Handoff 更新
+### Step 10: Handoff 更新
 
 **セッション状態を `spec/plan/handoff.yaml` に保存：**
 
@@ -235,16 +279,16 @@ context:
 ### Orchestrated Mode の完了時：
 
 ```
-🚀 ULTRAWORK COMPLETE (Orchestrated Mode)
+🚀 ULTRAWORK COMPLETE (Orchestrated Mode - Agent Teams)
 
 Orchestration:
 - 設定ファイル: spec/plan/orchestration.yml
 - タスクグループ: X個
-- 並列実行グループ: X個
+- 並列 Teammates: X個
 
 実行サマリー:
 ┌─────────────────────────────┬──────────────┬──────────────┐
-│ タスクグループ              │ エージェント │ ステータス   │
+│ タスクグループ              │ Teammate     │ ステータス   │
 ├─────────────────────────────┼──────────────┼──────────────┤
 │ Phase 1: 基盤構築           │ general      │ ✅ 完了      │
 │ Phase 2: 機能実装           │ frontend     │ ✅ 完了      │
@@ -268,10 +312,10 @@ Standards 適用:
 ### Free Mode の完了時：
 
 ```
-🚀 ULTRAWORK COMPLETE (Free Mode)
+🚀 ULTRAWORK COMPLETE (Free Mode - Agent Teams)
 
 実行サマリー:
-- 起動エージェント: X個
+- Spawn Teammates: X個
 - 並列タスク: X個
 - 完了タスク: X/X
 
@@ -286,4 +330,4 @@ Standards 適用:
 
 ---
 
-**今すぐ並列エージェントを起動し、最大速度でタスクを完了してください。**
+**今すぐ Agent Teams を起動し、teammate を並列 spawn して最大速度でタスクを完了してください。**
