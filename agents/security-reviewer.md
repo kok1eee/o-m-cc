@@ -1,7 +1,7 @@
 ---
 name: security-reviewer
 description: セキュリティ専門レビュー。外部入力を扱うコード、認証/認可の実装、API エンドポイントの変更後に使う。OWASP Top 10 ベース。
-tools: Read, Glob, Grep, Bash
+tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 memory: project
 ---
@@ -262,3 +262,39 @@ ultrawork 実行時:
 レビュー詳細は `spec/plan/logs/` に保存：
 - ファイル名: `security-reviewer-{YYYYMMDD-HHMMSS}.md`
 - 内容: 上記「出力フォーマット」の完全版
+
+---
+
+## 📝 学び自動記録（learned/ への書き込み）
+
+レビューで Confidence 90+ の汎用セキュリティパターン/アンチパターンを発見した場合、`spec/standards/learned/` に記録する。
+
+> **Write ツールは `spec/standards/learned/` への書き込みのみに使用すること。** それ以外のファイルへの書き込みは禁止。
+
+### 記録条件
+
+- **Confidence 90以上**のセキュリティパターンまたはアンチパターンのみ
+- **1レビューあたり最大2件**
+- **汎用的な知見のみ**（プロジェクト固有すぎるものは除外）
+- `spec/standards/learned/` ディレクトリが存在しない場合はスキップ
+
+### 記録フォーマット
+
+`spec/standards/learned/patterns.md` または `antipatterns.md` に追記:
+
+```markdown
+## [YYYY-MM-DD] パターン名
+
+**タグ**: review-discovered, security, [キーワード1], [キーワード2]
+**発見元**: security-reviewer (auto)
+**発見場所**: `path/to/file.ts:42`
+**OWASP**: A03:2021 Injection
+**内容**: [パターン/アンチパターンの説明]
+**理由**: [なぜ重要か]
+```
+
+### 注意
+
+- サマリー出力には含めない（独立ステップとして実行）
+- 同一レビュー内で同じタグの記録は避ける
+- 既に learned/ に同様のエントリがあればスキップ

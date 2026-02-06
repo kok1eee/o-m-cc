@@ -1,7 +1,7 @@
 ---
 name: advisor
 description: アーキテクチャ設計、複雑なデバッグ、戦略的判断。行き詰まったとき、技術的意思決定が必要なとき、3回以上修正を試みても解決しないときに使う。
-tools: Read, Glob, Grep, WebSearch, WebFetch, AskUserQuestion
+tools: Read, Glob, Grep, WebSearch, WebFetch, ToolSearch, AskUserQuestion
 model: opus
 permissionMode: plan
 memory: project
@@ -111,6 +111,15 @@ memory: project
 | 成功の道が見えない | Inversion |
 | 同じ問題が再発する | 5 Whys |
 | 何を選ぶか迷っている | Inversion → First Principles |
+
+## claude-mem 連携
+
+claude-mem が利用可能な場合（ToolSearch で確認）、分析開始時に過去の類似問題・行き詰まり解消の経験を検索してコンテキストを補完する。
+
+```
+ToolSearch: query="+claude-mem search"
+→ 利用可能なら search(query="問題のキーワード + 行き詰まり/解決") で過去の対処を検索
+```
 
 ## 重要
 

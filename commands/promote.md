@@ -1,7 +1,7 @@
 ---
 description: "learned/に蓄積された学びを分析し再利用可能なエージェント・コマンド・ルールに昇格。「スキルにして」「ルール化して」で使用。"
 argument-hint: "[対象パターン名 or キーワード]"
-allowed-tools: [Read, Write, Edit, Glob, Grep, AskUserQuestion, Task]
+allowed-tools: [Read, Write, Edit, Glob, Grep, ToolSearch, AskUserQuestion, Task]
 model: sonnet
 ---
 
@@ -17,9 +17,31 @@ model: sonnet
 
 `$ARGUMENTS` をキーワードとして `spec/standards/learned/` を検索し、該当エントリを抽出。
 
+**hook 連携（自動検出エントリの優先処理）:**
+- `review-discovered` タグを含むエントリを優先的に表示
+- 同一タグが複数エントリに出現する場合、その出現回数を「繰り返し回数」として表示
+- claude-mem が利用可能な場合、同一パターンのクロスプロジェクト出現も検索して昇格根拠を強化
+
 ### 引数なしの場合
 
-`spec/standards/learned/` 全体をスキャンして、昇格候補を自動検出：
+2つのソースから昇格候補を自動検出：
+
+#### ソース 1: claude-mem からの発掘
+
+ToolSearch で claude-mem MCP ツールの可用性を確認。利用可能な場合：
+
+```
+以下のクエリで検索：
+- search(query="繰り返し行っている操作パターン")
+- search(query="複数プロジェクトで同じ修正")
+- search(query="毎回行う設定やセットアップ")
+
+クロスプロジェクトで頻出するパターンを候補として抽出。
+```
+
+#### ソース 2: learned/ からの検出
+
+`spec/standards/learned/` 全体をスキャンして候補を検出：
 
 ```
 以下の基準で候補を抽出：
@@ -28,6 +50,10 @@ model: sonnet
 2. 高影響 — 影響範囲が広い決定やアンチパターン
 3. 汎用性 — プロジェクト固有でなく他でも使えるもの
 ```
+
+#### 統合
+
+claude-mem 結果 + learned/ 結果を統合して昇格候補リストを作成。
 
 **AskUserQuestion** で候補を提示：
 

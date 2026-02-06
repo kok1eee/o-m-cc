@@ -196,43 +196,38 @@ spec/standards/testing/     # テスト規約
 3. **建設的に**: 問題だけでなく解決策も提示
 4. **良い点も指摘**: ポジティブフィードバックも含める
 5. **過度に厳しくしない**: 許容できるレベルを判断、スタイルの好みは報告しない
-6. **パターンを学習**: 発見したパターンは Learned Standards に記録
-
 ---
 
-## 📚 Learned Standards 自動記録
+## 📝 学び自動記録（learned/ への書き込み）
 
-レビュー中に発見したパターン・決定・アンチパターンを自動で記録。
+レビューで Confidence 90+ の汎用パターン/アンチパターンを発見した場合、`spec/standards/learned/` に記録する。
 
-### 記録対象
+### 記録条件
 
-| 種類 | 記録先 | 例 |
-|------|--------|-----|
-| 良いパターン | `learned/patterns.md` | 「Service は interface を先に定義」 |
-| 技術的決定 | `learned/decisions.md` | 「認証は session-based を採用」 |
-| アンチパターン | `learned/antipatterns.md` | 「Repository で直接 console.log 禁止」 |
+- **Confidence 90以上**のパターンまたはアンチパターンのみ
+- **1レビューあたり最大2件**
+- **汎用的な知見のみ**（プロジェクト固有すぎるものは除外）
+- `spec/standards/learned/` ディレクトリが存在しない場合はスキップ
 
 ### 記録フォーマット
 
-```markdown
-## [YYYY-MM-DD] [パターン名]
+`spec/standards/learned/patterns.md` または `antipatterns.md` に追記:
 
-**発見場所**: `src/services/UserService.ts:42`
-**内容**: [具体的な説明]
-**理由**: [なぜこれが良い/悪いか]
+```markdown
+## [YYYY-MM-DD] パターン名
+
+**タグ**: review-discovered, [キーワード1], [キーワード2]
+**発見元**: code-reviewer (auto)
+**発見場所**: `path/to/file.ts:42`
+**内容**: [パターン/アンチパターンの説明]
+**理由**: [なぜ重要か]
 ```
 
-### 記録タイミング
+### 注意
 
-1. **レビュー完了後**に Write ツールで追記
-2. **Good（良い点）** で発見したものは `patterns.md` へ
-3. **繰り返し指摘した問題** は `antipatterns.md` へ
-4. **プロジェクト固有の決定** は `decisions.md` へ
-
-### 記録の判断基準
-
-- **記録する**: プロジェクト全体に適用できるパターン
-- **記録しない**: 一時的な修正、個別のバグ修正
+- サマリー出力には含めない（独立ステップとして実行）
+- 同一レビュー内で同じタグの記録は避ける
+- 既に learned/ に同様のエントリがあればスキップ
 
 ---
 

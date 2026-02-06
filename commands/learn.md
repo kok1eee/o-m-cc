@@ -129,7 +129,8 @@ cp "${CLAUDE_PLUGIN_ROOT}/templates/standards/learned/antipatterns.md" spec/stan
 🏷️ タグ: [タグ一覧]
 
 💡 この学びは次回 /o-m-cc:plan 実行時に
-   learnings-researcher が自動検索します。
+   learnings-researcher がセマンティック検索します。
+   普段の操作は claude-mem が自動記録しています。
 ```
 
 ---

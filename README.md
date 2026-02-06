@@ -1,4 +1,4 @@
-# o-m-cc v0.8.0
+# o-m-cc v0.9.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -7,6 +7,7 @@
 o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注入するプラグインです。
 
 - **Agent Teams**: TeammateTool による peer-to-peer マルチエージェント協調
+- **claude-mem 連携**: セマンティックメモリ検索で過去の全操作を活用
 - **Sisyphus哲学**: タスク完了まで決して止まらない
 - **TODOドリブン**: 明確なタスクリストに基づいて作業
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
@@ -163,6 +164,14 @@ Agent Teams:
 # マーケットプレイス追加（初回のみ）
 claude plugin marketplace add anthropics/claude-plugins-official
 ```
+
+### セマンティックメモリ（オプション）
+
+| プラグイン | 用途 |
+|-----------|------|
+| [claude-mem](https://github.com/thedotmack/claude-mem) | 全セッションの操作を自動記録、セマンティック検索（`/o-m-cc:install` で設定） |
+
+> **Note**: claude-mem は AGPL ライセンスの外部依存です。o-m-cc は claude-mem の MCP ツールを呼ぶ側であり、組み込みはしません。未設定でも Grep フォールバックで動作します。
 
 ### 開発支援（共通）
 
@@ -718,6 +727,15 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.9.0
+
+- **claude-mem 連携**: セマンティックメモリ検索を全エージェントに提供
+- **learnings-researcher 強化**: claude-mem セマンティック検索をプライマリに、Grep をフォールバックに
+- **/install に claude-mem セットアップステップ追加**
+- **/promote が claude-mem からクロスプロジェクトのスキル候補を発掘**
+- **4エージェント (debugger, designer, advisor, analyst)** に ToolSearch + claude-mem 連携を追加
+- claude-mem 未設定時は従来の Grep ベースで完全動作（オプショナル依存）
 
 ### 0.8.0
 

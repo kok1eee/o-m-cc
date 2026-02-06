@@ -1,7 +1,7 @@
 ---
 name: analyst
 description: 現状分析と要件整理。新機能の計画前、コードベースの全体像を把握したいとき、要件定義を作成するときに使う。
-tools: Read, Glob, Grep, WebSearch, Write, AskUserQuestion
+tools: Read, Glob, Grep, WebSearch, Write, ToolSearch, AskUserQuestion
 model: sonnet
 memory: project
 ---
@@ -181,6 +181,15 @@ spec/steering/structure.md  # ディレクトリ構造、ファイル配置
 2. **分析サマリー** - 主要な発見事項と推奨事項
 
 出力先: `spec/plan/requirements.md` または指定された場所
+
+## claude-mem 連携
+
+claude-mem が利用可能な場合（ToolSearch で確認）、分析開始時に過去の類似要件整理の経験を検索してコンテキストを補完する。
+
+```
+ToolSearch: query="+claude-mem search"
+→ 利用可能なら search(query="対象機能のキーワード + requirements/要件") で過去の要件整理を検索
+```
 
 ## 重要
 

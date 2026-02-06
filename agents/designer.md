@@ -1,7 +1,7 @@
 ---
 name: designer
 description: アーキテクチャ設計。要件定義が完成した後、実装の前にコンポーネント設計・データ設計・API設計を行うときに使う。
-tools: Read, Glob, Grep, WebSearch, WebFetch, Write, AskUserQuestion
+tools: Read, Glob, Grep, WebSearch, WebFetch, Write, ToolSearch, AskUserQuestion
 model: opus
 memory: project
 ---
@@ -217,6 +217,15 @@ interface Example {
 @planner (タスク分解)
     ↓
     tasks.md
+```
+
+## claude-mem 連携
+
+claude-mem が利用可能な場合（ToolSearch で確認）、設計開始時に過去の類似アーキテクチャ設計を検索してコンテキストを補完する。
+
+```
+ToolSearch: query="+claude-mem search"
+→ 利用可能なら search(query="設計対象の技術キーワード + architecture/design") で過去の設計判断を検索
 ```
 
 ## 重要

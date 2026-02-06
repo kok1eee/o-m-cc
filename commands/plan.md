@@ -65,9 +65,11 @@ TeammateTool: spawnTeam
      以下の機能に関連する過去の知見を検索してください：
      $ARGUMENTS
 
-     ## 検索対象
-     - spec/standards/learned/ を検索
-     - 関連するパターン・決定・アンチパターンを抽出
+     ## 検索方式
+     1. ToolSearch で claude-mem MCP ツールの可用性を確認
+     2. 利用可能なら search で関連する過去の操作をセマンティック検索
+     3. 補完として spec/standards/learned/ を Grep 検索
+     4. 結果をマージして Lead に報告（検索方式も併記）
 
      ## 出力
      関連する学びが見つかったら Lead にメッセージで報告。
