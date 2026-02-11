@@ -135,19 +135,24 @@ Agent Teams で teammate を並列 spawn して最速実行：
 ### 複雑なタスク（/o-m-cc:plan）
 
 ```
-Agent Teams:
-┌──────────────┐ ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  Phase 0.5   │ │  Phase 1     │───▶│  Phase 1.5   │───▶│  Phase 2     │───▶│  Phase 3     │
-│  学び検索    │ │  要件定義    │    │  ギャップ    │    │  設計        │    │  タスク分解  │
-│  (learnings) │ │  (analyst)   │    │  (scout)     │    │  (designer)  │    │  (planner)   │
-└──────┬───────┘ └──────┬───────┘    └──────────────┘    └──────────────┘    └──────────────┘
-       │                │                   │                   │                   │
-       └── 並列 spawn ──┘                   ▼                   ▼                   ▼
-                                       追加質問で          design.md          tasks.md
-                                       要件を補完
+Agent Teams (Council + Pipeline ハイブリッド):
+┌─────────────────────────────────────────────────────┐
+│              Phase 1: Discovery Council               │
+│  learnings-researcher ◄─► analyst (Lead) ◄─► scout   │
+│  peer-to-peer で findings を共有                      │
+└─────────────────────────────────────────────────────┘
+          │ requirements.md
+          ▼
+  Phase 2 (designer) → Phase 3 (planner)
+  design.md             tasks.md
+                           │
+          ┌────────────────────────────────┐
+          │    Phase 4: Review Council      │
+          │    critic (Lead) ◄─► advisor    │
+          └────────────────────────────────┘
 ```
 
-**Phase 0.5 + 1 は並列 teammates、Phase 1.5 以降は依存タスクで順序制御**
+**Phase 1 は Discovery Council、Phase 2-3 は Pipeline、Phase 4 は Review Council**
 
 ### 実装フェーズ
 

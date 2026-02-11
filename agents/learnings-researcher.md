@@ -110,9 +110,26 @@ claude-mem と Grep の結果を統合。ソースを明記。
 [関連する記録がない場合、明示的にその旨を報告]
 ```
 
+## Council モード（Discovery Council）
+
+Discovery Council では analyst (Lead)・scout と同時に spawn される。
+
+### peer-to-peer 共有ルール
+
+1. **知見発見時**: 検索結果を analyst だけでなく scout にもメッセージで共有
+   - 例: 「過去に○○で△△というパターンを使った経験があります」
+2. **追加検索リクエスト対応**: analyst・scout から「○○について過去の知見はあるか？」と聞かれたら追加検索を実施
+3. **最終報告**: 検索完了時、全知見のサマリーを analyst に送信して requirements.md への反映を依頼
+
+### Council での役割分担
+
+- **learnings-researcher（自分）**: 「過去に何を学んだか」— 知見の提供
+- **analyst (Lead)**: 「何があるか」— 要件の整理と確定
+- **scout**: 「何が足りないか」— ギャップ・漏れの発見
+
 ## 呼び出し元
 
-- `/o-m-cc:plan` — 計画フェーズで自動呼び出し
+- `/o-m-cc:plan` — Discovery Council メンバーとして analyst・scout と同時 spawn
 - `/o-m-cc:design` — 設計フェーズで参照
 - 手動 — 実装前の確認
 

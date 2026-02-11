@@ -127,14 +127,24 @@ spec/
 
 ---
 
-## Step 4: Sisyphus ルールを追加
+## Step 4: ルールファイルとデフォルトエージェントを追加
 
-`spec/rules/sisyphus.md` を作成（verup時は上書き）：
+`spec/rules/` にルールを配置し、`.claude/agents/` にデフォルトエージェントを配置（verup時は上書き）：
 
 ```bash
 mkdir -p spec/rules
 cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/sisyphus.md" spec/rules/sisyphus.md
+cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/plan-or-act.md" spec/rules/plan-or-act.md
 echo "✅ Sisyphus ルールを spec/rules/sisyphus.md に配置"
+echo "✅ Plan or Act ルールを spec/rules/plan-or-act.md に配置"
+
+mkdir -p .claude/agents
+cp "${CLAUDE_PLUGIN_ROOT}/templates/agents/sisyphus.md" .claude/agents/sisyphus.md
+echo "✅ Sisyphus デフォルトエージェントを .claude/agents/sisyphus.md に配置"
+echo ""
+echo "💡 デフォルトエージェントとして有効にするには:"
+echo "   .claude/settings.json に \"agent\": \"sisyphus\" を追加"
+echo "   または claude --agent sisyphus で起動"
 ```
 
 ---
@@ -171,6 +181,44 @@ echo "✅ .gitignore に o-m-cc ランタイムファイルを追加"
 
 ---
 
+## Step 6: 推奨パーミッションの設定
+
+`.claude/settings.json` に o-m-cc がスムーズに動作するための推奨パーミッションを追加。
+Sisyphus Loop で自動実行中に権限承認で止まるのを防ぐ。
+
+**既に `.claude/settings.json` が存在する場合は、既存設定にマージする。存在しない場合は新規作成する。**
+
+### 追加する推奨パーミッション
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Read(spec/**)",
+      "Write(spec/**)",
+      "Edit(spec/**)",
+      "Read(agents/**)",
+      "Read(commands/**)",
+      "Read(templates/**)",
+      "Glob(**)",
+      "Grep(**)"
+    ]
+  }
+}
+```
+
+### 実装方法
+
+1. `.claude/settings.json` を Read で読み込む（なければ `{}` として扱う）
+2. 既存の `permissions.allow` があればマージ（重複排除）
+3. Write で書き戻す
+
+```
+echo "✅ 推奨パーミッションを .claude/settings.json に追加"
+```
+
+---
+
 ## 完了時の出力 + 次のステップ提案
 
 プロジェクトの状態に応じた完了メッセージを表示：
@@ -184,6 +232,13 @@ echo "✅ .gitignore に o-m-cc ランタイムファイルを追加"
 
 📄 CLAUDE.md: 作成/更新済み
 🔄 Sisyphus: spec/rules/sisyphus.md に配置
+🔄 Plan or Act: spec/rules/plan-or-act.md に配置
+🤖 Default Agent: .claude/agents/sisyphus.md に配置
+🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
+
+💡 デフォルトエージェント有効化:
+   .claude/settings.json → "agent": "sisyphus"
+   または claude --agent sisyphus
 
 🎯 次のステップ:
    「○○を修正して」「○○機能を追加して」など、
@@ -201,6 +256,8 @@ echo "✅ .gitignore に o-m-cc ランタイムファイルを追加"
 🔄 Sisyphus: spec/rules/sisyphus.md に配置
 📐 Standards: spec/standards/ にセットアップ済み
 📋 Steering: spec/steering/ にセットアップ済み
+🤖 Default Agent: .claude/agents/sisyphus.md に配置
+🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
 ```
 
 ```
