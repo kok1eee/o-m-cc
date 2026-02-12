@@ -14,7 +14,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - **Agent Teams**: TeammateTool (spawnTeam + teammates) による並列エージェント協調
 - **peer-to-peer 通信**: teammates 間でメッセージ交換
 - **共有タスクリスト**: TaskCreate/TaskUpdate で teammates が自律的にタスク管理
-- **claude-mem 連携**: 外部依存として claude-mem MCP ツールをセマンティック検索に利用（ToolSearch で動的ロード）
+- **HANDOVER.md VCS 履歴**: セッション引き継ぎの VCS 履歴をナレッジベースとして活用
 
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用

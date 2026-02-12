@@ -86,10 +86,7 @@ TeammateTool: spawnTeam
      $ARGUMENTS
 
      ## 検索方式
-     1. ToolSearch で claude-mem MCP ツールの可用性を確認
-     2. 利用可能なら search で関連する過去の操作をセマンティック検索
-     3. 補完として HANDOVER.md の VCS 履歴を検索
-     4. 結果をマージして報告（検索方式も併記）
+     HANDOVER.md の VCS 履歴をキーワード検索
 
      ## Council 連携（peer-to-peer）
      あなたは Discovery Council のメンバーです。

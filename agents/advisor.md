@@ -112,15 +112,6 @@ memory: project
 | 同じ問題が再発する | 5 Whys |
 | 何を選ぶか迷っている | Inversion → First Principles |
 
-## claude-mem 連携
-
-claude-mem が利用可能な場合（ToolSearch で確認）、分析開始時に過去の類似問題・行き詰まり解消の経験を検索してコンテキストを補完する。
-
-```
-ToolSearch: query="+claude-mem search"
-→ 利用可能なら search(query="問題のキーワード + 行き詰まり/解決") で過去の対処を検索
-```
-
 ## Council モード（Review Council）
 
 Review Council では critic (Lead) と同時に spawn され、戦略的・アーキテクチャ的観点からレビューに参加する。

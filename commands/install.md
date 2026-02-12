@@ -47,30 +47,6 @@ bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-plugins.sh" [オプション]
 
 ---
 
-## Step 2.5: claude-mem メモリの設定
-
-**AskUserQuestion** で claude-mem を設定するか確認：
-
-```
-質問: claude-mem（セマンティックメモリ）を設定しますか？全セッションの操作を自動記録し、セマンティック検索が可能になります。
-header: "Memory"
-multiSelect: false
-
-選択肢:
-1. 設定する（推奨） - 全セッションの操作を自動記録、セマンティック検索可能に
-2. スキップ - メモリなしで運用
-```
-
-「設定する」を選んだ場合のみ実行：
-
-```bash
-# claude-mem プラグインをインストール
-claude plugin marketplace add thedotmack/claude-mem
-claude plugin install claude-mem
-```
-
----
-
 ## Step 3: Sisyphus スピナーの設定
 
 **AskUserQuestion** で Sisyphus スピナーを設定するか確認：

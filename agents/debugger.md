@@ -151,15 +151,6 @@ Phase 1 を完了していなければ、修正コードを書くことはでき
 [テスト出力を添付]
 ```
 
-## claude-mem 連携
-
-claude-mem が利用可能な場合（ToolSearch で確認）、Phase 1 の調査開始時に過去の類似エラー・修正を検索してコンテキストを補完する。
-
-```
-ToolSearch: query="+claude-mem search"
-→ 利用可能なら search(query="エラーメッセージ or 症状のキーワード") で過去の対処を検索
-```
-
 ## 連携
 
 - **advisor**: 3回以上修正に失敗したら advisor に相談

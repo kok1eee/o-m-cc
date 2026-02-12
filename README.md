@@ -1,4 +1,4 @@
-# o-m-cc v0.12.0
+# o-m-cc v0.13.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -7,7 +7,7 @@
 o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注入するプラグインです。
 
 - **Agent Teams**: TeammateTool による peer-to-peer マルチエージェント協調
-- **claude-mem 連携**: セマンティックメモリ検索で過去の全操作を活用
+- **HANDOVER.md ナレッジ**: VCS 履歴から過去の学びを自動検索
 - **Sisyphus哲学**: タスク完了まで決して止まらない
 - **TODOドリブン**: 明確なタスクリストに基づいて作業
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
@@ -144,14 +144,6 @@ Agent Teams (Council + Pipeline ハイブリッド):
 # マーケットプレイス追加（初回のみ）
 claude plugin marketplace add anthropics/claude-plugins-official
 ```
-
-### セマンティックメモリ（オプション）
-
-| プラグイン | 用途 |
-|-----------|------|
-| [claude-mem](https://github.com/thedotmack/claude-mem) | 全セッションの操作を自動記録、セマンティック検索（`/o-m-cc:install` で設定） |
-
-> **Note**: claude-mem は AGPL ライセンスの外部依存です。o-m-cc は claude-mem の MCP ツールを呼ぶ側であり、組み込みはしません。未設定でも Grep フォールバックで動作します。
 
 ### 開発支援（共通）
 
@@ -346,19 +338,25 @@ SessionStart Hook
 
 ## Learning Flow
 
-セッション中の教訓・意思決定を HANDOVER.md に蓄積し、VCS 履歴から繰り返すパターンをスキル化する2ステップフロー。
+セッション中の教訓・意思決定を HANDOVER.md に蓄積し、VCS 履歴から繰り返すパターンを自動スキル化するフロー。
 
 ```
 セッション作業
     ↓
-/handover → HANDOVER.md（意思決定、教訓、Gotchas）→ git commit で履歴蓄積
+/handover → HANDOVER.md（意思決定、教訓、Gotchas）→ VCS commit で履歴蓄積
     ↓
-/promote → HANDOVER.md の VCS 履歴を横断検索 → 繰り返すパターンをスキル化
+promote-checker（自動）→ VCS 履歴と照合 → パターン検出
+    ├─ なし → 終了
+    └─ あり → ~/.claude/skill-candidates.md に蓄積 → 自動スキル昇格
+                ├─ 複数プロジェクトで出現 → グローバルルール（~/.claude/CLAUDE.md）
+                └─ 単一プロジェクトで頻出 → プロジェクトルール（CLAUDE.md）
 ```
+
+`/promote` で手動実行も可能（クロスプロジェクト候補 + ローカル候補を統合して提示）。
 
 ### HANDOVER.md の VCS 管理
 
-HANDOVER.md はバージョン管理対象。セッションごとに上書きされ、VCS の diff 履歴として教訓が蓄積される。`/promote` はこの履歴を横断検索して繰り返すパターンを発見する。
+HANDOVER.md はバージョン管理対象。セッションごとに上書きされ、VCS の diff 履歴として教訓が蓄積される。`promote-checker` はこの履歴を自動検索して繰り返すパターンを発見・スキル化する。
 
 ## Agent Capabilities
 
@@ -420,7 +418,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | `resume-session.sh` | 前回のセッション状態を表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
 | Stop | `generate-handover.sh` | セッション状態を HANDOVER.md に保存 |
-| Stop | `promote-checker.sh` | HANDOVER.md 履歴から繰り返しパターンを検出し `/promote` を提案 |
+| Stop | `promote-checker.sh` | HANDOVER.md 履歴から繰り返しパターンを検出し自動スキル昇格を実行 |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
@@ -581,6 +579,13 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.13.0
+
+- **Cross-Project Skill Discovery**: `promote-checker` が繰り返しパターンを `~/.claude/skill-candidates.md` にグローバル蓄積
+- **自動スキル昇格**: promote-checker が提案ではなく自動でスキル昇格を実行（複数プロジェクト → グローバルルール、単一プロジェクト → プロジェクトルール）
+- **/promote クロスプロジェクト対応**: `~/.claude/skill-candidates.md`（クロスプロジェクト）+ HANDOVER.md VCS 履歴（ローカル）を統合して候補提示
+- **/promote 昇格先拡張**: エージェント / コマンド / プロジェクトルール / グローバルルール（`~/.claude/CLAUDE.md`）の4択に
 
 ### 0.12.0
 

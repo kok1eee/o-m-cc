@@ -189,15 +189,6 @@ requirements.md を Write する前に、以下を確認：
 
 出力先: `plan/requirements.md` または指定された場所
 
-## claude-mem 連携
-
-claude-mem が利用可能な場合（ToolSearch で確認）、分析開始時に過去の類似要件整理の経験を検索してコンテキストを補完する。
-
-```
-ToolSearch: query="+claude-mem search"
-→ 利用可能なら search(query="対象機能のキーワード + requirements/要件") で過去の要件整理を検索
-```
-
 ## 重要
 
 - **調査優先**: 推測ではなく、実際のコードを確認

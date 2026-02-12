@@ -102,8 +102,36 @@ done
 
 log_debug "promote-checker: recurring patterns found: $PATTERNS"
 
-jq -n --arg patterns "$PATTERNS" '{
-  "systemMessage": ("🔁 繰り返しパターン検出（HANDOVER.md 履歴）: " + $patterns + " — `/o-m-cc:promote` でスキル昇格を検討してください。")
+# グローバル skill-candidates.md に追記（クロスプロジェクト蓄積）
+SKILL_CANDIDATES="$HOME/.claude/skill-candidates.md"
+PROJECT_NAME=$(basename "$(pwd)")
+TODAY=$(date +%Y-%m-%d)
+
+# ディレクトリ確保
+mkdir -p "$(dirname "$SKILL_CANDIDATES")"
+
+# 追記
+{
+  echo ""
+  echo "### ${TODAY} ${PROJECT_NAME}"
+  for item in "${RECURRING[@]}"; do
+    echo "- ${item}"
+  done
+} >> "$SKILL_CANDIDATES"
+
+log_debug "promote-checker: appended ${#RECURRING[@]} patterns to $SKILL_CANDIDATES"
+
+# skill-candidates.md の既存内容を読み取り（クロスプロジェクト文脈）
+CANDIDATES_CONTEXT=""
+if [[ -f "$SKILL_CANDIDATES" ]]; then
+  CANDIDATES_CONTEXT=$(tail -50 "$SKILL_CANDIDATES" 2>/dev/null || echo "")
+fi
+
+jq -n \
+  --arg patterns "$PATTERNS" \
+  --arg candidates "$CANDIDATES_CONTEXT" \
+  --arg project "$PROJECT_NAME" '{
+  "systemMessage": ("🔁 繰り返しパターン検出 — 自動スキル昇格を実行してください。\n\n検出パターン: " + $patterns + "\nプロジェクト: " + $project + "\n\n~/.claude/skill-candidates.md（クロスプロジェクト履歴）:\n" + $candidates + "\n\n以下の手順で自動昇格:\n1. 上記パターンと skill-candidates.md の履歴を分析\n2. 複数プロジェクトで出現 → グローバルルール（~/.claude/CLAUDE.md）\n   単一プロジェクトで頻出 → プロジェクトルール（CLAUDE.md）\n3. 既存ルールと重複しないか確認してからスキルを作成")
 }'
 
 exit 0

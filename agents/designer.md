@@ -193,15 +193,6 @@ interface Example {
     tasks.md
 ```
 
-## claude-mem 連携
-
-claude-mem が利用可能な場合（ToolSearch で確認）、設計開始時に過去の類似アーキテクチャ設計を検索してコンテキストを補完する。
-
-```
-ToolSearch: query="+claude-mem search"
-→ 利用可能なら search(query="設計対象の技術キーワード + architecture/design") で過去の設計判断を検索
-```
-
 ## 重要
 
 - **要件に忠実**: 全ての FR/NFR が設計でカバーされていること
