@@ -149,3 +149,13 @@ to_number() {
 if [[ -z "${O_M_CC_HOOK_NAME:-}" ]]; then
   O_M_CC_HOOK_NAME=$(basename "${BASH_SOURCE[1]:-unknown}" .sh)
 fi
+
+# エラートラップ: どの hook のどこで失敗したか stderr に出力
+_on_error() {
+  local exit_code=$?
+  local line_no="${1:-unknown}"
+  local script="${O_M_CC_HOOK_NAME:-unknown}"
+  echo "❌ [o-m-cc:${script}] line ${line_no} で失敗 (exit ${exit_code})" >&2
+  log_message "ERROR" "line ${line_no} で失敗 (exit ${exit_code})"
+}
+trap '_on_error ${LINENO}' ERR
