@@ -1,5 +1,5 @@
 #!/bin/bash
-# o-m-cc: Resume session from handoff.yaml on session start
+# o-m-cc: Resume session from HANDOVER.md on session start
 
 set -euo pipefail
 
@@ -15,75 +15,53 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
-HANDOFF_FILE="spec/plan/handoff.yaml"
+HANDOVER_FILE="spec/plan/HANDOVER.md"
 
-# Skip if no handoff file
-if [[ ! -f "$HANDOFF_FILE" ]]; then
-  log_debug "handoff.yaml が見つかりません、スキップ"
-  exit 0
-fi
+# ファイルの鮮度チェック（max_days 以内か）
+check_file_age() {
+  local file="$1"
+  local max_days="${2:-7}"
+  local file_mtime
+  file_mtime=$(get_file_mtime "$file")
+  file_mtime=$(( file_mtime + 0 ))  # 数値化
+  local current_time
+  current_time=$(date +%s)
+  local file_age_days=$(( (current_time - file_mtime) / 86400 ))
+  [[ $file_age_days -le $max_days ]]
+}
 
-# Check file age (skip if older than 7 days)
-file_mtime=$(get_file_mtime "$HANDOFF_FILE")
-file_mtime=$(( file_mtime + 0 ))  # 数値化
-current_time=$(date +%s)
-file_age_days=$(( (current_time - file_mtime) / 86400 ))
-
-if [[ $file_age_days -gt 7 ]]; then
-  log_debug "handoff.yaml が7日以上古いためスキップ"
-  exit 0
-fi
-
-# Display previous session state
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "📋 前回のセッション情報 (spec/plan/handoff.yaml)"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
-# Extract key information using grep/sed (lightweight parsing)
-if grep -q "status:" "$HANDOFF_FILE" 2>/dev/null; then
-  status=$(grep "^status:" "$HANDOFF_FILE" | head -1 | sed 's/status: *//' | tr -d '"')
-  echo "ステータス: $status"
-fi
-
-if grep -q "progress:" "$HANDOFF_FILE" 2>/dev/null; then
-  percentage=$(grep "percentage:" "$HANDOFF_FILE" | head -1 | sed 's/.*percentage: *//' | tr -d '"' || echo "")
-  [[ -n "$percentage" ]] && echo "進捗: $percentage"
-fi
-
-if grep -q "current_task:" "$HANDOFF_FILE" 2>/dev/null; then
+# --- HANDOVER.md（リッチ引き継ぎ書）を優先チェック ---
+# 意思決定ログや教訓は長期間有効なため 30 日
+if [[ -f "$HANDOVER_FILE" ]] && check_file_age "$HANDOVER_FILE" 30; then
   echo ""
-  echo "現在のタスク:"
-  phase=$(grep -A1 "current_task:" "$HANDOFF_FILE" | grep "phase:" | head -1 | sed 's/.*phase: *//' | tr -d '"' || echo "")
-  task=$(grep -A2 "current_task:" "$HANDOFF_FILE" | grep "task:" | head -1 | sed 's/.*task: *//' | tr -d '"' || echo "")
-  [[ -n "$phase" ]] && echo "  - フェーズ: $phase"
-  [[ -n "$task" ]] && echo "  - タスク: $task"
-fi
-
-# 変更ファイル一覧を表示
-if grep -q "modified_files:" "$HANDOFF_FILE" 2>/dev/null; then
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "📝 前回の引き継ぎ書あり (spec/plan/HANDOVER.md)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
-  echo "変更ファイル:"
-  sed -n '/^modified_files:/,/^[a-z]/p' "$HANDOFF_FILE" | grep -E '^\s+-' | sed 's/.*- "/  - /' | sed 's/"$//' | head -10
-  MOD_COUNT=$(grep -c '^\s*-' <<< "$(sed -n '/^modified_files:/,/^[a-z]/p' "$HANDOFF_FILE" | grep -E '^\s+-')" 2>/dev/null || echo "0")
-  if [[ "$MOD_COUNT" -gt 10 ]]; then
-    echo "  ... 他 $((MOD_COUNT - 10)) ファイル"
+
+  # 作業サマリーセクションを抽出して表示
+  if grep -q "## 作業サマリー" "$HANDOVER_FILE" 2>/dev/null; then
+    echo "【作業サマリー】"
+    sed -n '/^## 作業サマリー/,/^## /p' "$HANDOVER_FILE" | grep -E '^\s*-' | head -5
+    echo ""
   fi
-fi
 
-# 直近のコミットを表示
-if grep -q "recent_commits:" "$HANDOFF_FILE" 2>/dev/null; then
+  # ネクストステップを抽出して表示
+  if grep -q "## ネクストステップ" "$HANDOVER_FILE" 2>/dev/null; then
+    echo "【ネクストステップ】"
+    sed -n '/^## ネクストステップ/,/^## /p' "$HANDOVER_FILE" | grep -E '^\s*[0-9]+\.' | head -5
+    echo ""
+  fi
+
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "💡 詳細: spec/plan/HANDOVER.md を読んでください"
+  echo "💡 続行: 作業内容を説明してください"
+  echo "💡 リセット: /clear"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
-  echo "直近のコミット:"
-  sed -n '/^recent_commits:/,/^[a-z]/p' "$HANDOFF_FILE" | grep -E '^\s+-' | sed 's/.*- "/  - /' | sed 's/"$//' | head -5
+  exit 0
 fi
 
-echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "💡 続行: 作業内容を説明してください"
-echo "💡 リセット: /clear"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo ""
-
+# HANDOVER.md が見つからない場合
+log_debug "HANDOVER.md が見つかりません、スキップ"
 exit 0

@@ -14,7 +14,7 @@ STATE_FILES=(
   "spec/sisyphus-state.json"
   "spec/.task-counter"
   "spec/.completed-phases"
-  "spec/plan/handoff.yaml"
+  "spec/plan/HANDOVER.md"
   "spec/hooks-error.log"
 )
 

@@ -163,7 +163,7 @@ GITIGNORE_ENTRIES=(
   "spec/sisyphus-state.json"
   "spec/.completed-tasks"
   "spec/plan/logs/"
-  "spec/plan/handoff.yaml"
+  "spec/plan/HANDOVER.md"
 )
 
 # .gitignore が存在しない場合は作成

@@ -239,36 +239,9 @@ TeammateTool: spawnTeammate
 4. Critical なし → 完了
 ```
 
-### Step 10: Handoff 更新
+### Step 10: 引き継ぎ書の生成
 
-**セッション状態を `spec/plan/handoff.yaml` に保存：**
-
-```yaml
-# spec/plan/handoff.yaml
-updated_at: "[現在時刻]"
-status: "completed"  # or "in_progress" if tasks remain
-
-current_task:
-  id: "[最後に取り組んだタスク]"
-  progress: "100%"
-
-discoveries:
-  - type: "pattern"
-    content: "[発見したパターン]"
-  - type: "decision"
-    content: "[決定事項]"
-
-completed_tasks:
-  - "[完了したタスクID一覧]"
-
-next_steps:
-  - "[残タスクがあれば記載]"
-
-context:
-  key_files:
-    - "[重要なファイル]"
-  notes: "[次回セッションへの申し送り]"
-```
+`/o-m-cc:handover` を実行してセッションの引き継ぎ書を生成する。
 
 **発見したパターンは `spec/standards/learned/` にも記録。**
 

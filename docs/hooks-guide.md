@@ -26,7 +26,7 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 | Hook | 説明 | タイムアウト |
 |------|------|------------|
 | `stop-guard.sh` | Sisyphus ガード（DONE 検知時のレビュー確認） | 10秒 |
-| `generate-handoff.sh` | セッション状態を handoff.yaml に保存 | 10秒 |
+| `generate-handover.sh` | セッション状態を HANDOVER.md に保存（/handover 未実行時のフォールバック） | 10秒 |
 
 ### UserPromptSubmit (ユーザー入力時)
 
@@ -105,7 +105,7 @@ bash hooks/reset-state.sh
 削除されるファイル:
 - `spec/sisyphus-state.json`
 - `spec/.completed-phases`
-- `spec/plan/handoff.yaml`
+- `spec/plan/HANDOVER.md`
 - `spec/hooks-error.log`
 
 ### hooks を無効化

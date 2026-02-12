@@ -50,15 +50,15 @@ sudo apt install python3
 
 ## SessionStart 関連
 
-### HOOK-101: handoff.yaml の読み込み失敗
+### HOOK-101: HANDOVER.md の読み込み失敗
 
 **症状**: 前回のセッション情報が表示されない
 
-**原因**: `spec/plan/handoff.yaml` が破損している
+**原因**: `spec/plan/HANDOVER.md` が破損している
 
 **対処法**:
 ```bash
-rm spec/plan/handoff.yaml
+rm spec/plan/HANDOVER.md
 ```
 
 ### HOOK-102: プランファイルのアーカイブ失敗
@@ -88,9 +88,9 @@ mv ~/.claude/plans/*.md ~/.claude/plans/archive/$(date +%Y-%m-%d)/
 rm spec/sisyphus-state.json
 ```
 
-### HOOK-104: handoff.yaml の生成失敗
+### HOOK-104: HANDOVER.md の生成失敗
 
-**症状**: セッション終了時に handoff.yaml が作成されない
+**症状**: セッション終了時に HANDOVER.md が作成されない
 
 **原因**: `spec/plan/` ディレクトリがない、tasks.md が存在しない
 
@@ -141,7 +141,7 @@ bash hooks/reset-state.sh
 ```bash
 rm -f spec/sisyphus-state.json
 rm -f spec/.completed-phases
-rm -f spec/plan/handoff.yaml
+rm -f spec/plan/HANDOVER.md
 rm -f spec/hooks-error.log
 ```
 

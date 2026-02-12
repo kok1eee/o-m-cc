@@ -34,7 +34,7 @@
           },
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/generate-handoff.sh",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/generate-handover.sh",
             "timeout": 10000
           }
         ]

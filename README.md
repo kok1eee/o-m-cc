@@ -111,6 +111,7 @@ Agent Teams で teammate を並列 spawn して最速実行：
 | `/o-m-cc:audit [target]` | エージェント・コマンドの品質監査 | - |
 | `/o-m-cc:learn [概要]` | 学びを構造化記録（パターン / アンチパターン / 決定） | - |
 | `/o-m-cc:promote [keyword]` | 繰り返す学びをスキルに昇格 | - |
+| `/o-m-cc:handover` | セッション引き継ぎ書を生成（意思決定・教訓・申し送り） | fork |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
 
@@ -253,7 +254,8 @@ spec/plan/
 ├── requirements.md     # 要件定義（FR-X, NFR-X）
 ├── design.md           # 設計書（コンポーネント、API）
 ├── tasks.md            # 実装タスク（依存関係、見積もり）
-└── orchestration.yml   # オーケストレーション設定（ultrawork用）
+├── orchestration.yml   # オーケストレーション設定（ultrawork用）
+└── HANDOVER.md         # セッション引き継ぎ書（/handover で生成）
 ```
 
 ## Orchestration
@@ -353,7 +355,7 @@ o-m-cc プラグインの初期トークン消費:
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
 | エージェント | ~880 | 16 エージェント定義 |
-| スキル | ~130 | 11 コマンド定義 |
+| スキル | ~140 | 12 コマンド定義 |
 | **合計** | **~1010** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
@@ -407,68 +409,76 @@ spec/plan/logs/
 ```
 SessionStart Hook
     │
-    └─ spec/plan/handoff.yaml を検出
+    └─ spec/plan/HANDOVER.md を検出
          │
-         ├─ 7日以上古い → スキップ
+         ├─ 30日以上古い → スキップ
          │
-         └─ 有効 → 前回の状態を表示
-              ├─ Status
-              ├─ Current Task
-              └─ Next Steps
+         └─ 有効 → 引き継ぎ書の案内を表示
+              ├─ 作業サマリー
+              └─ ネクストステップ
 ```
+
+### HANDOVER.md の生成
+
+| 方法 | タイミング | 内容 |
+|------|-----------|------|
+| `/o-m-cc:handover` | 手動（セッション終了前） | リッチ（意思決定ログ、教訓、申し送り） |
+| `generate-handover.sh` | 自動（Stop hook） | 軽量フォールバック（進捗、変更ファイル） |
+
+`/o-m-cc:handover` で既に生成済みの場合、Stop hook はスキップします。
 
 ### 表示例
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 Previous Session Found (spec/plan/handoff.yaml)
+📝 前回の引き継ぎ書あり (spec/plan/HANDOVER.md)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Status: in_progress
+【作業サマリー】
+- UserService の実装に取り組んだ
+- 認証は session-based を採用（JWT は既存インフラと非互換のため却下）
 
-Current Task:
-  - Phase: Phase 2: 機能実装
-  - Task: 2-1 - UserService の実装
-
-Next Steps:
-  - UserService のテスト追加
+【ネクストステップ】
+1. UserService のテスト追加
+2. エラーハンドリングの統一
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 To continue: describe what you want to work on
-💡 To start fresh: /clear
+💡 詳細: spec/plan/HANDOVER.md を読んでください
+💡 続行: 作業内容を説明してください
+💡 リセット: /clear
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-## Handoff
+## Handover
 
-セッション状態を構造化して引き継ぐ仕組み。ultrawork 完了時に自動生成。
+セッション状態を構造化して引き継ぐ仕組み。`/o-m-cc:handover` または Stop hook で `spec/plan/HANDOVER.md` を生成。
 
 ### 目的
 
 - `/compact` 後も状態を復元可能
 - 次回セッションへのスムーズな引き継ぎ
-- 発見事項の記録
+- 意思決定の理由と教訓の記録
 
 ### 構造
 
-```yaml
-# spec/plan/handoff.yaml
-updated_at: "2026-01-20T14:30:00+09:00"
-status: "in_progress"
+```markdown
+# Session Handover
+> Generated: 2026-01-20 14:30
 
-current_task:
-  phase: "Phase 2: 機能実装"
-  task: "2-1"
-  progress: "70%"
+## 作業サマリー
+- UserService の実装に取り組んだ
+- Phase 1 完了、Phase 2 は 70% 進捗
 
-discoveries:
-  - type: "pattern"
-    content: "Service クラスは interface を先に定義"
-  - type: "decision"
-    content: "認証は session-based を採用"
+## 意思決定ログ
+| 決定 | 理由 | 代替案 |
+|------|------|--------|
+| session-based 認証 | 既存インフラとの互換性 | JWT |
 
-next_steps:
-  - "UserService のテスト追加"
+## 教訓と注意点（Gotchas）
+- UserRepository のテストが不安定（CI で flaky）
+
+## ネクストステップ
+1. UserService のテスト追加
 ```
 
 ## Learned Standards
@@ -556,7 +566,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
 | SessionStart | `resume-session.sh` | 前回のセッション状態を表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
-| Stop | `generate-handoff.sh` | セッション状態を保存 |
+| Stop | `generate-handover.sh` | セッション状態を HANDOVER.md に保存 |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
@@ -620,7 +630,8 @@ o-m-cc/
 │   ├── tasks.md               # タスク分解
 │   ├── plan.md                # 計画（Agent Teams オーケストレーター）
 │   ├── review.md              # コードレビュー（Agent Teams 並列）
-│   └── ultrawork.md           # Agent Teams 並列実行（自動 /compact）
+│   ├── ultrawork.md           # Agent Teams 並列実行（自動 /compact）
+│   └── handover.md            # セッション引き継ぎ書生成
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
 │   ├── lib/
@@ -629,7 +640,7 @@ o-m-cc/
 │   ├── archive-plans.sh       # プランアーカイブ
 │   ├── resume-session.sh      # セッション復元
 │   ├── stop-guard.sh          # Sisyphus ガード
-│   ├── generate-handoff.sh    # セッション状態保存
+│   ├── generate-handover.sh   # セッション状態保存（HANDOVER.md）
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
 │   ├── focus-guard.sh         # タスク進行中の脱線防止
 │   ├── teammate-idle.sh       # Teammate idle 時の再割り当て（Agent Teams）
@@ -639,8 +650,9 @@ o-m-cc/
 ├── docs/                      # ドキュメント
 │   ├── hooks-guide.md         # Hooks 使い方ガイド
 │   └── hooks-errors.md        # エラーリファレンス
-├── templates/                 # Standards/Steering/Handoff テンプレート
-│   ├── handoff.yaml.example   # Handoff テンプレート
+├── templates/                 # Standards/Steering テンプレート
+│   ├── agents/
+│   │   └── sisyphus.md        # Sisyphus デフォルトエージェント
 │   ├── standards/
 │   │   ├── global/
 │   │   ├── frontend/
