@@ -1,4 +1,4 @@
-# o-m-cc v0.9.0
+# o-m-cc v0.10.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -732,6 +732,17 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.10.0
+
+- **Council + Pipeline ハイブリッド化**: `/plan` フローを Council 型と Pipeline 型の組み合わせに再構成
+  - Phase 1: Discovery Council（learnings-researcher + analyst + scout が同時 spawn + peer-to-peer 共有）
+  - Phase 4: Review Council（critic + advisor が同時 spawn + peer-to-peer 共有）
+  - Phase 2-3: Pipeline（designer, planner）は変更なし
+- **Sisyphus Default Agent**: `templates/agents/sisyphus.md` — 振る舞い定義を CLAUDE.md から分離
+  - `claude --agent sisyphus` または settings.json の `"agent": "sisyphus"` で有効化
+- **推奨パーミッション自動設定**: `/init` Step 6 で `.claude/settings.json` に事前承認を追加
+- **Plan or Act ルール**: タスク複雑度による自動モード切替テンプレートを追加
 
 ### 0.9.0
 
