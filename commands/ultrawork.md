@@ -243,8 +243,6 @@ TeammateTool: spawnTeammate
 
 `/o-m-cc:handover` を実行してセッションの引き継ぎ書を生成する。
 
-**発見したパターンは `spec/standards/learned/` にも記録。**
-
 ---
 
 ## 出力

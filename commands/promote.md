@@ -1,13 +1,13 @@
 ---
-description: "learned/に蓄積された学びを分析し再利用可能なエージェント・コマンド・ルールに昇格。「スキルにして」「ルール化して」で使用。"
+description: "HANDOVER.md の履歴から繰り返すパターンを発見し、再利用可能なスキルに昇格。「スキルにして」「ルール化して」で使用。"
 argument-hint: "[対象パターン名 or キーワード]"
-allowed-tools: [Read, Write, Edit, Glob, Grep, ToolSearch, AskUserQuestion, Task]
+allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, ToolSearch, AskUserQuestion, Task]
 model: sonnet
 ---
 
 # /o-m-cc:promote - 学びのスキル昇格
 
-**`spec/standards/learned/` に蓄積された学びを分析し、再利用可能なスキルに昇格させる。**
+**HANDOVER.md の VCS 履歴を横断検索し、繰り返すパターンを発見して再利用可能なスキルに昇格させる。**
 
 ---
 
@@ -15,12 +15,15 @@ model: sonnet
 
 ### 引数ありの場合
 
-`$ARGUMENTS` をキーワードとして `spec/standards/learned/` を検索し、該当エントリを抽出。
+`$ARGUMENTS` をキーワードとして HANDOVER.md の VCS 履歴を検索し、該当セッションを抽出。
 
-**hook 連携（自動検出エントリの優先処理）:**
-- `review-discovered` タグを含むエントリを優先的に表示
-- 同一タグが複数エントリに出現する場合、その出現回数を「繰り返し回数」として表示
-- claude-mem が利用可能な場合、同一パターンのクロスプロジェクト出現も検索して昇格根拠を強化
+```bash
+# jj が使える場合
+jj log -p -- spec/plan/HANDOVER.md | grep -i "$ARGUMENTS" -A 10 -B 5
+
+# git の場合
+git log -p -- spec/plan/HANDOVER.md | grep -i "$ARGUMENTS" -A 10 -B 5
+```
 
 ### 引数なしの場合
 
@@ -39,21 +42,29 @@ ToolSearch で claude-mem MCP ツールの可用性を確認。利用可能な�
 クロスプロジェクトで頻出するパターンを候補として抽出。
 ```
 
-#### ソース 2: learned/ からの検出
+#### ソース 2: HANDOVER.md VCS 履歴からの検出
 
-`spec/standards/learned/` 全体をスキャンして候補を検出：
+HANDOVER.md の全コミット履歴を取得して分析：
 
+```bash
+# jj が使える場合
+jj log -p -- spec/plan/HANDOVER.md
+
+# git の場合
+git log -p -- spec/plan/HANDOVER.md
 ```
+
 以下の基準で候補を抽出：
 
-1. 頻出パターン — 同じタグが複数エントリに出現
-2. 高影響 — 影響範囲が広い決定やアンチパターン
+```
+1. 頻出パターン — 複数セッションで同じ教訓・Gotchas が繰り返し登場
+2. 高影響 — 「うまくいかなかったこと」に複数回登場する同種の問題
 3. 汎用性 — プロジェクト固有でなく他でも使えるもの
 ```
 
 #### 統合
 
-claude-mem 結果 + learned/ 結果を統合して昇格候補リストを作成。
+claude-mem 結果 + HANDOVER.md 履歴結果を統合して昇格候補リストを作成。
 
 **AskUserQuestion** で候補を提示：
 
@@ -73,12 +84,12 @@ multiSelect: false
 
 ## Step 2: 元の学びを読み込み
 
-対象エントリの全文を Read で取得。関連する他のエントリも含めて収集。
+対象セッションの HANDOVER.md 内容を VCS 履歴から抽出。関連する他セッションの記載も収集。
 
 ```
 収集する情報：
-- 元のエントリ内容（パターン / アンチパターン / 決定）
-- 関連するタグで紐づく他のエントリ
+- HANDOVER.md の該当セッションの全内容（教訓、Gotchas、意思決定）
+- 同種のパターンが出現する他セッションの記載
 - 発見場所のコード（存在すれば）
 ```
 
@@ -122,7 +133,7 @@ model: haiku
 ## 背景
 
 この知見は以下の学びから昇格：
-- spec/standards/learned/[source].md の [エントリ名]
+- HANDOVER.md の [日付] セッション
 
 ## 役割
 
@@ -150,7 +161,7 @@ model: sonnet
 ## 背景
 
 この機能は以下の学びから昇格：
-- spec/standards/learned/[source].md の [エントリ名]
+- HANDOVER.md の [日付] セッション
 
 [コマンドの手順]
 ```
@@ -165,7 +176,7 @@ model: sonnet
 ## 背景
 
 この規則は以下の学びから昇格：
-- spec/standards/learned/[source].md の [エントリ名]
+- HANDOVER.md の [日付] セッション
 
 ## ルール
 
@@ -182,32 +193,14 @@ model: sonnet
 
 ---
 
-## Step 5: 元エントリに昇格マークを追加
-
-元の学びエントリに昇格済みであることを記録：
-
-```markdown
-## [YYYY-MM-DD] パターン名
-
-> ✅ **昇格済み** → agents/[name].md (YYYY-MM-DD)
-
-**発見場所**: ...
-```
-
-Edit tool で該当エントリのタイトル直下に昇格マークを挿入。
-
----
-
-## Step 6: 確認出力
+## Step 5: 確認出力
 
 ```
 ✅ スキル昇格完了
 
 📦 生成: [agents/commands/templates/rules]/[name].md
-📝 元の学び: spec/standards/learned/[source].md
+📝 元の学び: HANDOVER.md の [日付] セッション
 🏷️ 種類: [エージェント / コマンド / ルール]
-
-💡 元のエントリに昇格済みマークを追加しました。
 ```
 
 ---

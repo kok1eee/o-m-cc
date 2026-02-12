@@ -95,7 +95,6 @@ sed -i '' "s/\[PROJECT_NAME\]/$PROJECT_NAME/g" CLAUDE.md
   spec/steering/product.md   ← README.md から推測
   spec/steering/tech.md      ← 依存関係から生成
   spec/steering/structure.md ← ディレクトリ構造
-  spec/standards/learned/patterns.md ← 既存コードから抽出
 ```
 
 **実行方法:**
@@ -103,27 +102,31 @@ sed -i '' "s/\[PROJECT_NAME\]/$PROJECT_NAME/g" CLAUDE.md
 2. Read で内容を取得
 3. 分析結果を spec/ 配下に Write
 
-### 新規プロジェクトの場合: テンプレートセットアップ
+### 新規プロジェクトの場合: ヒアリングして生成
 
-Standards と Steering を両方セットアップする（デフォルト動作）：
+ユーザーに **AskUserQuestion** で以下を確認し、`spec/` を生成：
 
-```bash
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/setup-project.sh" --all
+```
+質問: プロジェクトの技術スタックは？
+header: "Tech"
+multiSelect: true
+
+選択肢:
+1. TypeScript / JavaScript
+2. Python
+3. Go
+4. その他
 ```
 
-**セットアップ後の構造:**
+回答に基づいて `spec/standards/` と `spec/steering/` のスケルトンを生成：
+
 ```
 spec/
 ├── standards/    # 技術規約（実装時に参照）
-│   ├── global/
-│   ├── frontend/
-│   ├── backend/
-│   └── testing/
 └── steering/     # プロジェクト文脈（計画時に参照）
-    ├── product.md
-    ├── tech.md
-    └── structure.md
 ```
+
+**Note:** テンプレートは使用しない。プロジェクトの実態に合わせてゼロから生成する。
 
 ---
 
@@ -163,7 +166,6 @@ GITIGNORE_ENTRIES=(
   "spec/sisyphus-state.json"
   "spec/.completed-tasks"
   "spec/plan/logs/"
-  "spec/plan/HANDOVER.md"
 )
 
 # .gitignore が存在しない場合は作成

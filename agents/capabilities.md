@@ -107,7 +107,7 @@ TeammateTool: spawnTeam
 | **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作 | バグ, エラー, デバッグ, bug, error |
 | **advisor** | 戦略判断・思考フレームワーク | 行き詰まり、3回修正しても未解決、前提を疑いたいとき | 相談, 困った, 行き詰まり, stuck, なぜ |
 | **researcher** | 外部調査 | ライブラリの使い方、API仕様確認 | 調べて, 使い方, ベストプラクティス |
-| **learnings-researcher** | 過去の学び検索（claude-mem セマンティック + Grep） | 実装前の知識確認、類似バグ調査 | 前回, 学び, 同じミス, 教訓 |
+| **learnings-researcher** | 過去の学び検索（claude-mem セマンティック + HANDOVER.md 履歴） | 実装前の知識確認、類似バグ調査 | 前回, 学び, 同じミス, 教訓 |
 | **frontend** | UI実装 | React/Vue コンポーネント作成 | UI, 画面, コンポーネント, screen |
 | **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | レビュー, 品質, review, quality |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | セキュリティ, 脆弱性, security |
@@ -127,7 +127,7 @@ TeammateTool: spawnTeam
 | analyst | コードベース、ユーザー要求 | 構造分析、要件抽出 | requirements.md |
 | researcher | 技術キーワード | Web検索、ドキュメント調査 | 調査レポート |
 | scout | requirements.md | スコープ確認、ギャップ分析 | IN/OUT SCOPE + 質問リスト |
-| learnings-researcher | タスク説明 | claude-mem セマンティック検索 + learned/ Grep フォールバック | 関連する過去の知見 |
+| learnings-researcher | タスク説明 | claude-mem セマンティック検索 + HANDOVER.md VCS 履歴フォールバック | 関連する過去の知見 |
 | vision | 画像/PDFファイル | 視覚分析 | 抽出情報レポート |
 
 ### 設計・計画系（READ のみ）
@@ -188,16 +188,11 @@ debugger → [advisor（3回失敗時）] → code-reviewer
 ### 学習フロー
 
 ```
-操作 ──── claude-mem（自動記録） ──┐
-                                   ├──▶ learnings-researcher（セマンティック + Grep 検索）
-/o-m-cc:learn ── learned/（手動記録）┘        │
-      ↑                                      ▼
-      │                                /o-m-cc:promote（スキル昇格）
-      │                                      ↑
-code-reviewer ─── learned/（自動記録）──┐      │
-security-reviewer ─ learned/（自動記録）┘      │
-      │                                       │
-      └─── pattern-detector hook ─── 重複検出 ─┘
+操作 ──── claude-mem（自動記録） ───┐
+                                    ├─▶ learnings-researcher（セマンティック + HANDOVER.md 履歴検索）
+/o-m-cc:handover ── HANDOVER.md ────┘         │
+                                              ▼
+                                        /o-m-cc:promote（スキル昇格）
 ```
 
 ---

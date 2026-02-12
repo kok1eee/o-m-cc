@@ -1,4 +1,4 @@
-# o-m-cc v0.10.0
+# o-m-cc v0.11.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -109,8 +109,7 @@ Agent Teams で teammate を並列 spawn して最速実行：
 |---------|------|---------|
 | `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論 + code-simplifier提案） | fork |
 | `/o-m-cc:audit [target]` | エージェント・コマンドの品質監査 | - |
-| `/o-m-cc:learn [概要]` | 学びを構造化記録（パターン / アンチパターン / 決定） | - |
-| `/o-m-cc:promote [keyword]` | 繰り返す学びをスキルに昇格 | - |
+| `/o-m-cc:promote [keyword]` | HANDOVER.md 履歴から繰り返すパターンをスキルに昇格 | - |
 | `/o-m-cc:handover` | セッション引き継ぎ書を生成（意思決定・教訓・申し送り） | fork |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
@@ -302,43 +301,15 @@ dependencies:
 
 ## Standards & Steering
 
-プロジェクト固有の規約とコンテキストを `spec/` 配下で管理：
+プロジェクト固有の規約とコンテキストを `spec/` 配下で管理。
 
-```bash
-# セットアップ（プロジェクトルートで実行）
-bash ~/spec/plugins/o-m-cc/scripts/setup-project.sh
-```
-
-### Standards（技術規約）
-
-実装時にエージェントが参照する技術規約：
+`/o-m-cc:init` がコードベースを分析して自動生成、または新規プロジェクトではヒアリングから生成する。テンプレートは使わず、プロジェクトの実態に合わせてゼロから作る。
 
 ```
-spec/standards/
-├── global/
-│   ├── coding-style.md   # コーディングスタイル
-│   ├── conventions.md    # 規約（Git、エラーハンドリング等）
-│   └── tech-stack.md     # 技術スタック
-├── frontend/
-│   └── components.md     # フロントエンド規約
-├── backend/
-│   └── api-design.md     # API設計規約
-└── testing/
-    └── test-strategy.md  # テスト戦略
+spec/
+├── standards/    # 技術規約（実装時にエージェントが参照）
+└── steering/     # プロジェクト文脈（計画時にエージェントが参照）
 ```
-
-### Steering（プロジェクト文脈）
-
-計画時にエージェントが参照するプロジェクト文脈：
-
-```
-spec/steering/
-├── product.md     # プロダクト概要、目的、ロードマップ
-├── tech.md        # アーキテクチャ、技術選定理由、ADR
-└── structure.md   # ディレクトリ構造、ファイル配置規則
-```
-
-**Standards vs Steering**:
 
 | | Standards | Steering |
 |---|-----------|----------|
@@ -355,7 +326,7 @@ o-m-cc プラグインの初期トークン消費:
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
 | エージェント | ~880 | 16 エージェント定義 |
-| スキル | ~140 | 12 コマンド定義 |
+| スキル | ~130 | 11 コマンド定義 |
 | **合計** | **~1010** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
@@ -481,31 +452,21 @@ SessionStart Hook
 1. UserService のテスト追加
 ```
 
-## Learned Standards
+## Learning Flow
 
-プロジェクトで発見したパターン・規約を累積記録。
-
-### Static vs Learned
-
-| 種類 | 場所 | 内容 |
-|------|------|------|
-| **Static** | `spec/standards/global/` etc. | 事前定義の規約 |
-| **Learned** | `spec/standards/learned/` | 発見したパターン（動的） |
-
-### ファイル構成
+セッション中の教訓・意思決定を HANDOVER.md に蓄積し、VCS 履歴から繰り返すパターンをスキル化する2ステップフロー。
 
 ```
-spec/standards/learned/
-├── patterns.md      # 発見したパターン
-├── decisions.md     # 技術的決定
-└── antipatterns.md  # 避けるべきパターン
+セッション作業
+    ↓
+/handover → HANDOVER.md（意思決定、教訓、Gotchas）→ git commit で履歴蓄積
+    ↓
+/promote → HANDOVER.md の VCS 履歴を横断検索 → 繰り返すパターンをスキル化
 ```
 
-### 記録タイミング
+### HANDOVER.md の VCS 管理
 
-- コードレビュー時に発見
-- 実装中に気づいた暗黙の規約
-- Handoff の discoveries から転記
+HANDOVER.md はバージョン管理対象。セッションごとに上書きされ、VCS の diff 履歴として教訓が蓄積される。`/promote` はこの履歴を横断検索して繰り返すパターンを発見する。
 
 ## Agent Capabilities
 
@@ -567,6 +528,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | `resume-session.sh` | 前回のセッション状態を表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
 | Stop | `generate-handover.sh` | セッション状態を HANDOVER.md に保存 |
+| Stop | `promote-checker.sh` | HANDOVER.md 履歴から繰り返しパターンを検出し `/promote` を提案 |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
@@ -623,7 +585,6 @@ o-m-cc/
 │   ├── init.md                # プロジェクト初期化
 │   ├── install.md             # グローバル設定
 │   ├── audit.md               # 品質監査
-│   ├── learn.md               # 学び記録
 │   ├── promote.md             # スキル昇格
 │   ├── requirements.md        # 要件定義
 │   ├── design.md              # 設計
@@ -641,6 +602,7 @@ o-m-cc/
 │   ├── resume-session.sh      # セッション復元
 │   ├── stop-guard.sh          # Sisyphus ガード
 │   ├── generate-handover.sh   # セッション状態保存（HANDOVER.md）
+│   ├── promote-checker.sh     # HANDOVER.md 履歴から繰り返しパターン検出
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
 │   ├── focus-guard.sh         # タスク進行中の脱線防止
 │   ├── teammate-idle.sh       # Teammate idle 時の再割り当て（Agent Teams）
@@ -650,23 +612,12 @@ o-m-cc/
 ├── docs/                      # ドキュメント
 │   ├── hooks-guide.md         # Hooks 使い方ガイド
 │   └── hooks-errors.md        # エラーリファレンス
-├── templates/                 # Standards/Steering テンプレート
+├── templates/                 # テンプレート
 │   ├── agents/
 │   │   └── sisyphus.md        # Sisyphus デフォルトエージェント
-│   ├── standards/
-│   │   ├── global/
-│   │   ├── frontend/
-│   │   ├── backend/
-│   │   ├── testing/
-│   │   └── learned/           # 発見したパターン（動的）
-│   └── steering/
-│       ├── product.md
-│       ├── tech.md
-│       └── structure.md
 ├── scripts/
 │   ├── install-plugins.sh     # 推奨プラグインのインストール
-│   ├── setup-claude-md.sh     # CLAUDE.md の Sisyphus セクション管理
-│   └── setup-project.sh       # Standards/Steering セットアップ
+│   └── setup-claude-md.sh     # CLAUDE.md の Sisyphus セクション管理
 └── README.md
 ```
 
@@ -744,6 +695,17 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.11.0
+
+- **learned/ 廃止**: `spec/standards/learned/`、`/learn` コマンド、`pattern-detector.sh` hook を削除
+- **HANDOVER.md VCS 管理化**: `.gitignore` から除外し、セッションごとの diff 履歴として教訓を蓄積
+- **/promote 刷新**: learned/ 検索 → HANDOVER.md の VCS 履歴横断検索でパターン発見・スキル昇格
+- **learnings-researcher 更新**: 検索対象を HANDOVER.md VCS 履歴 + claude-mem に変更（レガシー learned/ フォールバック付き）
+- **code-reviewer / security-reviewer 簡素化**: learned/ 自動記録セクションを削除
+- **promote-checker.sh**: Stop hook で HANDOVER.md VCS 履歴から繰り返しパターンを自動検出し `/promote` を提案
+- **standards/steering テンプレート廃止**: 空テンプレートを削除。`/init` がコードベース分析またはヒアリングから生成
+- **setup-project.sh 削除**: テンプレートコピーが不要になったため
 
 ### 0.10.0
 
