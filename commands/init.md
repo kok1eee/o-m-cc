@@ -1,5 +1,5 @@
 ---
-description: "プロジェクト固有の初期化（CLAUDE.md, spec/, Sisyphusルール）。新規プロジェクト開始時や既存プロジェクトにo-m-ccを導入する際に使用。"
+description: "プロジェクト固有の初期化（CLAUDE.md, plan/, Sisyphusルール）。新規プロジェクト開始時や既存プロジェクトにo-m-ccを導入する際に使用。"
 argument-hint: "[project-name]"
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion, Task]
 model: sonnet
@@ -70,77 +70,24 @@ sed -i '' "s/\[PROJECT_NAME\]/$PROJECT_NAME/g" CLAUDE.md
 
 ---
 
-## Step 3: Spec セットアップ（プロジェクトタイプで分岐）
+## Step 3: Spec ディレクトリの準備
 
-### 既存プロジェクトの場合: 自動分析
+計画フェーズ用の `plan/` ディレクトリを作成：
 
-コードベースを分析して `spec/` を自動生成：
-
-```
-以下を自動で分析・生成します：
-
-1. 技術スタック検出
-   - package.json / pyproject.toml / go.mod / Cargo.toml を解析
-   - フレームワーク・ライブラリを特定
-
-2. ディレクトリ構造マッピング
-   - src/, lib/, app/ などの構造を分析
-   - 命名規則を推測
-
-3. コーディングパターン抽出
-   - 既存コードからパターンを学習
-   - 規約を推測
-
-生成ファイル:
-  spec/steering/product.md   ← README.md から推測
-  spec/steering/tech.md      ← 依存関係から生成
-  spec/steering/structure.md ← ディレクトリ構造
+```bash
+mkdir -p plan
+echo "✅ plan/ を作成"
 ```
 
-**実行方法:**
-1. Glob で主要ファイルを検出（package.json, README.md, src/ など）
-2. Read で内容を取得
-3. 分析結果を spec/ 配下に Write
-
-### 新規プロジェクトの場合: ヒアリングして生成
-
-ユーザーに **AskUserQuestion** で以下を確認し、`spec/` を生成：
-
-```
-質問: プロジェクトの技術スタックは？
-header: "Tech"
-multiSelect: true
-
-選択肢:
-1. TypeScript / JavaScript
-2. Python
-3. Go
-4. その他
-```
-
-回答に基づいて `spec/standards/` と `spec/steering/` のスケルトンを生成：
-
-```
-spec/
-├── standards/    # 技術規約（実装時に参照）
-└── steering/     # プロジェクト文脈（計画時に参照）
-```
-
-**Note:** テンプレートは使用しない。プロジェクトの実態に合わせてゼロから生成する。
+**Note:** プロジェクトの規約・文脈は CLAUDE.md に集約。plan/ は計画ファイルのみ管理。
 
 ---
 
-## Step 4: ルールファイルとデフォルトエージェントを追加
+## Step 4: デフォルトエージェントを追加
 
-`spec/rules/` にルールを配置し、`.claude/agents/` にデフォルトエージェントを配置（verup時は上書き）：
+`.claude/agents/` にデフォルトエージェントを配置（verup時は上書き）：
 
 ```bash
-mkdir -p spec/rules
-cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/sisyphus.md" spec/rules/sisyphus.md
-cp "${CLAUDE_PLUGIN_ROOT}/templates/rules/plan-or-act.md" spec/rules/plan-or-act.md
-echo "✅ Sisyphus ルールを spec/rules/sisyphus.md に配置"
-echo "✅ Plan or Act ルールを spec/rules/plan-or-act.md に配置"
-
 mkdir -p .claude/agents
 cp "${CLAUDE_PLUGIN_ROOT}/templates/agents/sisyphus.md" .claude/agents/sisyphus.md
 echo "✅ Sisyphus デフォルトエージェントを .claude/agents/sisyphus.md に配置"
@@ -163,9 +110,8 @@ GITIGNORE_ENTRIES=(
   ".claude/"
   ""
   "# o-m-cc runtime files"
-  "spec/sisyphus-state.json"
-  "spec/.completed-tasks"
-  "spec/plan/logs/"
+  ".claude/sisyphus-state.json"
+  ".claude/.completed-tasks"
 )
 
 # .gitignore が存在しない場合は作成
@@ -196,9 +142,9 @@ Sisyphus Loop で自動実行中に権限承認で止まるのを防ぐ。
 {
   "permissions": {
     "allow": [
-      "Read(spec/**)",
-      "Write(spec/**)",
-      "Edit(spec/**)",
+      "Read(plan/**)",
+      "Write(plan/**)",
+      "Edit(plan/**)",
       "Read(agents/**)",
       "Read(commands/**)",
       "Read(templates/**)",
@@ -225,16 +171,13 @@ echo "✅ 推奨パーミッションを .claude/settings.json に追加"
 
 プロジェクトの状態に応じた完了メッセージを表示：
 
-### 既存プロジェクト
-
 ```
 ╔══════════════════════════════════════════════════════════╗
 ║  ✅ o-m-cc 初期化完了                                    ║
 ╚══════════════════════════════════════════════════════════╝
 
 📄 CLAUDE.md: 作成/更新済み
-🔄 Sisyphus: spec/rules/sisyphus.md に配置
-🔄 Plan or Act: spec/rules/plan-or-act.md に配置
+📁 plan/: 計画ファイル用ディレクトリ準備済み
 🤖 Default Agent: .claude/agents/sisyphus.md に配置
 🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
 
@@ -242,27 +185,6 @@ echo "✅ 推奨パーミッションを .claude/settings.json に追加"
    .claude/settings.json → "agent": "sisyphus"
    または claude --agent sisyphus
 
-🎯 次のステップ:
-   「○○を修正して」「○○機能を追加して」など、
-   やりたいことをそのまま伝えてください。
-```
-
-### 新規プロジェクト
-
-```
-╔══════════════════════════════════════════════════════════╗
-║  ✅ o-m-cc 初期化完了                                    ║
-╚══════════════════════════════════════════════════════════╝
-
-📄 CLAUDE.md: 作成/更新済み
-🔄 Sisyphus: spec/rules/sisyphus.md に配置
-📐 Standards: spec/standards/ にセットアップ済み
-📋 Steering: spec/steering/ にセットアップ済み
-🤖 Default Agent: .claude/agents/sisyphus.md に配置
-🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
-```
-
-```
 🎯 次のステップ:
    「○○を修正して」「○○機能を追加して」など、
    やりたいことをそのまま伝えてください。

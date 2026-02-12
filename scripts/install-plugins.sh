@@ -36,7 +36,6 @@ for plugin in frontend-design feature-dev; do
   fi
 done
 echo "  ℹ️  security-guidance: integrated into o-m-cc (hooks)"
-echo "  ℹ️  code-simplifier: integrated into o-m-cc (agents)"
 
 # Parse arguments for LSP plugins
 INSTALL_TS=false

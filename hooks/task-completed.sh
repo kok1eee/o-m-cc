@@ -17,7 +17,7 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
-TASKS_FILE="spec/plan/tasks.md"
+TASKS_FILE="plan/tasks.md"
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)

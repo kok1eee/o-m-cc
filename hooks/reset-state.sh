@@ -11,11 +11,11 @@ source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
 # リセット対象ファイル
 STATE_FILES=(
-  "spec/sisyphus-state.json"
-  "spec/.task-counter"
-  "spec/.completed-phases"
-  "spec/plan/HANDOVER.md"
-  "spec/hooks-error.log"
+  ".claude/sisyphus-state.json"
+  ".claude/.task-counter"
+  ".claude/.completed-phases"
+  "plan/HANDOVER.md"
+  ".claude/hooks-error.log"
 )
 
 echo ""

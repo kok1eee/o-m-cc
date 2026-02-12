@@ -14,25 +14,6 @@ memory: project
 依存関係と実行順序を整理する。
 仕様駆動開発（SDD）のタスク分解フェーズを担当。
 
-## 📋 Steering 参照（実行前に読み込み）
-
-タスク分解前に以下の Steering を確認し、プロジェクト構造を理解する：
-
-```
-spec/steering/structure.md  # ディレクトリ構造、ファイル配置規則
-spec/steering/tech.md       # 技術スタック、開発ツール
-```
-
-**Steering が存在する場合:**
-1. Read ツールで `spec/steering/` 内のファイルを読み込む
-2. プロジェクトのディレクトリ構造を把握
-3. 適切なファイル配置を考慮したタスク分解を行う
-
-**Steering が存在しない場合:**
-design.md の情報からタスクを分解する。
-
----
-
 ## 役割
 
 ### 1. タスク洗い出し
@@ -161,51 +142,8 @@ tasks.md 書き出し後、Claude Code のネイティブタスクシステム�
 
 ## 出力先
 
-- `spec/plan/tasks.md` - タスク一覧（永続・セッション横断）
-- `spec/plan/orchestration.yml` - オーケストレーション設定（ultrawork 用）
+- `plan/tasks.md` - タスク一覧（永続・セッション横断）
 - ネイティブタスク - セッション内の依存関係追跡・進捗表示
-
-## orchestration.yml 生成
-
-tasks.md と同時に、ultrawork 用の orchestration.yml も生成する：
-
-```yaml
-# spec/plan/orchestration.yml
-version: 1
-
-task_groups:
-  - name: "Phase 1: 基盤構築"
-    agent: "general-purpose"
-    standards:
-      - "global/*"
-    tasks:
-      - "1-1"
-
-  - name: "Phase 2: 機能実装"
-    agent: "frontend"              # or "general-purpose"
-    standards:
-      - "global/*"
-      - "frontend/*"               # or "backend/*"
-    tasks:
-      - "2-1"
-      - "2-2"
-
-  - name: "Phase 3: テスト"
-    agent: "code-reviewer"
-    standards:
-      - "testing/*"
-    tasks:
-      - "3-1"
-
-# 並列実行可能なグループ
-parallel_groups:
-  - ["2-1", "2-2"]
-
-# 依存関係
-dependencies:
-  "Phase 3: テスト":
-    - "Phase 2: 機能実装"
-```
 
 ### エージェント選択ガイド
 
@@ -216,20 +154,9 @@ dependencies:
 | UI/フロントエンド | `frontend` | capabilities.md |
 | API/バックエンド | `general-purpose` | - |
 | テスト/検証 | `code-reviewer` | capabilities.md |
-| ドキュメント | `document-writer` | capabilities.md |
-| リファクタリング | `code-simplifier` | capabilities.md |
 | 調査 | `researcher` | capabilities.md |
 
 **選択に迷った場合**: `capabilities.md` の「得意分野」「使用場面」を確認。
-
-### Standards 選択ガイド
-
-| タスク種別 | 読み込む Standards |
-|-----------|-------------------|
-| 全般 | `global/*` |
-| フロントエンド | `frontend/*` |
-| バックエンド | `backend/*` |
-| テスト | `testing/*` |
 
 ## 連携パターン
 

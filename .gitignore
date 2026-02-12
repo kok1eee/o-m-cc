@@ -10,6 +10,9 @@
 *~
 
 # Runtime state
-spec/sisyphus-state.json
-spec/plan/
-spec/.completed-phases
+.claude/sisyphus-state.json
+.claude/.completed-phases
+.claude/.completed-tasks
+.claude/.task-counter
+.claude/hooks-error.log
+plan/

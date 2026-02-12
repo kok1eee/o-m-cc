@@ -4,10 +4,10 @@ hooks で発生するエラーと対処法を説明します。
 
 ## エラーログの確認
 
-hooks のエラーは `spec/hooks-error.log` に記録されます:
+hooks のエラーは `.claude/hooks-error.log` に記録されます:
 
 ```bash
-cat spec/hooks-error.log
+cat .claude/hooks-error.log
 ```
 
 ログ形式:
@@ -54,11 +54,11 @@ sudo apt install python3
 
 **症状**: 前回のセッション情報が表示されない
 
-**原因**: `spec/plan/HANDOVER.md` が破損している
+**原因**: `plan/HANDOVER.md` が破損している
 
 **対処法**:
 ```bash
-rm spec/plan/HANDOVER.md
+rm plan/HANDOVER.md
 ```
 
 ### HOOK-102: プランファイルのアーカイブ失敗
@@ -85,18 +85,18 @@ mv ~/.claude/plans/*.md ~/.claude/plans/archive/$(date +%Y-%m-%d)/
 
 **対処法**:
 ```bash
-rm spec/sisyphus-state.json
+rm .claude/sisyphus-state.json
 ```
 
 ### HOOK-104: HANDOVER.md の生成失敗
 
 **症状**: セッション終了時に HANDOVER.md が作成されない
 
-**原因**: `spec/plan/` ディレクトリがない、tasks.md が存在しない
+**原因**: `plan/` ディレクトリがない、tasks.md が存在しない
 
 **対処法**:
 ```bash
-mkdir -p spec/plan
+mkdir -p plan
 ```
 
 ## PostToolUse 関連
@@ -139,10 +139,10 @@ bash hooks/reset-state.sh
 または手動で:
 
 ```bash
-rm -f spec/sisyphus-state.json
-rm -f spec/.completed-phases
-rm -f spec/plan/HANDOVER.md
-rm -f spec/hooks-error.log
+rm -f .claude/sisyphus-state.json
+rm -f .claude/.completed-phases
+rm -f plan/HANDOVER.md
+rm -f .claude/hooks-error.log
 ```
 
 ## デバッグ
@@ -164,5 +164,5 @@ echo '{}' | bash hooks/resume-session.sh
 ## サポート
 
 問題が解決しない場合:
-1. `spec/hooks-error.log` の内容を確認
+1. `.claude/hooks-error.log` の内容を確認
 2. GitHub Issues で報告: https://github.com/kok1eee/o-m-cc/issues

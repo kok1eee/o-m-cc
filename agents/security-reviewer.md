@@ -229,7 +229,7 @@ Grep: (execute|query)\s*\(.*\+.*\)
 **code-reviewer と同時に実行可能:**
 
 ```
-ultrawork 実行時:
+Agent Teams 実行時:
 ├── security-reviewer (並列)
 │   └── セキュリティ観点のレビュー
 └── code-reviewer (並列)
@@ -238,28 +238,4 @@ ultrawork 実行時:
 
 結果は個別に報告され、両方の Critical がなければマージ可能。
 
----
-
-## 📤 出力モード
-
-**トークン効率のため、要約 + ログ分離を採用。**
-
-### 完了時の出力フォーマット
-
-```markdown
-## ✅ security-reviewer 完了
-
-**結果**: Critical X件 / Warning Y件
-**対象ファイル**:
-- src/api/auth.ts
-- src/utils/crypto.ts
-**サマリー**: SQLインジェクション1件検出。即時修正が必要。
-**詳細ログ**: spec/plan/logs/security-reviewer-{YYYYMMDD-HHMMSS}.md
-```
-
-### 詳細ログの保存
-
-レビュー詳細は `spec/plan/logs/` に保存：
-- ファイル名: `security-reviewer-{YYYYMMDD-HHMMSS}.md`
-- 内容: 上記「出力フォーマット」の完全版
 

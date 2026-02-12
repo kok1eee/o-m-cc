@@ -15,7 +15,7 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
-HANDOVER_FILE="spec/plan/HANDOVER.md"
+HANDOVER_FILE="plan/HANDOVER.md"
 
 # ファイルの鮮度チェック（max_days 以内か）
 check_file_age() {
@@ -35,7 +35,7 @@ check_file_age() {
 if [[ -f "$HANDOVER_FILE" ]] && check_file_age "$HANDOVER_FILE" 30; then
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "📝 前回の引き継ぎ書あり (spec/plan/HANDOVER.md)"
+  echo "📝 前回の引き継ぎ書あり (plan/HANDOVER.md)"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
 
@@ -54,7 +54,7 @@ if [[ -f "$HANDOVER_FILE" ]] && check_file_age "$HANDOVER_FILE" 30; then
   fi
 
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "💡 詳細: spec/plan/HANDOVER.md を読んでください"
+  echo "💡 詳細: plan/HANDOVER.md を読んでください"
   echo "💡 続行: 作業内容を説明してください"
   echo "💡 リセット: /clear"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

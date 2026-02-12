@@ -20,8 +20,8 @@ permissionMode: plan
 ```
 1. claude-mem（セマンティック検索） - プライマリ
 2. HANDOVER.md VCS 履歴 - フォールバック
-   jj log -p -- spec/plan/HANDOVER.md
-   または git log -p -- spec/plan/HANDOVER.md
+   jj log -p -- plan/HANDOVER.md
+   または git log -p -- plan/HANDOVER.md
 ```
 
 ## 検索手順
@@ -55,13 +55,13 @@ claude-mem の結果が不十分、または未設定の場合に実行：
 
 ```bash
 # jj が使える場合
-jj log -p -- spec/plan/HANDOVER.md | grep -i "キーワード" -A 10 -B 5
+jj log -p -- plan/HANDOVER.md | grep -i "キーワード" -A 10 -B 5
 
 # git の場合
-git log -p -- spec/plan/HANDOVER.md | grep -i "キーワード" -A 10 -B 5
+git log -p -- plan/HANDOVER.md | grep -i "キーワード" -A 10 -B 5
 ```
 
-HANDOVER.md が VCS 管理されていない場合は、現在の `spec/plan/HANDOVER.md` を Read で確認。
+HANDOVER.md が VCS 管理されていない場合は、現在の `plan/HANDOVER.md` を Read で確認。
 
 ### Step 4: 結果をマージして構造化出力
 
@@ -131,7 +131,6 @@ Discovery Council では analyst (Lead)・scout と同時に spawn される。
 ## 呼び出し元
 
 - `/o-m-cc:plan` — Discovery Council メンバーとして analyst・scout と同時 spawn
-- `/o-m-cc:design` — 設計フェーズで参照
 - 手動 — 実装前の確認
 
 ## 効率ガイドライン

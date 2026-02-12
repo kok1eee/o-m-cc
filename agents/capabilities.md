@@ -90,7 +90,7 @@ TeammateTool: spawnTeam
 ユーザーリクエストのキーワードでマッチ → ディスパッチ戦略で規模判定 → 適切な方式で実行
 
 ### plan あり
-得意分野・使用場面を参照 → orchestration.yml にエージェントを設定 → teammate として spawn
+得意分野・使用場面を参照 → タスクに適したエージェントを teammate として spawn
 
 ---
 
@@ -111,8 +111,6 @@ TeammateTool: spawnTeam
 | **frontend** | UI実装 | React/Vue コンポーネント作成 | UI, 画面, コンポーネント, screen |
 | **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | レビュー, 品質, review, quality |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | セキュリティ, 脆弱性, security |
-| **code-simplifier** | リファクタリング | 実装完了後、コードが複雑なとき | 簡素化, リファクタ, simplify |
-| **document-writer** | ドキュメント作成 | 技術文書、API仕様、ガイド作成 | ドキュメント, 文書, docs |
 | **vision** | 画像・PDF分析 | デザインモック、エラー画面解析 | 画像, スクショ, PDF, screenshot |
 
 ---
@@ -135,7 +133,7 @@ TeammateTool: spawnTeam
 | エージェント | Input | Processing | Output |
 |-------------|-------|------------|--------|
 | designer | requirements.md | アーキテクチャ設計 | design.md |
-| planner | design.md | タスク分解、依存関係整理 | tasks.md + orchestration.yml |
+| planner | design.md | タスク分解、依存関係整理 | tasks.md |
 | critic | requirements + design + tasks | 妥当性検証 | レビューレポート |
 | advisor | 問題の状況 | トレードオフ分析（claude-mem で過去の類似判断を参照） | 推奨アプローチ + 根拠 |
 
@@ -144,7 +142,6 @@ TeammateTool: spawnTeam
 | エージェント | Input | Processing | Output |
 |-------------|-------|------------|--------|
 | frontend | デザイン仕様 | UI実装 | コンポーネントファイル |
-| code-simplifier | 対象コード | リファクタリング | 簡素化されたコード |
 | debugger | バグの症状 | 根本原因調査 → 修正 | デバッグレポート + 修正コード |
 
 ### 品質系
@@ -153,7 +150,6 @@ TeammateTool: spawnTeam
 |-------------|-------|------------|--------|
 | code-reviewer | diff、変更コード | 品質チェック | 問題レポート（Confidence付き） |
 | security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート |
-| document-writer | コード、仕様 | ドキュメント生成 | 技術文書 |
 
 > **並列 spawn 推奨**: `code-reviewer` + `security-reviewer` は同時 spawn でチェック。
 

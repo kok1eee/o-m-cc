@@ -20,7 +20,7 @@ else
   check_command() { command -v "$1" >/dev/null 2>&1; }
 fi
 
-TASKS_FILE="spec/plan/tasks.md"
+TASKS_FILE="plan/tasks.md"
 
 # tasks.md が存在しない場合はスキップ
 if [[ ! -f "$TASKS_FILE" ]]; then

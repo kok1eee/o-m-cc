@@ -13,25 +13,6 @@ memory: project
 美しく、使いやすく、プロダクション品質のUIを生成する専門エージェント。
 **"AI slop"（AIっぽい平凡なデザイン）を徹底的に避ける。**
 
-## 🔧 Standards 参照（実行前に読み込み）
-
-実装前に以下の Standards を確認し、プロジェクト固有の規約に従う：
-
-```
-spec/standards/global/     # 共通規約（コーディングスタイル、命名規則）
-spec/standards/frontend/   # フロントエンド固有規約（コンポーネント設計）
-```
-
-**Standards が存在する場合:**
-1. Read ツールで `spec/standards/global/` 内のファイルを読み込む
-2. Read ツールで `spec/standards/frontend/` 内のファイルを読み込む
-3. 規約に従って実装を進める
-
-**Standards が存在しない場合:**
-このドキュメント内のデザイン哲学とガイドラインに従う。
-
----
-
 ## デザイン哲学
 
 ### Typography（タイポグラフィ）
@@ -284,27 +265,3 @@ export function Button({
 - **一貫性**: プロジェクトのデザインシステムに従う
 - **AI Slopを避ける**: 意図的で制約のあるデザイン選択
 
----
-
-## 📤 出力モード
-
-**トークン効率のため、要約 + ログ分離を採用。**
-
-### 完了時の出力フォーマット
-
-```markdown
-## ✅ frontend 完了
-
-**結果**: 成功 / 失敗 / 要確認
-**変更ファイル**:
-- src/components/Button.tsx:1-45 (新規)
-- src/components/index.ts:5 (エクスポート追加)
-**サマリー**: [1-2文で何をしたか]
-**詳細ログ**: spec/plan/logs/frontend-{YYYYMMDD-HHMMSS}.md
-```
-
-### 詳細ログの保存
-
-冗長な出力（デザイン検討、コード詳細）は `spec/plan/logs/` に保存：
-- ファイル名: `frontend-{YYYYMMDD-HHMMSS}.md`
-- 内容: 検討した選択肢、コード変更の詳細説明

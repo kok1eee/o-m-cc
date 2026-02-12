@@ -23,7 +23,7 @@ if ! check_command jq; then
 fi
 
 # Configuration
-STATE_FILE="spec/sisyphus-state.json"
+STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 MAX_SAME_REASON="${SISYPHUS_MAX_SAME_REASON:-3}"
 

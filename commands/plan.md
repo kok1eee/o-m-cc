@@ -123,7 +123,7 @@ TeammateTool: spawnTeam
      未受信の場合はメッセージで状況を確認してください。
 
      ## 出力
-     - spec/plan/requirements.md に要件定義を出力
+     - plan/requirements.md に要件定義を出力
      - 完了したら Lead にメッセージで報告
 
 3. TeammateTool: spawnTeammate
@@ -180,10 +180,10 @@ TeammateTool: spawnTeammate
     requirements.md を基にアーキテクチャ設計書を作成してください。
 
     ## 入力
-    - spec/plan/requirements.md
+    - plan/requirements.md
 
     ## 出力
-    - spec/plan/design.md に設計書を出力
+    - plan/design.md に設計書を出力
     - 完了したら Lead にメッセージで報告
 ```
 
@@ -204,12 +204,11 @@ TeammateTool: spawnTeammate
     design.md を基にタスクを分解してください。
 
     ## 入力
-    - spec/plan/design.md
-    - spec/plan/requirements.md
+    - plan/design.md
+    - plan/requirements.md
 
     ## 出力
-    - spec/plan/tasks.md にタスクリストを出力
-    - spec/plan/orchestration.yml にオーケストレーション設定を出力
+    - plan/tasks.md にタスクリストを出力
     - 完了したら Lead にメッセージで報告
 ```
 
@@ -230,9 +229,9 @@ TeammateTool: spawnTeammate
      計画全体をレビューしてください。
 
      ## 入力
-     - spec/plan/requirements.md
-     - spec/plan/design.md
-     - spec/plan/tasks.md
+     - plan/requirements.md
+     - plan/design.md
+     - plan/tasks.md
 
      ## Council Lead（peer-to-peer）
      あなたは Review Council の Lead です。
@@ -257,9 +256,9 @@ TeammateTool: spawnTeammate
      計画全体を戦略的・アーキテクチャ的観点からレビューしてください。
 
      ## 入力
-     - spec/plan/requirements.md
-     - spec/plan/design.md
-     - spec/plan/tasks.md
+     - plan/requirements.md
+     - plan/design.md
+     - plan/tasks.md
 
      ## Council 連携（peer-to-peer）
      あなたは Review Council のメンバーです。
@@ -287,7 +286,7 @@ TeammateTool: spawnTeammate
 ## 出力ファイル
 
 ```
-spec/plan/
+plan/
 ├── requirements.md  # 要件定義
 ├── design.md        # 設計書
 └── tasks.md         # 実装タスク
@@ -301,9 +300,9 @@ spec/plan/
 
 ```
 ✅ 計画完了（Agent Teams）
-   📄 spec/plan/requirements.md
-   📄 spec/plan/design.md
-   📄 spec/plan/tasks.md
+   📄 plan/requirements.md
+   📄 plan/design.md
+   📄 plan/tasks.md
 
    - 機能要件: X件
    - コンポーネント: X個

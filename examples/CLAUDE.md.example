@@ -54,7 +54,6 @@ code-reviewer subagent でレビュー
 | explore | 高速コード探索 |
 | vision | PDF/画像分析 |
 | frontend | UI/UX実装 |
-| document-writer | ドキュメント作成 |
 | code-reviewer | コードレビュー |
 
 ---

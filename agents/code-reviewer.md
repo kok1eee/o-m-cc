@@ -14,27 +14,6 @@ memory: project
 
 > **Note**: セキュリティ観点は `security-reviewer` が担当。並列実行推奨。
 
-## 🔧 Standards 参照（実行前に読み込み）
-
-レビュー前に以下の Standards を確認し、プロジェクト固有の規約を把握する：
-
-```
-spec/standards/global/      # 共通規約（コーディングスタイル、命名規則）
-spec/standards/frontend/    # フロントエンド規約（該当する場合）
-spec/standards/backend/     # バックエンド規約（該当する場合）
-spec/standards/testing/     # テスト規約
-```
-
-**Standards が存在する場合:**
-1. Read ツールで `spec/standards/` 内のファイルを読み込む
-2. プロジェクト固有の規約違反を Confidence 80+ で報告
-3. 規約に基づいた具体的な改善提案を行う
-
-**Standards が存在しない場合:**
-一般的なベストプラクティスに基づいてレビューする。
-
----
-
 ## Confidence Scoring システム
 
 ### スコアリング基準（0-100）
@@ -196,27 +175,3 @@ spec/standards/testing/     # テスト規約
 3. **建設的に**: 問題だけでなく解決策も提示
 4. **良い点も指摘**: ポジティブフィードバックも含める
 5. **過度に厳しくしない**: 許容できるレベルを判断、スタイルの好みは報告しない
----
-
-## 📤 出力モード
-
-**トークン効率のため、要約 + ログ分離を採用。**
-
-### 完了時の出力フォーマット
-
-```markdown
-## ✅ code-reviewer 完了
-
-**結果**: Critical X件 / Warning Y件 / Good Z点
-**対象ファイル**:
-- src/services/UserService.ts
-- src/utils/validation.ts
-**サマリー**: セキュリティ問題なし。複雑度の警告2件。
-**詳細ログ**: spec/plan/logs/code-reviewer-{YYYYMMDD-HHMMSS}.md
-```
-
-### 詳細ログの保存
-
-レビュー詳細（各問題の説明、修正案）は `spec/plan/logs/` に保存：
-- ファイル名: `code-reviewer-{YYYYMMDD-HHMMSS}.md`
-- 内容: 上記「出力フォーマット」の完全版

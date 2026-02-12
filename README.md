@@ -1,4 +1,4 @@
-# o-m-cc v0.11.0
+# o-m-cc v0.12.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -52,13 +52,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 計画フェーズを先に実行：
 
 ```bash
-# 方法1: 一括実行
 /o-m-cc:plan "認証システムを実装"
-
-# 方法2: 段階的に実行
-/o-m-cc:requirements "認証システムを実装"
-/o-m-cc:design
-/o-m-cc:tasks
 ```
 
 計画が完了したら、普通に実装を依頼：
@@ -66,16 +60,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ```
 「計画に沿って実装を開始して」
 ```
-
-### 最大パフォーマンスモード
-
-Agent Teams で teammate を並列 spawn して最速実行：
-
-```bash
-/o-m-cc:ultrawork "認証機能を実装"
-```
-
-> **Note**: ultrawork 開始時に自動的に `/compact` を実行します。プランファイル（`spec/plan/`）にすべての情報が保存されているため、会話履歴のクリーンアップが安全に行えます。
 
 ## Commands
 
@@ -92,22 +76,13 @@ Agent Teams で teammate を並列 spawn して最速実行：
 
 | コマンド | 説明 | Context |
 |---------|------|---------|
-| `/o-m-cc:requirements <task>` | 要件定義（SDD Phase 1） | - |
-| `/o-m-cc:design` | 設計書作成（SDD Phase 2） | - |
-| `/o-m-cc:tasks` | タスク分解（SDD Phase 3） | - |
-| `/o-m-cc:plan <task>` | 上記を一括実行（Agent Teams で並列化 + scout ギャップ分析） | fork |
-
-### 実行
-
-| コマンド | 説明 | Context |
-|---------|------|---------|
-| `/o-m-cc:ultrawork <task>` | Agent Teams で teammate 並列 spawn、最大パフォーマンス実行（自動 /compact） | fork |
+| `/o-m-cc:plan <task>` | 要件 → 設計 → タスク分解を一括実行（Agent Teams で並列化 + scout ギャップ分析） | fork |
 
 ### 品質
 
 | コマンド | 説明 | Context |
 |---------|------|---------|
-| `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論 + code-simplifier提案） | fork |
+| `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論） | fork |
 | `/o-m-cc:audit [target]` | エージェント・コマンドの品質監査 | - |
 | `/o-m-cc:promote [keyword]` | HANDOVER.md 履歴から繰り返すパターンをスキルに昇格 | - |
 | `/o-m-cc:handover` | セッション引き継ぎ書を生成（意思決定・教訓・申し送り） | fork |
@@ -157,8 +132,8 @@ Agent Teams (Council + Pipeline ハイブリッド):
 ### 実装フェーズ
 
 ```
-「実装開始して」または /o-m-cc:ultrawork
-  → Agent Teams → teammate 並列 spawn → レビュー → 簡素化提案 → 完了
+「実装開始して」
+  → Agent Teams → teammate 並列 spawn → レビュー → 完了
 ```
 
 ## Dependencies
@@ -184,7 +159,6 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-----------|------|
 | frontend-design | フロントエンド設計支援 |
 | feature-dev | 機能開発ワークフロー |
-| code-simplifier | コード簡素化（レビュー後提案） |
 | security-guidance | セキュリティレビュー支援 |
 
 ### LSP（言語に応じて選択）
@@ -226,7 +200,6 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | Agent | 役割 | Model | Permission | Memory |
 |-------|------|-------|------------|--------|
 | @frontend | UI/UXコンポーネント作成 | sonnet | write | project |
-| @document-writer | ドキュメント作成 | sonnet | write | - |
 
 ### Quality Agents（品質系）
 
@@ -234,7 +207,6 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|--------|
 | @code-reviewer | コードレビュー | sonnet | default | project |
 | @security-reviewer | セキュリティレビュー | sonnet | default | project |
-| @code-simplifier | コード簡素化・リファクタリング | sonnet | write | - |
 
 > **Permission**:
 > - `plan`: 読み取り専用モード（permissionMode: plan）。権限確認なしで高速動作
@@ -248,74 +220,13 @@ claude plugin marketplace add anthropics/claude-plugins-official
 計画フェーズで以下のファイルが生成されます：
 
 ```
-spec/plan/
+plan/
 ├── brainstorm.md       # ブレインストーミング結果（オプション）
 ├── requirements.md     # 要件定義（FR-X, NFR-X）
 ├── design.md           # 設計書（コンポーネント、API）
 ├── tasks.md            # 実装タスク（依存関係、見積もり）
-├── orchestration.yml   # オーケストレーション設定（ultrawork用）
 └── HANDOVER.md         # セッション引き継ぎ書（/handover で生成）
 ```
-
-## Orchestration
-
-`/o-m-cc:tasks` で tasks.md と同時に `orchestration.yml` が生成されます。
-`/o-m-cc:ultrawork` はこのファイルを読み込み、Agent Teams で構造化された実行を行います。
-
-### orchestration.yml 構造
-
-```yaml
-version: 1
-
-task_groups:
-  - name: "Phase 1: 基盤構築"
-    agent: "general-purpose"
-    standards:
-      - "global/*"
-    tasks:
-      - "1-1"
-
-  - name: "Phase 2: 機能実装"
-    agent: "frontend"
-    standards:
-      - "global/*"
-      - "frontend/*"
-    tasks:
-      - "2-1"
-      - "2-2"
-
-parallel_groups:
-  - ["Phase 1: 基盤構築", "Phase 2: 機能実装"]
-
-dependencies:
-  "Phase 3: テスト":
-    - "Phase 2: 機能実装"
-```
-
-### 実行モード
-
-| モード | 条件 | 動作 |
-|--------|------|------|
-| **Orchestrated** | `orchestration.yml` あり | YML定義に従って teammate を spawn して構造化実行 |
-| **Free** | `orchestration.yml` なし | Lead がタスク分解 → teammate に割り当て |
-
-## Standards & Steering
-
-プロジェクト固有の規約とコンテキストを `spec/` 配下で管理。
-
-`/o-m-cc:init` がコードベースを分析して自動生成、または新規プロジェクトではヒアリングから生成する。テンプレートは使わず、プロジェクトの実態に合わせてゼロから作る。
-
-```
-spec/
-├── standards/    # 技術規約（実装時にエージェントが参照）
-└── steering/     # プロジェクト文脈（計画時にエージェントが参照）
-```
-
-| | Standards | Steering |
-|---|-----------|----------|
-| 目的 | 実装品質の統一 | 計画の文脈提供 |
-| 参照タイミング | 実装時 | 計画時 |
-| 内容 | How（どう実装するか） | What/Why（何を、なぜ） |
 
 ## Token Efficiency
 
@@ -338,11 +249,7 @@ o-m-cc プラグインの初期トークン消費:
 ### 仕組み
 
 ```
-Teammate
-    │
-    ├─ 詳細 → spec/plan/logs/{agent}-{timestamp}.md に保存
-    │
-    └─ 要約 → Lead にメッセージで返却
+Teammate → 要約をメッセージで Lead に返却
 ```
 
 ### エージェント出力フォーマット
@@ -354,22 +261,7 @@ Teammate
 **変更ファイル**:
 - path/to/file.ts:45-67
 **サマリー**: [1-2文で何をしたか]
-**詳細ログ**: spec/plan/logs/{agent}-{YYYYMMDD-HHMMSS}.md
 ```
-
-### ログ構造
-
-```
-spec/plan/logs/
-├── frontend-20260120-143052.md      # フロントエンド実装詳細
-├── code-reviewer-20260120-144530.md # レビュー詳細
-└── explore-20260120-142010.md       # 探索結果詳細
-```
-
-**メリット**:
-- メインエージェントのコンテキスト消費を抑制
-- 人間への表示も簡潔に
-- 詳細は必要時のみ参照可能
 
 ## Cross-Session Restoration
 
@@ -380,7 +272,7 @@ spec/plan/logs/
 ```
 SessionStart Hook
     │
-    └─ spec/plan/HANDOVER.md を検出
+    └─ plan/HANDOVER.md を検出
          │
          ├─ 30日以上古い → スキップ
          │
@@ -402,7 +294,7 @@ SessionStart Hook
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 前回の引き継ぎ書あり (spec/plan/HANDOVER.md)
+📝 前回の引き継ぎ書あり (plan/HANDOVER.md)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 【作業サマリー】
@@ -414,7 +306,7 @@ SessionStart Hook
 2. エラーハンドリングの統一
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 詳細: spec/plan/HANDOVER.md を読んでください
+💡 詳細: plan/HANDOVER.md を読んでください
 💡 続行: 作業内容を説明してください
 💡 リセット: /clear
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -422,7 +314,7 @@ SessionStart Hook
 
 ## Handover
 
-セッション状態を構造化して引き継ぐ仕組み。`/o-m-cc:handover` または Stop hook で `spec/plan/HANDOVER.md` を生成。
+セッション状態を構造化して引き継ぐ仕組み。`/o-m-cc:handover` または Stop hook で `plan/HANDOVER.md` を生成。
 
 ### 目的
 
@@ -544,7 +436,7 @@ claude
 
 ### エラーログ
 
-hooks のエラーは `spec/hooks-error.log` に記録されます。
+hooks のエラーは `.claude/hooks-error.log` に記録されます。
 
 ### 状態リセット
 
@@ -574,24 +466,18 @@ o-m-cc/
 │   ├── researcher.md          # 調査スペシャリスト
 │   ├── explore.md             # 高速探索
 │   ├── frontend.md            # UI/UXエンジニア
-│   ├── document-writer.md     # テクニカルライター
 │   ├── vision.md              # マルチモーダル分析
 │   ├── debugger.md             # 体系的デバッグ
 │   ├── learnings-researcher.md # 過去の学び検索
 │   ├── code-reviewer.md       # コード品質レビュー
 │   ├── security-reviewer.md   # セキュリティレビュー（並列 spawn 推奨）
-│   └── code-simplifier.md     # コード簡素化・リファクタリング
 ├── commands/                  # スラッシュコマンド
 │   ├── init.md                # プロジェクト初期化
 │   ├── install.md             # グローバル設定
 │   ├── audit.md               # 品質監査
 │   ├── promote.md             # スキル昇格
-│   ├── requirements.md        # 要件定義
-│   ├── design.md              # 設計
-│   ├── tasks.md               # タスク分解
-│   ├── plan.md                # 計画（Agent Teams オーケストレーター）
+│   ├── plan.md                # 計画（要件→設計→タスク一括、Agent Teams）
 │   ├── review.md              # コードレビュー（Agent Teams 並列）
-│   ├── ultrawork.md           # Agent Teams 並列実行（自動 /compact）
 │   └── handover.md            # セッション引き継ぎ書生成
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
@@ -696,6 +582,15 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 ## Changelog
 
+### 0.12.0
+
+- **spec/ 簡素化**: `spec/standards/`, `spec/steering/`, `spec/rules/` を廃止。CLAUDE.md が唯一のプロジェクト規約・文脈のソース
+- **エージェント更新**: 5つのエージェント（code-reviewer, designer, frontend, planner, analyst）から Standards/Steering 参照セクションを削除
+- **/init 簡素化**: コードベース分析・ヒアリングによる spec/standards/ 等の生成を廃止。plan/ のみ作成
+- **ultrawork / orchestration.yml 廃止**: capabilities.md のディスパッチ戦略 + ネイティブタスクシステムで代替
+- **plan/logs/ 廃止**: teammate の出力はメッセージで Lead に返却する方式に統一
+- **auto-verify.sh**: verify.json パスを `spec/steering/verify.json` → `.claude/verify.json` に変更
+
 ### 0.11.0
 
 - **learned/ 廃止**: `spec/standards/learned/`、`/learn` コマンド、`pattern-detector.sh` hook を削除
@@ -742,7 +637,7 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 - **新エージェント**: debugger（体系的デバッグ）、learnings-researcher（過去の学び検索）
 - **新コマンド**: `/install`（グローバル設定）、`/audit`（品質監査）、`/learn`（学び記録）、`/promote`（スキル昇格）
-- **新hooks**: agent-rules.json（エージェント自動提案）、suggest-agent.sh
+- **新hooks**: ~~agent-rules.json、suggest-agent.sh~~（v0.12.0 で削除、capabilities.md のディスパッチ戦略に統合）
 - **security-reviewer 強化**: Trail of Bits パターン（Rationalizations、Insecure Defaults、Sharp Edges）
 - **code-reviewer 強化**: Blast Radius 分析（変更の影響範囲定量化）
 - **ワンショット改善**: scout の「必ず質問で終わる」を廃止、plan/init/audit の不要な確認を削除
@@ -754,7 +649,7 @@ export SISYPHUS_MAX_ITERATIONS=30
   - `spec/standards/` - 技術規約
   - `spec/steering/` - プロジェクト文脈
   - `spec/rules/` - Sisyphus ルール
-  - `spec/plan/` - 計画ファイル（requirements, design, tasks）
+  - `plan/` - 計画ファイル（requirements, design, tasks）
 - `.claude/` 全体を gitignore 推奨（Claude Code 内部用）
 - Token Efficiency セクションに初期読み込みコストを追加
 

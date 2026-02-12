@@ -16,9 +16,9 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
-TASKS_FILE="spec/plan/tasks.md"
-COUNTER_FILE="spec/.completed-phases"
-VERIFY_CONFIG="spec/steering/verify.json"
+TASKS_FILE="plan/tasks.md"
+COUNTER_FILE=".claude/.completed-phases"
+VERIFY_CONFIG=".claude/verify.json"
 
 # tasks.md が存在しない場合はスキップ
 if [[ ! -f "$TASKS_FILE" ]]; then
@@ -127,7 +127,7 @@ COMMANDS=$(get_verify_commands)
 
 if [[ -z "$COMMANDS" ]]; then
   echo "⚠️  検証コマンドが見つかりません"
-  echo "   spec/steering/verify.json を作成するか、サポートされているプロジェクトタイプを使用してください"
+  echo "   .claude/verify.json を作成するか、サポートされているプロジェクトタイプを使用してください"
   echo ""
   exit 0
 fi

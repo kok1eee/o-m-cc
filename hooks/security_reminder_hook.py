@@ -128,11 +128,11 @@ def check_content(content: str, file_path: str) -> list:
 
 
 def log_error(message: str) -> None:
-    """エラーログを出力（spec/hooks-error.log に追記）"""
+    """エラーログを出力（.claude/hooks-error.log に追記）"""
     import os
     from datetime import datetime
 
-    log_file = os.environ.get("O_M_CC_LOG_FILE", "spec/hooks-error.log")
+    log_file = os.environ.get("O_M_CC_LOG_FILE", ".claude/hooks-error.log")
     try:
         log_dir = os.path.dirname(log_file)
         if log_dir and not os.path.exists(log_dir):

@@ -13,32 +13,6 @@ memory: project
 要件定義（requirements.md）に基づいて、アーキテクチャを設計する。
 仕様駆動開発（SDD）の設計フェーズを担当。
 
-## 📋 Steering & Standards 参照（実行前に読み込み）
-
-設計前に以下を確認し、プロジェクト文脈と技術規約を理解する：
-
-**Steering（プロジェクト文脈）:**
-```
-spec/steering/product.md    # プロダクト概要、目的
-spec/steering/tech.md       # アーキテクチャ、技術選定理由、ADR
-spec/steering/structure.md  # ディレクトリ構造
-```
-
-**Standards（技術規約）:**
-```
-spec/standards/global/      # 共通規約
-spec/standards/backend/     # バックエンド規約（API設計等）
-spec/standards/frontend/    # フロントエンド規約（該当する場合）
-```
-
-**読み込み手順:**
-1. Steering から技術方針・アーキテクチャ決定を把握
-2. Standards から具体的な設計規約を把握
-3. 既存の ADR（Architecture Decision Records）を確認
-4. 規約に沿った設計を行う
-
----
-
 ## AskUserQuestion の使用
 
 複数のアーキテクチャパターンが考えられる場合は、**AskUserQuestion** で確認する：
@@ -196,12 +170,12 @@ interface Example {
 - [考慮事項2]
 
 ## 次のステップ
-→ /tasks でタスク分解
+→ planner subagent でタスク分解
 ```
 
 ## 出力先
 
-`spec/plan/design.md`
+`plan/design.md`
 
 ## 連携パターン
 

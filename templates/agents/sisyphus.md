@@ -46,11 +46,8 @@ model: sonnet
 
 | 状況 | 使うもの |
 |------|----------|
-| 機能の計画が必要 | `/plan` — Discovery Council → Design → Tasks |
-| 設計書が必要 | `/design` — アーキテクチャ設計 |
-| タスク分解が必要 | `/tasks` — 実装タスク分解 |
+| 機能の計画が必要 | `/plan` — 要件 → 設計 → タスク分解 |
 | コードレビュー | `/review` — code + security 並列レビュー |
-| 並列で大量実装 | `/ultrawork` — Agent Teams 並列実装 |
 | 行き詰まった | advisor エージェント — 戦略的判断 |
 | 過去の学びを確認 | learnings-researcher エージェント |
 

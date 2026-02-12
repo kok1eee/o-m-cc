@@ -27,11 +27,10 @@ jj diff --stat 2>/dev/null || git diff --stat HEAD 2>/dev/null || echo "変更�
 
 ### 1b. 計画ファイルの確認
 
-**Glob** で `spec/plan/` 配下を確認：
-- `spec/plan/requirements.md`
-- `spec/plan/design.md`
-- `spec/plan/tasks.md`
-- `spec/plan/orchestration.yml`
+**Glob** で `plan/` 配下を確認：
+- `plan/requirements.md`
+- `plan/design.md`
+- `plan/tasks.md`
 
 存在するファイルを **Read** で内容を把握する。
 
@@ -43,9 +42,9 @@ jj diff --stat 2>/dev/null || git diff --stat HEAD 2>/dev/null || echo "変更�
 
 ## Step 2: 引き継ぎ書の生成
 
-Step 1 で収集した情報と、**このセッション全体の会話コンテキスト**を振り返り、以下の構造で `spec/plan/HANDOVER.md` を生成する。
+Step 1 で収集した情報と、**このセッション全体の会話コンテキスト**を振り返り、以下の構造で `plan/HANDOVER.md` を生成する。
 
-**Write** ツールで `spec/plan/HANDOVER.md` に書き出す：
+**Write** ツールで `plan/HANDOVER.md` に書き出す：
 
 ```markdown
 # Session Handover
@@ -100,7 +99,7 @@ Step 1 で収集した情報と、**このセッション全体の会話コン�
 ```
 ✅ 引き継ぎ書を生成しました
 
-📄 spec/plan/HANDOVER.md
+📄 plan/HANDOVER.md
 📊 作業サマリー: [1行の概要]
 📋 ネクストステップ: [件数] 件
 

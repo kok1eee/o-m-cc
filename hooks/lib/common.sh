@@ -3,7 +3,7 @@
 # 全 Bash hooks で source して使用
 
 # ログファイル
-O_M_CC_LOG_FILE="${O_M_CC_LOG_FILE:-spec/hooks-error.log}"
+O_M_CC_LOG_FILE="${O_M_CC_LOG_FILE:-.claude/hooks-error.log}"
 O_M_CC_LOG_MAX_LINES=100
 
 # =============================================================================

@@ -19,10 +19,10 @@ model: sonnet
 
 ```bash
 # jj が使える場合
-jj log -p -- spec/plan/HANDOVER.md | grep -i "$ARGUMENTS" -A 10 -B 5
+jj log -p -- plan/HANDOVER.md | grep -i "$ARGUMENTS" -A 10 -B 5
 
 # git の場合
-git log -p -- spec/plan/HANDOVER.md | grep -i "$ARGUMENTS" -A 10 -B 5
+git log -p -- plan/HANDOVER.md | grep -i "$ARGUMENTS" -A 10 -B 5
 ```
 
 ### 引数なしの場合
@@ -48,10 +48,10 @@ HANDOVER.md の全コミット履歴を取得して分析：
 
 ```bash
 # jj が使える場合
-jj log -p -- spec/plan/HANDOVER.md
+jj log -p -- plan/HANDOVER.md
 
 # git の場合
-git log -p -- spec/plan/HANDOVER.md
+git log -p -- plan/HANDOVER.md
 ```
 
 以下の基準で候補を抽出：
@@ -107,7 +107,7 @@ multiSelect: false
 選択肢:
 1. エージェント — 特定タスクを実行する専門エージェント
 2. コマンド — ユーザーが呼び出すスラッシュコマンド
-3. ルール — spec/rules/ に配置する行動規範
+3. ルール — CLAUDE.md に追記する行動規範（プロジェクト規約）
 ```
 
 ---
@@ -168,28 +168,18 @@ model: sonnet
 
 ### ルールの場合
 
-`templates/rules/[name].md` を作成し、init 時に `spec/rules/` へコピーされるようにする：
+プロジェクトの CLAUDE.md に行動規範セクションを追記する：
 
 ```markdown
-# [ルール名]
+## [ルール名]
 
-## 背景
+> この規則は HANDOVER.md の [日付] セッションの学びから昇格
 
-この規則は以下の学びから昇格：
-- HANDOVER.md の [日付] セッション
-
-## ルール
-
-[具体的な行動規範]
-
-## 違反例
-
-[やってはいけない例]
-
-## 準拠例
-
-[正しい例]
+- [具体的な行動規範]
+- [違反例と準拠例]
 ```
+
+**Edit** ツールで CLAUDE.md の適切な位置に追記する。
 
 ---
 
@@ -198,7 +188,7 @@ model: sonnet
 ```
 ✅ スキル昇格完了
 
-📦 生成: [agents/commands/templates/rules]/[name].md
+📦 生成: [agents/commands]/[name].md または CLAUDE.md に追記
 📝 元の学び: HANDOVER.md の [日付] セッション
 🏷️ 種類: [エージェント / コマンド / ルール]
 ```

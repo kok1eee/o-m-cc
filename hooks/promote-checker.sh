@@ -14,7 +14,7 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
-HANDOVER_FILE="spec/plan/HANDOVER.md"
+HANDOVER_FILE="plan/HANDOVER.md"
 
 # HANDOVER.md がなければスキップ
 if [[ ! -f "$HANDOVER_FILE" ]]; then

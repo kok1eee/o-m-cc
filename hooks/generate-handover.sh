@@ -1,7 +1,7 @@
 #!/bin/bash
 # Auto-generate HANDOVER.md on session stop (lightweight fallback)
 # /o-m-cc:handover で生成済みの場合はスキップ
-# spec/plan/ にタスクファイルがある場合のみ生成
+# plan/ にタスクファイルがある場合のみ生成
 
 set -euo pipefail
 
@@ -16,11 +16,11 @@ else
   to_number() { local v="$1"; [[ "$v" =~ ^[0-9]+$ ]] && echo "$v" || echo "${2:-0}"; }
 fi
 
-PLAN_DIR="spec/plan"
+PLAN_DIR="plan"
 HANDOVER_FILE="${PLAN_DIR}/HANDOVER.md"
 TASKS_FILE="${PLAN_DIR}/tasks.md"
 
-# spec/plan/ が存在しない場合はスキップ
+# plan/ が存在しない場合はスキップ
 if [[ ! -d "$PLAN_DIR" ]]; then
   exit 0
 fi
