@@ -1,8 +1,10 @@
 ---
+name: promote
 description: "HANDOVER.md の履歴から繰り返すパターンを発見し、再利用可能なスキルに昇格。「スキルにして」「ルール化して」で使用。"
 argument-hint: "[対象パターン名 or キーワード]"
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, ToolSearch, AskUserQuestion, Task]
 model: sonnet
+disable-model-invocation: true
 ---
 
 # /o-m-cc:promote - 学びのスキル昇格
@@ -102,7 +104,7 @@ multiSelect: false
 
 選択肢:
 1. エージェント — 特定タスクを実行する専門エージェント（プラグインレベル）
-2. コマンド — ユーザーが呼び出すスラッシュコマンド（プラグインレベル）
+2. スキル — ユーザーが呼び出すスラッシュコマンド（プラグインレベル）
 3. プロジェクトルール — CLAUDE.md に追記する行動規範（プロジェクトレベル）
 4. グローバルルール — ~/.claude/CLAUDE.md に追記する行動規範（全プロジェクト共通）
 ```
@@ -141,12 +143,13 @@ model: haiku
 [具体的な実行手順]
 ```
 
-### コマンドの場合
+### スキルの場合
 
-`commands/[name].md` を作成：
+`skills/[name]/SKILL.md` を作成：
 
 ```markdown
 ---
+name: "[スキル名]"
 description: "[学びから抽出した説明]"
 argument-hint: "[引数]"
 allowed-tools: [必要なツール]
@@ -160,7 +163,7 @@ model: sonnet
 この機能は以下の学びから昇格：
 - HANDOVER.md の [日付] セッション
 
-[コマンドの手順]
+[スキルの手順]
 ```
 
 ### プロジェクトルールの場合
@@ -201,9 +204,9 @@ model: sonnet
 ```
 ✅ スキル昇格完了
 
-📦 生成: [agents/commands]/[name].md または CLAUDE.md / ~/.claude/CLAUDE.md に追記
+📦 生成: [agents/skills]/[name] または CLAUDE.md / ~/.claude/CLAUDE.md に追記
 📝 元の学び: HANDOVER.md の [日付] セッション
-🏷️ 種類: [エージェント / コマンド / プロジェクトルール / グローバルルール]
+🏷️ 種類: [エージェント / スキル / プロジェクトルール / グローバルルール]
 ```
 
 ---

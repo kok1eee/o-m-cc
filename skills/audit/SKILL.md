@@ -1,17 +1,19 @@
 ---
+name: audit
 description: "エージェント・コマンド・フックの品質を監査しレポート生成。「品質チェックして」「監査して」で使用。"
 allowed-tools: [Task, Read, Glob, Grep, AskUserQuestion]
+disable-model-invocation: true
 ---
 
 # /o-m-cc:audit — 品質監査
 
-指定された対象（agent / command / hook）を監査し、品質レポートを生成する。
+指定された対象（agent / skill / hook）を監査し、品質レポートを生成する。
 
 ## 使用例
 
 ```
 /o-m-cc:audit agents/planner.md
-/o-m-cc:audit commands/plan.md
+/o-m-cc:audit skills/plan/SKILL.md
 /o-m-cc:audit all agents
 ```
 
@@ -26,7 +28,7 @@ allowed-tools: [Task, Read, Glob, Grep, AskUserQuestion]
 引数に応じて対象を決定：
 - ファイルパス指定 → そのファイル
 - `all agents` → `agents/*.md` 全体
-- `all commands` → `commands/*.md` 全体
+- `all skills` → `skills/*/SKILL.md` 全体
 - 引数なし → AskUserQuestion で確認
 
 ### Step 2: チェック項目
@@ -41,7 +43,7 @@ allowed-tools: [Task, Read, Glob, Grep, AskUserQuestion]
 | 出力フォーマット | 出力の形式が定義されている |
 | capabilities.md | エージェント一覧に登録されている |
 
-#### コマンド (`commands/*.md`)
+#### スキル (`skills/*/SKILL.md`)
 
 | チェック | 基準 |
 |---------|------|

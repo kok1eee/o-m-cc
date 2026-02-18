@@ -1,4 +1,4 @@
-# o-m-cc v0.13.0
+# o-m-cc v0.15.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -61,31 +61,31 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 「計画に沿って実装を開始して」
 ```
 
-## Commands
+## Skills
 
 ### セットアップ
 
-| コマンド | 説明 |
-|---------|------|
-| `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） |
-| `/o-m-cc:install` | グローバル設定（プラグイン・スピナー・hooks）- 一度だけ |
+| スキル | 説明 | 自動発動 |
+|--------|------|----------|
+| `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） | 手動のみ |
+| `/o-m-cc:install` | グローバル設定（プラグイン・スピナー・hooks）- 一度だけ | 手動のみ |
 
 > 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
 ### 計画フェーズ（複雑なタスク用）
 
-| コマンド | 説明 | Context |
-|---------|------|---------|
-| `/o-m-cc:plan <task>` | 要件 → 設計 → タスク分解を一括実行（Agent Teams で並列化 + scout ギャップ分析） | fork |
+| スキル | 説明 | Context | 自動発動 |
+|--------|------|---------|----------|
+| `/o-m-cc:plan <task>` | 要件 → 設計 → タスク分解を一括実行（Agent Teams で並列化 + scout ギャップ分析） | fork | 「計画して」で発動 |
 
 ### 品質
 
-| コマンド | 説明 | Context |
-|---------|------|---------|
-| `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論） | fork |
-| `/o-m-cc:audit [target]` | エージェント・コマンドの品質監査 | - |
-| `/o-m-cc:promote [keyword]` | HANDOVER.md 履歴から繰り返すパターンをスキルに昇格 | - |
-| `/o-m-cc:handover` | セッション引き継ぎ書を生成（意思決定・教訓・申し送り） | fork |
+| スキル | 説明 | Context | 自動発動 |
+|--------|------|---------|----------|
+| `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論） | fork | 「レビューして」で発動 |
+| `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
+| `/o-m-cc:promote [keyword]` | HANDOVER.md 履歴から繰り返すパターンをスキルに昇格 | - | 手動のみ |
+| `/o-m-cc:handover` | セッション引き継ぎ書を生成（意思決定・教訓・申し送り） | fork | 「引き継ぎ」で発動 |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
 
@@ -229,7 +229,7 @@ o-m-cc プラグインの初期トークン消費:
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
 | エージェント | ~880 | 16 エージェント定義 |
-| スキル | ~130 | 11 コマンド定義 |
+| スキル | ~130 | 7 スキル定義 |
 | **合計** | **~1010** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
@@ -453,6 +453,9 @@ o-m-cc/
 ├── .claude-plugin/
 │   ├── plugin.json
 │   └── marketplace.json
+├── facets/                    # エージェント横断の共通ポリシー（Faceted Prompting）
+│   └── policies/
+│       └── confidence-scoring.md  # Confidence Scoring 共通基準
 ├── agents/                    # エージェント定義（teammate spawn 時に参照）
 │   ├── capabilities.md        # エージェント能力サマリー + キーワード
 │   ├── analyst.md             # 要件定義
@@ -469,14 +472,14 @@ o-m-cc/
 │   ├── learnings-researcher.md # 過去の学び検索
 │   ├── code-reviewer.md       # コード品質レビュー
 │   ├── security-reviewer.md   # セキュリティレビュー（並列 spawn 推奨）
-├── commands/                  # スラッシュコマンド
-│   ├── init.md                # プロジェクト初期化
-│   ├── install.md             # グローバル設定
-│   ├── audit.md               # 品質監査
-│   ├── promote.md             # スキル昇格
-│   ├── plan.md                # 計画（要件→設計→タスク一括、Agent Teams）
-│   ├── review.md              # コードレビュー（Agent Teams 並列）
-│   └── handover.md            # セッション引き継ぎ書生成
+├── skills/                    # スラッシュコマンド（スキル）
+│   ├── init/SKILL.md          # プロジェクト初期化
+│   ├── install/SKILL.md       # グローバル設定
+│   ├── audit/SKILL.md         # 品質監査
+│   ├── promote/SKILL.md       # スキル昇格
+│   ├── plan/SKILL.md          # 計画（要件→設計→タスク一括、Agent Teams）
+│   ├── review/SKILL.md        # コードレビュー（Agent Teams 並列）
+│   └── handover/SKILL.md      # セッション引き継ぎ書生成
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
 │   ├── lib/
@@ -579,6 +582,18 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.15.0
+
+- **Faceted Prompting**: `facets/policies/confidence-scoring.md` で Confidence Scoring ポリシーを一元管理。code-reviewer / security-reviewer が共通基準を参照
+- **集約ロジック**: `all()`/`any()` による明示的な判定条件を review（`all("Critical なし")` → マージ可能）と plan（Phase 1 / Phase 4）に導入
+- **spawn prompt 統一**: 全 teammate の spawn prompt を「エージェント定義 / 参照ポリシー / コンテキスト / 入力 / チーム連携 / 出力」の標準構造に統一
+
+### 0.14.0
+
+- **commands/ → skills/ 移行**: `commands/*.md`（フラットファイル）→ `skills/*/SKILL.md`（ディレクトリ構造）に移行
+- **disable-model-invocation**: install/init/audit/promote の4スキルに `disable-model-invocation: true` を追加（意図しない自動発動を防止）
+- **自動発動スキル**: plan（「計画して」）、review（「レビューして」）、handover（「引き継ぎ」）はモデル判断で自動発動
 
 ### 0.13.0
 

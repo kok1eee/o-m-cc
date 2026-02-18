@@ -1,4 +1,5 @@
 ---
+name: handover
 description: "セッションの引き継ぎ書を生成。セッション終了前に「引き継ぎ」「handover」で使用。"
 allowed-tools: [Read, Write, Glob, Grep, Bash, TaskList]
 model: sonnet

@@ -6,7 +6,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
 - Python - セキュリティフック
-- Markdown - エージェント定義, コマンド定義, ドキュメント
+- Markdown - エージェント定義, スキル定義, ドキュメント
 - JSON - プラグイン設定, hooks設定
 - YAML - ハンドオフ
 
@@ -16,7 +16,11 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - **共有タスクリスト**: TaskCreate/TaskUpdate で teammates が自律的にタスク管理
 - **HANDOVER.md VCS 履歴**: セッション引き継ぎの VCS 履歴をナレッジベースとして活用
 
+## Faceted Prompting
+- `facets/policies/` - エージェント横断の共通ポリシー（Confidence Scoring 等）
+- エージェント定義（`agents/*.md`）から `facets/` を参照し、共通基準を一元管理
+
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用
-- エージェント数・コマンド数を変更したら `plugin.json`, `marketplace.json`, `README.md`, `capabilities.md` を同期
+- エージェント数・スキル数を変更したら `plugin.json`, `marketplace.json`, `README.md`, `capabilities.md` を同期
 - バージョンは `plugin.json` を正とし、他ファイルも合わせる

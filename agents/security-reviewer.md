@@ -11,6 +11,12 @@ memory: project
 セキュリティ観点に特化したコードレビューエージェント。
 **code-reviewer と並列実行**して、品質とセキュリティを同時にチェック。
 
+## Confidence Scoring
+
+> **共通ポリシー**: `facets/policies/confidence-scoring.md` を Read して適用してください。
+>
+> Confidence 80以上の問題のみを報告。90+ = Critical、80-89 = Warning。
+
 ## 役割
 
 - OWASP Top 10 に基づく脆弱性検出

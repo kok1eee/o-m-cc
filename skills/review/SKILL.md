@@ -1,4 +1,5 @@
 ---
+name: review
 description: "Agent Teams で code-reviewer と security-reviewer を並列実行してコード品質・セキュリティをチェック。「レビューして」「コードを確認して」で使用。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool]
@@ -45,40 +46,53 @@ TeammateTool: spawnTeam
    teamName: "review"
    name: "code-reviewer"
    prompt: |
-     agents/code-reviewer.md の指示に従い、以下の変更差分をレビューしてください。
+     ## エージェント定義
+     agents/code-reviewer.md の指示に従ってください。
 
-     ## レビュー対象
+     ## 参照ポリシー
+     facets/policies/confidence-scoring.md を Read して適用してください。
+
+     ## コンテキスト
+     - タスク: $ARGUMENTS のコードレビュー
+     - スコープ: コード品質（バグ、複雑性、保守性）
+
+     ## 入力
      [変更差分を含める]
-
-     ## チェック項目
-     - バグ、ロジックエラー
-     - コード複雑性、保守性
-     - プロジェクト規約への準拠
-     - Confidence Scoring で高優先度の問題のみ報告
 
      ## チーム連携
      - 発見した問題を security-reviewer teammate にもメッセージで共有
      - セキュリティに関連する発見があれば security-reviewer に相談
      - 完了したら Lead に結果サマリーをメッセージ送信
 
+     ## 出力
+     - Confidence 80+ の問題のみ Critical/Warning で報告
+     - agents/code-reviewer.md の出力フォーマットに従う
+
 2. TeammateTool: spawnTeammate
    teamName: "review"
    name: "security-reviewer"
    prompt: |
-     agents/security-reviewer.md の指示に従い、以下の変更差分のセキュリティをチェックしてください。
+     ## エージェント定義
+     agents/security-reviewer.md の指示に従ってください。
 
-     ## レビュー対象
+     ## 参照ポリシー
+     facets/policies/confidence-scoring.md を Read して適用してください。
+
+     ## コンテキスト
+     - タスク: $ARGUMENTS のセキュリティレビュー
+     - スコープ: OWASP Top 10 + Trail of Bits パターン
+
+     ## 入力
      [変更差分を含める]
-
-     ## チェック項目
-     - OWASP Top 10 ベースのセキュリティチェック
-     - 脆弱性、認証/認可、機密データ
-     - Trail of Bits パターン（Rationalizations, Insecure Defaults, Sharp Edges）
 
      ## チーム連携
      - 発見した問題を code-reviewer teammate にもメッセージで共有
      - コード品質に関連する発見があれば code-reviewer に相談
      - 完了したら Lead に結果サマリーをメッセージ送信
+
+     ## 出力
+     - Confidence 80+ の問題のみ Critical/Warning で報告
+     - agents/security-reviewer.md の出力フォーマットに従う
 ```
 
 **重要**: 両方の teammate を同時に spawn してレビュー時間を短縮。
@@ -87,6 +101,11 @@ Teammates は互いの発見をメッセージで共有・議論できます。
 ### Step 4: 結果の集約
 
 両方の teammate からの報告を集約：
+
+#### 集約ルール
+
+- `all("Critical なし")` → マージ可能
+- `any("Critical あり")` → 修正必須。Step 5 へ
 
 ```markdown
 # 統合レビュー結果
@@ -100,8 +119,8 @@ Teammates は互いの発見をメッセージで共有・議論できます。
 - Warning: X件
 
 ## 総合判定
-→ 両方 Critical なし: マージ可能
-→ いずれか Critical あり: 修正必須
+→ all("Critical なし"): マージ可能
+→ any("Critical あり"): 修正必須
 ```
 
 ### Step 5: Critical 発見時の対応確認

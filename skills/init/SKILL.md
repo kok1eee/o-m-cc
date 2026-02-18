@@ -1,8 +1,10 @@
 ---
+name: init
 description: "プロジェクト固有の初期化（CLAUDE.md, plan/, Sisyphusルール）。新規プロジェクト開始時や既存プロジェクトにo-m-ccを導入する際に使用。"
 argument-hint: "[project-name]"
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion, Task]
 model: sonnet
+disable-model-invocation: true
 ---
 
 # /o-m-cc:init - Project Initialization
@@ -146,7 +148,7 @@ Sisyphus Loop で自動実行中に権限承認で止まるのを防ぐ。
       "Write(plan/**)",
       "Edit(plan/**)",
       "Read(agents/**)",
-      "Read(commands/**)",
+      "Read(skills/**)",
       "Read(templates/**)",
       "Glob(**)",
       "Grep(**)"

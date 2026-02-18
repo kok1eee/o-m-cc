@@ -1,8 +1,10 @@
 ---
+name: install
 description: "プラグイン・スピナー・hooksのグローバル環境セットアップ。初回インストール後に一度だけ使用。"
 argument-hint: ""
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion]
 model: sonnet
+disable-model-invocation: true
 ---
 
 # /o-m-cc:install - Global Setup
