@@ -104,23 +104,26 @@ if [[ $CURRENT_ITERATION -ge $MAX_ITERATIONS ]]; then
   exit 0
 fi
 
-if [[ -z "$TRANSCRIPT_PATH" ]] || [[ ! -f "$TRANSCRIPT_PATH" ]]; then
-  exit 0
-fi
-
-# Check if there are any assistant messages
-if ! grep -q '"role":"assistant"' "$TRANSCRIPT_PATH" 2>/dev/null; then
-  exit 0
-fi
-
 # Get last assistant message
-LAST_LINE=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | tail -1)
-LAST_OUTPUT=$(echo "$LAST_LINE" | jq -r '
-  .message.content |
-  map(select(.type == "text")) |
-  map(.text) |
-  join("\n")
-' 2>/dev/null || echo "")
+# 2.1.47+: last_assistant_message が hook input に含まれる
+LAST_OUTPUT=$(echo "$HOOK_INPUT" | jq -r '.last_assistant_message // empty' 2>/dev/null || echo "")
+
+# フォールバック: last_assistant_message がない場合はトランスクリプトから取得
+if [[ -z "$LAST_OUTPUT" ]]; then
+  if [[ -z "$TRANSCRIPT_PATH" ]] || [[ ! -f "$TRANSCRIPT_PATH" ]]; then
+    exit 0
+  fi
+  if ! grep -q '"role":"assistant"' "$TRANSCRIPT_PATH" 2>/dev/null; then
+    exit 0
+  fi
+  LAST_LINE=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | tail -1)
+  LAST_OUTPUT=$(echo "$LAST_LINE" | jq -r '
+    .message.content |
+    map(select(.type == "text")) |
+    map(.text) |
+    join("\n")
+  ' 2>/dev/null || echo "")
+fi
 
 # Check for <promise>DONE</promise>
 if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
