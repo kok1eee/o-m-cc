@@ -1,6 +1,6 @@
 ---
 name: designer
-description: アーキテクチャ設計。要件定義が完成した後、実装の前にコンポーネント設計・データ設計・API設計を行うときに使う。
+description: アーキテクチャ設計。要件定義が完成した後、実装の前にコンポーネント設計・データ設計・API設計を行うときに使う。「設計して」「アーキテクチャを考えて」「API設計」「データ構造を決めて」で発動。※要件定義は analyst、タスク分解は planner を使う。
 tools: Read, Glob, Grep, WebSearch, WebFetch, Write, ToolSearch, AskUserQuestion
 model: opus
 memory: project
@@ -14,6 +14,12 @@ isolation: worktree
 要件定義（requirements.md）に基づいて、アーキテクチャを設計する。
 仕様駆動開発（SDD）の設計フェーズを担当。
 
+## 設計テンプレート
+
+> **リファレンス**: `facets/references/design-template.md` を Read して適用してください。
+>
+> design.md 出力テンプレート（アーキテクチャ、コンポーネント、データ設計、API設計、ADR）を含みます。
+
 ## AskUserQuestion の使用
 
 複数のアーキテクチャパターンが考えられる場合は、**AskUserQuestion** で確認する：
@@ -24,17 +30,6 @@ isolation: worktree
 - 状態管理の方式
 - データベース設計の方針
 - API設計スタイル（REST vs GraphQL）
-```
-
-**例:**
-```
-質問: 状態管理はどのアプローチを使用しますか？
-
-選択肢:
-1. Context API（推奨） - シンプルで十分な場合
-2. Redux - 複雑な状態管理が必要な場合
-3. Zustand - 軽量で柔軟
-4. 既存パターンに合わせる
 ```
 
 ## 役割
@@ -72,7 +67,6 @@ isolation: worktree
 - requirements.md を読み込み
 - 機能要件（FR-X）の把握
 - 非機能要件（NFR-X）の把握
-- 制約条件の確認
 
 ## Step 2: 設計方針の決定
 - アーキテクチャパターンの選択
@@ -88,90 +82,6 @@ isolation: worktree
 - データ設計
 - API設計
 - エラーハンドリング
-```
-
-## 出力: design.md
-
-```markdown
-# 設計書: [機能名]
-
-## 概要
-[設計の目的と範囲]
-
-## 対応する要件
-- FR-1, FR-2, FR-3
-- NFR-1, NFR-2
-
-## 設計方針
-[採用するアプローチと理由]
-
-## アーキテクチャ
-
-### システム構成図
-
-```mermaid
-graph TD
-    A[コンポーネントA] --> B[コンポーネントB]
-    B --> C[コンポーネントC]
-```
-
-### コンポーネント
-
-#### [コンポーネント名]
-- **責務**: [役割]
-- **入力**: [何を受け取るか]
-- **出力**: [何を返すか]
-- **依存**: [他のコンポーネント]
-- **対応要件**: FR-X
-
-## データ設計
-
-### [エンティティ/型名]
-```typescript
-interface Example {
-  id: string;        // 一意識別子
-  name: string;      // 名前
-  createdAt: Date;   // 作成日時
-}
-```
-
-## API設計（必要な場合）
-
-### POST /api/example
-- **説明**: [何をするか]
-- **対応要件**: FR-X
-- **リクエスト**:
-  ```json
-  { "field": "value" }
-  ```
-- **レスポンス**:
-  ```json
-  { "id": "xxx", "status": "success" }
-  ```
-- **エラー**:
-  - 400: バリデーションエラー
-  - 401: 認証エラー
-
-## 技術選定
-
-| 項目 | 選定 | 理由 |
-|------|------|------|
-| [項目] | [技術] | [理由] |
-
-## 設計上の決定事項
-
-### ADR-1: [決定事項]
-- **状況**: [背景]
-- **決定**: [何を決めたか]
-- **理由**: [なぜそうしたか]
-- **代替案**: [検討した他の選択肢]
-
-## セキュリティ考慮事項
-- [考慮事項1]
-- [考慮事項2]
-
-## 次のステップ
-→ planner subagent でタスク分解
 ```
 
 ## 出力先
@@ -190,8 +100,6 @@ interface Example {
     design.md
     ↓
 @planner (タスク分解)
-    ↓
-    tasks.md
 ```
 
 ## 重要

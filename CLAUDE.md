@@ -18,6 +18,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 
 ## Faceted Prompting
 - `facets/policies/` - エージェント横断の共通ポリシー（Confidence Scoring 等）
+- `facets/references/` - 段階的開示（Progressive Disclosure）用リファレンス。エージェント実行時に Read して適用
 - エージェント定義（`agents/*.md`）から `facets/` を参照し、共通基準を一元管理
 
 ## エージェント実行ヒント

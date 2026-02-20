@@ -15,4 +15,5 @@
 .claude/.completed-tasks
 .claude/.task-counter
 .claude/hooks-error.log
+.claude/idle-counts/
 plan/

@@ -3,6 +3,11 @@
 # TeammateIdle イベントで実行
 # teammate が idle になったとき、残タスクがあれば再割り当てを示唆
 # 全 teammate idle + 全タスク完了なら完了判定
+#
+# エスカレーションプロトコル:
+#   Stage 1（1回目）: 再割り当てを提案
+#   Stage 2（2回目）: Lead が引き取るか再割り当て
+#   Stage 3（3回目〜）: 部分完了 or ユーザー相談を促す
 
 set -euo pipefail
 
@@ -18,6 +23,7 @@ else
 fi
 
 TASKS_FILE="plan/tasks.md"
+IDLE_COUNT_DIR=".claude/idle-counts"
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
@@ -52,21 +58,63 @@ if [[ $TOTAL_TASKS -eq 0 ]]; then
 fi
 
 if [[ $REMAINING -gt 0 ]]; then
-  # 残タスクあり → 再割り当てを示唆
+  # --- エスカレーションカウント管理 ---
+  mkdir -p "$IDLE_COUNT_DIR"
+  SAFE_NAME=$(echo "$TEAMMATE_NAME" | tr -c '[:alnum:]-_' '_')
+  COUNT_FILE="${IDLE_COUNT_DIR}/${SAFE_NAME}"
+
+  if [[ -f "$COUNT_FILE" ]]; then
+    IDLE_COUNT=$(cat "$COUNT_FILE")
+    IDLE_COUNT=$((IDLE_COUNT + 1))
+  else
+    IDLE_COUNT=1
+  fi
+  echo "$IDLE_COUNT" > "$COUNT_FILE"
+
+  # --- Stage 別メッセージ ---
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "💤 Teammate Idle: $TEAMMATE_NAME"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-  echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-  echo "  → 未着手タスクがあります。この teammate に割り当てを検討してください。"
+
+  if [[ $IDLE_COUNT -le 1 ]]; then
+    # Stage 1: 再割り当て提案
+    echo "💤 Teammate Idle: $TEAMMATE_NAME"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
+    echo "  → 未着手タスクがあります。この teammate に割り当てを検討してください。"
+
+    SYSTEM_MSG="💤 ${TEAMMATE_NAME} が idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 未着手タスクの割り当てを検討してください。"
+
+  elif [[ $IDLE_COUNT -eq 2 ]]; then
+    # Stage 2: Lead 引き取り or 再割り当て
+    echo "⚠️  Teammate Idle (2回目): $TEAMMATE_NAME"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
+    echo "  → この teammate は応答していません。"
+    echo "  → Lead が直接引き取るか、別の teammate に再割り当てしてください。"
+
+    SYSTEM_MSG="⚠️ ${TEAMMATE_NAME} が2回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — Lead が直接引き取るか、別の teammate に再割り当てしてください。"
+
+  else
+    # Stage 3: エスカレーション
+    echo "🚨 Teammate Idle (${IDLE_COUNT}回目): $TEAMMATE_NAME"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo ""
+    echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
+    echo "  → エスカレーション: この teammate のタスクは完了できない可能性があります。"
+    echo "  → 部分的な成果物で完了とするか、ユーザーに相談してください。"
+
+    SYSTEM_MSG="🚨 エスカレーション: ${TEAMMATE_NAME} が ${IDLE_COUNT} 回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 部分完了とするか、ユーザーに相談してください。"
+  fi
+
   echo ""
 
-  jq -n --arg name "$TEAMMATE_NAME" --arg remaining "$REMAINING" --arg total "$TOTAL_TASKS" '{
-    "systemMessage": ("💤 " + $name + " が idle です。残タスク " + $remaining + "/" + $total + " 件 — 未着手タスクの割り当てを検討してください。")
-  }'
+  jq -n --arg msg "$SYSTEM_MSG" '{ "systemMessage": $msg }'
 else
-  # 全タスク完了 → 完了判定
+  # 全タスク完了 → 完了判定（カウントをリセット）
+  rm -rf "$IDLE_COUNT_DIR" 2>/dev/null || true
+
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"

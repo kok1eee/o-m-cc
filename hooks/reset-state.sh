@@ -18,6 +18,11 @@ STATE_FILES=(
   ".claude/hooks-error.log"
 )
 
+# リセット対象ディレクトリ
+STATE_DIRS=(
+  ".claude/idle-counts"
+)
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔄 o-m-cc 状態リセットツール"
@@ -26,12 +31,18 @@ echo ""
 echo "以下のファイルを削除します:"
 echo ""
 
-# 存在するファイルをリストアップ
+# 存在するファイル/ディレクトリをリストアップ
 EXISTING_FILES=()
 for file in "${STATE_FILES[@]}"; do
   if [[ -f "$file" ]]; then
     EXISTING_FILES+=("$file")
     echo "  📄 $file"
+  fi
+done
+for dir in "${STATE_DIRS[@]}"; do
+  if [[ -d "$dir" ]]; then
+    EXISTING_FILES+=("$dir")
+    echo "  📁 $dir/"
   fi
 done
 
@@ -58,10 +69,10 @@ fi
 
 echo ""
 
-# ファイル削除
+# ファイル/ディレクトリ削除
 DELETED_COUNT=0
 for file in "${EXISTING_FILES[@]}"; do
-  if rm -f "$file" 2>/dev/null; then
+  if rm -rf "$file" 2>/dev/null; then
     echo "  ✅ 削除: $file"
     DELETED_COUNT=$((DELETED_COUNT + 1))
     log_message "INFO" "状態ファイルを削除: $file" 2>/dev/null || true

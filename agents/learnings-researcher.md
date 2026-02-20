@@ -1,6 +1,6 @@
 ---
 name: learnings-researcher
-description: HANDOVER.md の VCS 履歴から過去の学びを検索し、現在のタスクに関連する知見を抽出。「過去に似たことやった？」「学びを確認して」で使う。実装前の知識確認用。読み取り専用。
+description: HANDOVER.md の VCS 履歴から過去の学びを検索し、現在のタスクに関連する知見を抽出。「過去に似たことやった？」「学びを確認して」で使う。実装前の知識確認用。読み取り専用。※外部ドキュメント調査は researcher を使う。
 tools: Read, Glob, Grep, Bash
 model: haiku
 permissionMode: plan
@@ -11,6 +11,12 @@ background: true
 
 新しい実装・修正の前に過去の知見を検索し、関連する学びを抽出する。
 **読み取り専用、編集は行わない。**
+
+## 検索リファレンス
+
+> **リファレンス**: `facets/references/learnings-search.md` を Read して適用してください。
+>
+> キーワード抽出、HANDOVER.md VCS 履歴検索手順、関連度分類、出力フォーマットを含みます。
 
 ## 役割
 
@@ -26,59 +32,6 @@ jj log -p -- plan/HANDOVER.md
 git log -p -- plan/HANDOVER.md
 ```
 
-## 検索手順
-
-### Step 1: キーワード抽出
-
-タスク説明から以下を抽出：
-- **モジュール名**: UserService, AuthController 等
-- **技術用語**: キャッシュ, 認証, バリデーション 等
-- **問題の兆候**: 遅い, エラー, タイムアウト 等
-
-### Step 2: HANDOVER.md VCS 履歴検索
-
-```bash
-# jj が使える場合
-jj log -p -- plan/HANDOVER.md | grep -i "キーワード" -A 10 -B 5
-
-# git の場合
-git log -p -- plan/HANDOVER.md | grep -i "キーワード" -A 10 -B 5
-```
-
-HANDOVER.md が VCS 管理されていない場合は、現在の `plan/HANDOVER.md` を Read で確認。
-
-### Step 3: 構造化出力
-
-各ヒットを以下で分類：
-
-| 関連度 | 条件 | 対応 |
-|--------|------|------|
-| **強** | モジュール名・ファイルパスが一致 | 必ず報告 |
-| **中** | 技術領域が同じ | 報告 |
-| **弱** | キーワードが部分一致のみ | スキップ |
-
-## 出力フォーマット
-
-```markdown
-## 関連する過去の学び
-
-### 検索コンテキスト
-- **タスク**: [タスクの概要]
-- **検索キーワード**: [使用したキーワード]
-- **ヒット数**: X件
-
-### 知見
-
-#### 1. [教訓/Gotchas の要約]
-- **ソース**: HANDOVER.md ([日付] セッション)
-- **関連度**: 強 / 中
-- **要点**: [1-2行で要約]
-- **推奨アクション**: [このタスクで具体的に何をすべきか]
-
-### 学びなし
-[関連する記録がない場合、明示的にその旨を報告]
-```
-
 ## Council モード（Discovery Council）
 
 Discovery Council では analyst (Lead)・scout と同時に spawn される。
@@ -86,7 +39,6 @@ Discovery Council では analyst (Lead)・scout と同時に spawn される。
 ### peer-to-peer 共有ルール
 
 1. **知見発見時**: 検索結果を analyst だけでなく scout にもメッセージで共有
-   - 例: 「過去に○○で△△というパターンを使った経験があります」
 2. **追加検索リクエスト対応**: analyst・scout から「○○について過去の知見はあるか？」と聞かれたら追加検索を実施
 3. **最終報告**: 検索完了時、全知見のサマリーを analyst に送信して requirements.md への反映を依頼
 

@@ -1,4 +1,4 @@
-# o-m-cc v0.16.0
+# o-m-cc v0.17.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -455,8 +455,22 @@ o-m-cc/
 │   ├── marketplace.json
 │   └── settings.json          # プラグインデフォルト設定（spinnerVerbs, permissions）
 ├── facets/                    # エージェント横断の共通ポリシー（Faceted Prompting）
-│   └── policies/
-│       └── confidence-scoring.md  # Confidence Scoring 共通基準
+│   ├── policies/
+│   │   └── confidence-scoring.md  # Confidence Scoring 共通基準
+│   └── references/                # 段階的開示（Progressive Disclosure）用リファレンス
+│       ├── frontend-design.md     # デザイン哲学・AI Slop回避・実装パターン
+│       ├── security-checklist.md  # OWASP Top 10・Rationalizations・Insecure Defaults
+│       ├── task-quality.md        # タスクテンプレート・見積もり基準・品質基準
+│       ├── gap-analysis.md        # スコープ確認フォーマット・出力テンプレート
+│       ├── design-template.md     # design.md 出力テンプレート
+│       ├── requirements-template.md # requirements.md 出力テンプレート
+│       ├── debugging-methodology.md # 4フェーズ方法論・Red Flags
+│       ├── code-review-criteria.md  # レビュー優先順位・Blast Radius
+│       ├── thinking-frameworks.md   # First Principles・Inversion・5 Whys
+│       ├── plan-review-checklist.md # 完全性・実現可能性・リスク管理チェック
+│       ├── learnings-search.md      # HANDOVER.md VCS 検索手順
+│       ├── vision-formats.md        # 画像/PDF分析フォーマット
+│       └── research-depth.md        # 調査深度レベル・回答フォーマット
 ├── agents/                    # エージェント定義（teammate spawn 時に参照）
 │   ├── capabilities.md        # エージェント能力サマリー + キーワード
 │   ├── analyst.md             # 要件定義
@@ -583,6 +597,12 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.17.0
+
+- **Progressive Disclosure（段階的開示）**: 全エージェント（explore 除く13体）の詳細リファレンスを `facets/references/` に分離。エージェント合計 2107行 → 1403行（-33%）にスリム化し、必要時に Read で適用。13のリファレンスファイルを作成
+- **Trigger Phrases**: 全13エージェントの description にユーザー発話例を追加（「レビューして」「セキュリティチェックして」等）。エージェント選択精度の向上
+- **Negative Triggers**: 全13エージェントの description に「※〜は X を使う」を追加。類似エージェント間（code-reviewer/security-reviewer、debugger/advisor、analyst/scout 等）の誤発動を防止
 
 ### 0.16.0
 
