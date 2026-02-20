@@ -17,6 +17,7 @@ o-m-cc is a Claude Code plugin that injects an "unstoppable developer" mindset.
 
 ## Prerequisites
 
+- **macOS / Linux** (Windows: use via WSL)
 - [Claude Code](https://claude.com/claude-code) CLI installed
 - `jq` (required for hooks): `brew install jq` / `apt install jq`
 - `python3` (for security hook)

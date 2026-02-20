@@ -24,12 +24,28 @@ fi
 
 TASKS_FILE="plan/tasks.md"
 IDLE_COUNT_DIR=".claude/idle-counts"
+HAS_JQ=false
+check_command jq && HAS_JQ=true
+
+# jq なしでも動作する JSON 出力ヘルパー
+emit_system_message() {
+  local msg="$1"
+  if $HAS_JQ; then
+    jq -n --arg msg "$msg" '{ "systemMessage": $msg }'
+  else
+    echo "{\"systemMessage\": \"$(echo "$msg" | sed 's/"/\\"/g')\"}"
+  fi
+}
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
 
 # teammate 名を取得
-TEAMMATE_NAME=$(echo "$HOOK_INPUT" | jq -r '.teammate_name // .agent_name // "unknown"' 2>/dev/null || echo "unknown")
+if $HAS_JQ; then
+  TEAMMATE_NAME=$(echo "$HOOK_INPUT" | jq -r '.teammate_name // .agent_name // "unknown"' 2>/dev/null || echo "unknown")
+else
+  TEAMMATE_NAME="unknown"
+fi
 
 log_debug "TeammateIdle: $TEAMMATE_NAME が idle になりました"
 
@@ -84,9 +100,7 @@ if [[ $REMAINING -gt 0 ]]; then
     echo "  → 未着手タスクを自分でクレームして作業を続行してください。"
     echo ""
 
-    jq -n --arg remaining "$REMAINING" --arg total "$TOTAL_TASKS" '{
-      "systemMessage": ("残タスク " + $remaining + "/" + $total + " 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。")
-    }'
+    emit_system_message "残タスク ${REMAINING}/${TOTAL_TASKS} 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。"
     exit 2
 
   elif [[ $IDLE_COUNT -eq 2 ]]; then
@@ -114,7 +128,7 @@ if [[ $REMAINING -gt 0 ]]; then
 
   echo ""
 
-  jq -n --arg msg "$SYSTEM_MSG" '{ "systemMessage": $msg }'
+  emit_system_message "$SYSTEM_MSG"
 else
   # 全タスク完了 → 完了判定（カウントをリセット）
   rm -rf "$IDLE_COUNT_DIR" 2>/dev/null || true
@@ -128,9 +142,7 @@ else
   echo "    問題がなければ <promise>DONE</promise> を出力してください。"
   echo ""
 
-  jq -n '{
-    "systemMessage": "✅ 全タスク完了。code-reviewer teammate で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
-  }'
+  emit_system_message "✅ 全タスク完了。code-reviewer teammate で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
 fi
 
 exit 0

@@ -18,13 +18,30 @@ else
 fi
 
 TASKS_FILE="plan/tasks.md"
+HAS_JQ=false
+check_command jq && HAS_JQ=true
+
+# jq なしでも動作する JSON 出力ヘルパー
+emit_system_message() {
+  local msg="$1"
+  if $HAS_JQ; then
+    jq -n --arg msg "$msg" '{ "systemMessage": $msg }'
+  else
+    echo "{\"systemMessage\": \"$(echo "$msg" | sed 's/"/\\"/g')\"}"
+  fi
+}
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
 
 # 完了したタスク情報を取得
-TASK_ID=$(echo "$HOOK_INPUT" | jq -r '.task_id // .taskId // "unknown"' 2>/dev/null || echo "unknown")
-TASK_SUBJECT=$(echo "$HOOK_INPUT" | jq -r '.task_subject // .subject // ""' 2>/dev/null || echo "")
+if $HAS_JQ; then
+  TASK_ID=$(echo "$HOOK_INPUT" | jq -r '.task_id // .taskId // "unknown"' 2>/dev/null || echo "unknown")
+  TASK_SUBJECT=$(echo "$HOOK_INPUT" | jq -r '.task_subject // .subject // ""' 2>/dev/null || echo "")
+else
+  TASK_ID="unknown"
+  TASK_SUBJECT=""
+fi
 
 log_debug "TaskCompleted: タスク $TASK_ID ($TASK_SUBJECT) が完了"
 
@@ -73,9 +90,7 @@ if [[ $REMAINING -gt 0 ]]; then
   echo "  → 次の未着手タスクをクレームして作業を続行してください。"
   echo ""
 
-  jq -n --arg id "$TASK_ID" --arg completed "$COMPLETED_TASKS" --arg total "$TOTAL_TASKS" --arg remaining "$REMAINING" '{
-    "systemMessage": ("✅ タスク " + $id + " 完了 (" + $completed + "/" + $total + ")。残 " + $remaining + " 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。")
-  }'
+  emit_system_message "✅ タスク ${TASK_ID} 完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})。残 ${REMAINING} 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。"
   exit 2
 else
   echo ""
@@ -83,9 +98,7 @@ else
   echo "  → code-reviewer teammate で最終レビューを実行してください。"
   echo ""
 
-  jq -n --arg completed "$COMPLETED_TASKS" '{
-    "systemMessage": ("🎉 全 " + $completed + " タスク完了！code-reviewer teammate で最終レビューを実行し、<promise>DONE</promise> を出力してください。")
-  }'
+  emit_system_message "🎉 全 ${COMPLETED_TASKS} タスク完了！code-reviewer teammate で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
 fi
 
 exit 0

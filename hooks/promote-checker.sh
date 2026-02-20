@@ -15,6 +15,8 @@ else
 fi
 
 HANDOVER_FILE="plan/HANDOVER.md"
+HAS_JQ=false
+command -v jq >/dev/null 2>&1 && HAS_JQ=true
 
 # HANDOVER.md がなければスキップ
 if [[ ! -f "$HANDOVER_FILE" ]]; then
@@ -127,11 +129,12 @@ if [[ -f "$SKILL_CANDIDATES" ]]; then
   CANDIDATES_CONTEXT=$(tail -50 "$SKILL_CANDIDATES" 2>/dev/null || echo "")
 fi
 
-jq -n \
-  --arg patterns "$PATTERNS" \
-  --arg candidates "$CANDIDATES_CONTEXT" \
-  --arg project "$PROJECT_NAME" '{
-  "systemMessage": ("🔁 繰り返しパターン検出 — 自動スキル昇格を実行してください。\n\n検出パターン: " + $patterns + "\nプロジェクト: " + $project + "\n\n~/.claude/skill-candidates.md（クロスプロジェクト履歴）:\n" + $candidates + "\n\n以下の手順で自動昇格:\n1. 上記パターンと skill-candidates.md の履歴を分析\n2. 複数プロジェクトで出現 → グローバルルール（~/.claude/CLAUDE.md）\n   単一プロジェクトで頻出 → プロジェクトルール（CLAUDE.md）\n3. 既存ルールと重複しないか確認してからスキルを作成")
-}'
+PROMOTE_MSG="🔁 繰り返しパターン検出 — 自動スキル昇格を実行してください。\n\n検出パターン: ${PATTERNS}\nプロジェクト: ${PROJECT_NAME}\n\n以下の手順で自動昇格:\n1. 上記パターンと ~/.claude/skill-candidates.md の履歴を分析\n2. 複数プロジェクトで出現 → グローバルルール（~/.claude/CLAUDE.md）\n   単一プロジェクトで頻出 → プロジェクトルール（CLAUDE.md）\n3. 既存ルールと重複しないか確認してからスキルを作成"
+
+if $HAS_JQ; then
+  jq -n --arg msg "$PROMOTE_MSG" '{ "systemMessage": $msg }'
+else
+  echo "{\"systemMessage\": \"$(echo "$PROMOTE_MSG" | sed 's/"/\\"/g')\"}"
+fi
 
 exit 0

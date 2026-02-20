@@ -81,8 +81,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 # 検証コマンドを取得
 get_verify_commands() {
   # カスタム設定があれば使用
-  if [[ -f "$VERIFY_CONFIG" ]]; then
-    echo "$VERIFY_CONFIG" | jq -r '.commands[]?' 2>/dev/null && return
+  if [[ -f "$VERIFY_CONFIG" ]] && command -v jq >/dev/null 2>&1; then
+    jq -r '.commands[]?' "$VERIFY_CONFIG" 2>/dev/null && return
   fi
 
   # プロジェクトタイプ自動検出
@@ -138,7 +138,8 @@ while IFS= read -r cmd; do
   echo ""
   echo "▶ $cmd"
 
-  if ! eval "$cmd" 2>&1 | head -50; then
+  # shellcheck disable=SC2086
+  if ! bash -c "$cmd" 2>&1 | head -50; then
     ERRORS+=("$cmd")
     echo "❌ FAILED: $cmd"
   else

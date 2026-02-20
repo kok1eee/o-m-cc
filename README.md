@@ -15,6 +15,11 @@ o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注�
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
 - **Prometheus式インタビュー**: 計画前にギャップ分析で漏れを発見
 
+## 動作環境
+
+- **macOS / Linux**: フルサポート
+- **Windows**: WSL (Windows Subsystem for Linux) 経由で使用してください
+
 ## Quick Start
 
 ```bash
