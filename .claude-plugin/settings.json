@@ -1,4 +1,8 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  },
+  "agent": "sisyphus",
   "spinnerVerbs": {
     "mode": "replace",
     "verbs": [
