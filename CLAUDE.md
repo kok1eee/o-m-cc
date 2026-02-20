@@ -23,8 +23,21 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 
 ## エージェント実行ヒント
 - `background: true` — I/O集約的な調査エージェント（researcher, learnings-researcher, explore）にバックグラウンド実行ヒント
-- `isolation: worktree` — ファイル変更を行うエージェント（frontend, designer, planner, debugger）に worktree 分離ヒント
-- これらは Claude Code 2.1.49+ の実験的機能。未対応バージョンでは無視される
+- `isolation: worktree` — ファイル変更を行うエージェント（frontend, designer, planner, debugger）に worktree 分離（2.1.50+ で正式サポート）
+
+## 設計思想と強み（変更提案時に必ず照合すること）
+
+以下は o-m-cc の核となる設計思想。これらを損なう提案があった場合は、**必ず指摘して代替案を提示すること**。
+
+| 原則 | 説明 | アンチパターン例 |
+|------|------|-----------------|
+| **Peer-to-peer 協調** | エージェント同士が対等に議論・共有する。中央オーケストレーターは置かない | 全エージェントを統括する「マスターエージェント」の導入 |
+| **VCS ベースのナレッジ** | HANDOVER.md の VCS 履歴がナレッジベース。外部 DB 不要 | 専用データベースやベクトルストアへの依存追加 |
+| **Sisyphus（止まらない）** | タスク完了まで止まらない。hooks の exit code で制御 | 途中で確認を求めて止まる設計、過剰な承認ステップ |
+| **Lightweight** | Markdown + Shell のみ。ビルド不要、ランタイム依存最小 | TypeScript/Python への書き換え、ビルドステップの導入 |
+| **Progressive Disclosure** | frontmatter → 本文 → 参照ファイルの3段階でトークン消費を最小化 | 全情報を1ファイルに詰め込む、エージェント定義の肥大化 |
+| **Plugin ネイティブ** | Claude Code のプラグインシステムに準拠。settings.json で自動設定 | プラグイン外でのグローバル設定変更を前提とする設計 |
+| **エージェント自律性** | 各エージェントは専門家として自律的に判断・行動する | エージェントの行動を細かくスクリプト化して自由度を奪う |
 
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用

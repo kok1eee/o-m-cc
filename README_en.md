@@ -164,6 +164,8 @@ Agent Teams (Council + Pipeline Hybrid):
 | teammate-idle | TeammateIdle | Escalation protocol (3 stages) for idle teammates |
 | task-completed | TaskCompleted | Progress tracking & next task assignment |
 
+> **Note**: Claude Code 2.1.50+ adds `WorktreeCreate` / `WorktreeRemove` hook events for custom VCS setup/teardown with worktree isolation (useful for non-git VCS like jj).
+
 ## Update
 
 ```bash

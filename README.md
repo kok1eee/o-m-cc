@@ -430,6 +430,8 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | TeammateIdle | `teammate-idle.sh` | idle teammate への残タスク再割り当て示唆 |
 | TaskCompleted | `task-completed.sh` | タスク完了時の進捗表示・依存タスクアンブロック |
 
+> **Note**: Claude Code 2.1.50+ では `WorktreeCreate` / `WorktreeRemove` フックイベントが利用可能です。非 git VCS（jj 等）で worktree 分離を使う場合のカスタムセットアップに活用できます。
+
 ### デバッグモード
 
 ```bash
