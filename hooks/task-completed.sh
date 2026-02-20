@@ -70,12 +70,13 @@ echo "  📊 進捗: ${COMPLETED_TASKS}/${TOTAL_TASKS} (${PROGRESS_PCT}%)"
 
 if [[ $REMAINING -gt 0 ]]; then
   echo "  📋 残タスク: ${REMAINING} 件"
-  echo "  → 依存関係が解除されたタスクがあれば teammate に割り当ててください。"
+  echo "  → 次の未着手タスクをクレームして作業を続行してください。"
   echo ""
 
   jq -n --arg id "$TASK_ID" --arg completed "$COMPLETED_TASKS" --arg total "$TOTAL_TASKS" --arg remaining "$REMAINING" '{
-    "systemMessage": ("✅ タスク " + $id + " 完了 (" + $completed + "/" + $total + ")。残 " + $remaining + " 件 — ブロック解除されたタスクの割り当てを確認してください。")
+    "systemMessage": ("✅ タスク " + $id + " 完了 (" + $completed + "/" + $total + ")。残 " + $remaining + " 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。")
   }'
+  exit 2
 else
   echo ""
   echo "  🎉 全タスク完了！"

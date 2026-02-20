@@ -76,17 +76,21 @@ if [[ $REMAINING -gt 0 ]]; then
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   if [[ $IDLE_COUNT -le 1 ]]; then
-    # Stage 1: 再割り当て提案
+    # Stage 1: exit 2 で teammate に作業続行を指示
     echo "💤 Teammate Idle: $TEAMMATE_NAME"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""
     echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    echo "  → 未着手タスクがあります。この teammate に割り当てを検討してください。"
+    echo "  → 未着手タスクを自分でクレームして作業を続行してください。"
+    echo ""
 
-    SYSTEM_MSG="💤 ${TEAMMATE_NAME} が idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 未着手タスクの割り当てを検討してください。"
+    jq -n --arg remaining "$REMAINING" --arg total "$TOTAL_TASKS" '{
+      "systemMessage": ("残タスク " + $remaining + "/" + $total + " 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。")
+    }'
+    exit 2
 
   elif [[ $IDLE_COUNT -eq 2 ]]; then
-    # Stage 2: Lead 引き取り or 再割り当て
+    # Stage 2: Lead に通知（teammate は停止）
     echo "⚠️  Teammate Idle (2回目): $TEAMMATE_NAME"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo ""

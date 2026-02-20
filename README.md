@@ -68,7 +68,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | スキル | 説明 | 自動発動 |
 |--------|------|----------|
 | `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） | 手動のみ |
-| `/o-m-cc:install` | グローバル設定（プラグイン・スピナー・hooks）- 一度だけ | 手動のみ |
 
 > 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
@@ -489,7 +488,6 @@ o-m-cc/
 │   ├── security-reviewer.md   # セキュリティレビュー（並列 spawn 推奨）
 ├── skills/                    # スラッシュコマンド（スキル）
 │   ├── init/SKILL.md          # プロジェクト初期化
-│   ├── install/SKILL.md       # グローバル設定
 │   ├── audit/SKILL.md         # 品質監査
 │   ├── promote/SKILL.md       # スキル昇格
 │   ├── plan/SKILL.md          # 計画（要件→設計→タスク一括、Agent Teams）
@@ -517,9 +515,6 @@ o-m-cc/
 ├── templates/                 # テンプレート
 │   ├── agents/
 │   │   └── sisyphus.md        # Sisyphus デフォルトエージェント
-├── scripts/
-│   ├── install-plugins.sh     # 推奨プラグインのインストール
-│   └── setup-claude-md.sh     # CLAUDE.md の Sisyphus セクション管理
 └── README.md
 ```
 
@@ -606,7 +601,7 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 ### 0.16.0
 
-- **Plugin settings.json**: spinnerVerbs と推奨パーミッションをプラグインデフォルト設定としてシップ（`/install` Step 3, `/init` Step 6 の手動設定を補完）
+- **Plugin settings.json**: spinnerVerbs と推奨パーミッションをプラグインデフォルト設定としてシップ
 - **Agent `background: true`**: researcher, learnings-researcher, explore にバックグラウンド実行ヒントを追加（I/O集約的な調査を非同期化）
 - **Agent `isolation: worktree`**: frontend, designer, planner, debugger に worktree 分離ヒントを追加（並列実行時のファイル競合防止）
 
@@ -619,7 +614,7 @@ export SISYPHUS_MAX_ITERATIONS=30
 ### 0.14.0
 
 - **commands/ → skills/ 移行**: `commands/*.md`（フラットファイル）→ `skills/*/SKILL.md`（ディレクトリ構造）に移行
-- **disable-model-invocation**: install/init/audit/promote の4スキルに `disable-model-invocation: true` を追加（意図しない自動発動を防止）
+- **disable-model-invocation**: init/audit/promote の3スキルに `disable-model-invocation: true` を追加（意図しない自動発動を防止）
 - **自動発動スキル**: plan（「計画して」）、review（「レビューして」）、handover（「引き継ぎ」）はモデル判断で自動発動
 
 ### 0.13.0
@@ -664,7 +659,7 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 - **claude-mem 連携**: セマンティックメモリ検索を全エージェントに提供
 - **learnings-researcher 強化**: claude-mem セマンティック検索をプライマリに、Grep をフォールバックに
-- **/install に claude-mem セットアップステップ追加**
+- ~~`/install` に claude-mem セットアップステップ追加~~（v0.17.0 で `/install` 削除）
 - **/promote が claude-mem からクロスプロジェクトのスキル候補を発掘**
 - **4エージェント (debugger, designer, advisor, analyst)** に ToolSearch + claude-mem 連携を追加
 - claude-mem 未設定時は従来の Grep ベースで完全動作（オプショナル依存）
@@ -683,7 +678,7 @@ export SISYPHUS_MAX_ITERATIONS=30
 ### 0.7.0
 
 - **新エージェント**: debugger（体系的デバッグ）、learnings-researcher（過去の学び検索）
-- **新コマンド**: `/install`（グローバル設定）、`/audit`（品質監査）、`/learn`（学び記録）、`/promote`（スキル昇格）
+- **新コマンド**: `/audit`（品質監査）、`/learn`（学び記録）、`/promote`（スキル昇格）
 - **新hooks**: ~~agent-rules.json、suggest-agent.sh~~（v0.12.0 で削除、capabilities.md のディスパッチ戦略に統合）
 - **security-reviewer 強化**: Trail of Bits パターン（Rationalizations、Insecure Defaults、Sharp Edges）
 - **code-reviewer 強化**: Blast Radius 分析（変更の影響範囲定量化）
