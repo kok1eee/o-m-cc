@@ -12,7 +12,7 @@
     {
       "name": "o-m-cc",
       "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。14の専門エージェント + hooks による品質チェック。HANDOVER.md VCS 履歴によるナレッジ検索。仕様駆動開発（SDD）フロー対応。",
-      "version": "0.17.0",
+      "version": "0.17.1",
       "source": {
         "source": "url",
         "url": "https://github.com/kok1eee/o-m-cc.git"

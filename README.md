@@ -1,4 +1,4 @@
-# o-m-cc v0.17.0
+# o-m-cc v0.17.1
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -592,6 +592,11 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.17.1
+
+- **Hook exit code 2**: TeammateIdle（Stage 1）と TaskCompleted（残タスクあり）で exit code 2 を使用し、teammate に作業続行を直接指示。Lead 経由の再割り当てを待たず自律的にタスクをクレーム
+- **`/install` スキル削除**: Plugin settings.json でスピナー・パーミッションが自動配信されるため不要に。`scripts/install-plugins.sh` も削除
 
 ### 0.17.0
 
