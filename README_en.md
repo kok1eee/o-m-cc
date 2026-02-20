@@ -153,15 +153,16 @@ Agent Teams (Council + Pipeline Hybrid):
 | Hook | Event | Description |
 |------|-------|-------------|
 | check-dependencies | SessionStart | Check required commands (jq, python3) |
+| archive-plans | SessionStart | Archive old plan files |
+| resume-session | SessionStart | Display previous session state |
 | stop-guard | Stop | Sisyphus loop control (detect `<promise>DONE</promise>`) |
-| focus-guard | Stop | Keep focus on current tasks |
-| auto-verify | Stop | Run project tests automatically |
 | generate-handover | Stop | Generate lightweight handover on session end |
 | promote-checker | Stop | Detect repeated patterns for skill promotion |
-| security-reminder | Stop | Security review reminder |
+| focus-guard | UserPromptSubmit | Keep focus on current tasks |
+| security-reminder | PreToolUse | Security review reminder |
+| auto-verify | PostToolUse | Run project tests automatically |
 | teammate-idle | TeammateIdle | Escalation protocol (3 stages) for idle teammates |
 | task-completed | TaskCompleted | Progress tracking & next task assignment |
-| archive-plans | SessionStart | Archive old plan files |
 
 ## Update
 

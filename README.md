@@ -23,9 +23,6 @@ o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注�
 ## Quick Start
 
 ```bash
-# 0. Agent Teams を有効化（必須）
-export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
-
 # 1. marketplace 追加
 claude plugin marketplace add kok1eee/o-m-cc
 
@@ -39,6 +36,8 @@ claude plugin install o-m-cc@kok1eee
 「ログインボタンのバグを修正して」
 → 自動的に Sisyphus モードで動作
 ```
+
+> Agent Teams は plugin の settings.json で自動的に有効化されます。手動での環境変数設定は不要です。
 
 ## Usage
 
@@ -101,9 +100,9 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ```
 /o-m-cc:init
-  → 依存プラグイン確認・インストール
-  → CLAUDE.md に Sisyphus 原則を追加
-  → hooks 設定（<promise>DONE</promise> までループ）
+  → CLAUDE.md 作成（既存なら Sisyphus セクション追加）
+  → .claude/agents/sisyphus.md 配置（デフォルトエージェント）
+  → .gitignore、推奨パーミッション設定
 ```
 
 ### 簡単なタスク
@@ -234,8 +233,8 @@ o-m-cc プラグインの初期トークン消費:
 
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
-| エージェント | ~880 | 16 エージェント定義 |
-| スキル | ~130 | 7 スキル定義 |
+| エージェント | ~880 | 14 エージェント定義 |
+| スキル | ~130 | 6 スキル定義 |
 | **合計** | **~1010** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
@@ -522,6 +521,10 @@ o-m-cc/
 ├── templates/                 # テンプレート
 │   ├── agents/
 │   │   └── sisyphus.md        # Sisyphus デフォルトエージェント
+│   ├── rules/
+│   │   ├── sisyphus.md        # Sisyphus ルール
+│   │   └── plan-or-act.md     # Plan or Act ルール
+│   └── agent-output-mode.md   # エージェント出力モード設定
 └── README.md
 ```
 
