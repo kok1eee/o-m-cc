@@ -1,5 +1,7 @@
 # o-m-cc v0.17.1
 
+[English](README_en.md)
+
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
 ## Overview

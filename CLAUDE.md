@@ -30,3 +30,14 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用
 - エージェント数・スキル数を変更したら `plugin.json`, `marketplace.json`, `README.md`, `capabilities.md` を同期
 - バージョンは `plugin.json` を正とし、他ファイルも合わせる
+
+## デプロイ
+```bash
+# 1. バージョンを更新（plugin.json, marketplace.json, README.md）
+# 2. コミット＆プッシュ
+jj describe -m "chore: bump to vX.Y.Z"
+jj bookmark set main -r @
+jj git push
+# 3. プラグイン更新
+claude plugin update o-m-cc@kok1eee
+```

@@ -1,0 +1,173 @@
+# o-m-cc v0.17.1
+
+[日本語](README.md)
+
+**Sisyphus Loop for Claude Code** — A multi-agent workflow that never stops until TODOs are done.
+
+## Overview
+
+o-m-cc is a Claude Code plugin that injects an "unstoppable developer" mindset.
+
+- **Agent Teams**: Peer-to-peer multi-agent coordination via TeammateTool
+- **HANDOVER.md Knowledge**: Auto-search past learnings from VCS history
+- **Sisyphus Philosophy**: Never stop until the task is complete
+- **TODO-Driven**: Work based on clear task lists
+- **Spec-Driven Development**: Structured flow from requirements → design → tasks → implementation
+- **Gap Analysis**: Discover missing requirements before planning
+
+## Prerequisites
+
+- [Claude Code](https://claude.com/claude-code) CLI installed
+- `jq` (required for hooks): `brew install jq` / `apt install jq`
+- `python3` (for security hook)
+
+## Quick Start
+
+```bash
+# 1. Add marketplace
+claude plugin marketplace add kok1eee/o-m-cc
+
+# 2. Install plugin
+claude plugin install o-m-cc@kok1eee
+
+# 3. Initialize project (creates CLAUDE.md + enables Sisyphus)
+/o-m-cc:init
+
+# 4. Just work normally
+"Fix the login button bug"
+→ Automatically runs in Sisyphus mode
+```
+
+> Agent Teams is enabled automatically via plugin settings.json. No manual env var setup needed.
+
+## Usage
+
+### Simple Tasks (bug fixes, small features)
+
+Just ask normally after Sisyphus mode is enabled:
+
+```
+"Add error handling to the API"
+"Change the button color to blue"
+"Fix the login page bug"
+```
+
+Automatically runs: TODO creation → Implementation → Review → Done.
+
+### Complex Tasks (new features, large refactoring)
+
+Run the planning phase first:
+
+```bash
+/o-m-cc:plan "Implement authentication system"
+```
+
+After planning completes:
+
+```
+"Start implementation based on the plan"
+```
+
+## Skills
+
+### Setup
+
+| Skill | Description | Auto-trigger |
+|-------|-------------|-------------|
+| `/o-m-cc:init` | Project initialization (CLAUDE.md + Sisyphus) | Manual only |
+
+### Planning Phase
+
+| Skill | Description | Context | Auto-trigger |
+|-------|-------------|---------|-------------|
+| `/o-m-cc:plan <task>` | Requirements → Design → Tasks (Agent Teams parallel + gap analysis) | fork | On "plan this" |
+
+### Quality
+
+| Skill | Description | Context | Auto-trigger |
+|-------|-------------|---------|-------------|
+| `/o-m-cc:review [files]` | Code review with Agent Teams (peer-to-peer discussion) | fork | On "review this" |
+| `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
+| `/o-m-cc:promote [keyword]` | Promote repeated patterns from HANDOVER.md history to skills | - | Manual only |
+| `/o-m-cc:handover` | Generate session handover document | fork | On "handover" |
+
+## Agents (14 specialists)
+
+### Planning
+
+| Agent | Role | Model |
+|-------|------|-------|
+| @analyst | Requirements analysis | sonnet |
+| @scout | Gap analysis | sonnet |
+| @designer | Architecture design | opus |
+| @planner | Task breakdown | sonnet |
+| @critic | Plan review | sonnet |
+
+### Analysis
+
+| Agent | Role | Model |
+|-------|------|-------|
+| @advisor | Strategy & debugging consultation | opus |
+| @researcher | Documentation research | sonnet |
+| @learnings-researcher | Past learnings search | haiku |
+| @debugger | Systematic debugging | sonnet |
+| @explore | Fast codebase exploration | haiku |
+| @vision | PDF/image analysis | sonnet |
+
+### Implementation
+
+| Agent | Role | Model |
+|-------|------|-------|
+| @frontend | UI/UX component creation | sonnet |
+
+### Quality
+
+| Agent | Role | Model |
+|-------|------|-------|
+| @code-reviewer | Code quality review | sonnet |
+| @security-reviewer | Security review | sonnet |
+
+## Planning Workflow
+
+```
+Agent Teams (Council + Pipeline Hybrid):
+┌─────────────────────────────────────────────────────┐
+│              Phase 1: Discovery Council               │
+│  learnings-researcher ◄─► analyst (Lead) ◄─► scout   │
+│  Peer-to-peer findings sharing                       │
+└─────────────────────────────────────────────────────┘
+          │ requirements.md
+          ▼
+  Phase 2 (designer) → Phase 3 (planner)
+  design.md             tasks.md
+                           │
+          ┌────────────────────────────────┐
+          │    Phase 4: Review Council      │
+          │    critic (Lead) ◄─► advisor    │
+          └────────────────────────────────┘
+```
+
+## Hooks
+
+| Hook | Event | Description |
+|------|-------|-------------|
+| check-dependencies | SessionStart | Check required commands (jq, python3) |
+| stop-guard | Stop | Sisyphus loop control (detect `<promise>DONE</promise>`) |
+| focus-guard | Stop | Keep focus on current tasks |
+| auto-verify | Stop | Run project tests automatically |
+| generate-handover | Stop | Generate lightweight handover on session end |
+| promote-checker | Stop | Detect repeated patterns for skill promotion |
+| security-reminder | Stop | Security review reminder |
+| teammate-idle | TeammateIdle | Escalation protocol (3 stages) for idle teammates |
+| task-completed | TaskCompleted | Progress tracking & next task assignment |
+| archive-plans | SessionStart | Archive old plan files |
+
+## Update
+
+```bash
+claude plugin update o-m-cc@kok1eee
+```
+
+## License
+
+MIT
