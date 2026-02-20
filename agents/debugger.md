@@ -4,6 +4,7 @@ description: 体系的デバッグ。バグ、テスト失敗、予期しない�
 tools: Read, Glob, Grep, Bash, ToolSearch, AskUserQuestion
 model: sonnet
 memory: project
+isolation: worktree
 ---
 
 # Debugger - 体系的デバッグスペシャリスト

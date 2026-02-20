@@ -1,4 +1,4 @@
-# o-m-cc v0.15.0
+# o-m-cc v0.16.0
 
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
@@ -452,7 +452,8 @@ bash hooks/reset-state.sh
 o-m-cc/
 ├── .claude-plugin/
 │   ├── plugin.json
-│   └── marketplace.json
+│   ├── marketplace.json
+│   └── settings.json          # プラグインデフォルト設定（spinnerVerbs, permissions）
 ├── facets/                    # エージェント横断の共通ポリシー（Faceted Prompting）
 │   └── policies/
 │       └── confidence-scoring.md  # Confidence Scoring 共通基準
@@ -582,6 +583,12 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.16.0
+
+- **Plugin settings.json**: spinnerVerbs と推奨パーミッションをプラグインデフォルト設定としてシップ（`/install` Step 3, `/init` Step 6 の手動設定を補完）
+- **Agent `background: true`**: researcher, learnings-researcher, explore にバックグラウンド実行ヒントを追加（I/O集約的な調査を非同期化）
+- **Agent `isolation: worktree`**: frontend, designer, planner, debugger に worktree 分離ヒントを追加（並列実行時のファイル競合防止）
 
 ### 0.15.0
 

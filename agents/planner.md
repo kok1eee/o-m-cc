@@ -4,6 +4,7 @@ description: タスク分解。設計書が完成した後、実装に入る前�
 tools: Read, Glob, Grep, Write, TaskCreate, TaskUpdate
 model: sonnet
 memory: project
+isolation: worktree
 ---
 
 # Planner - タスク分解スペシャリスト

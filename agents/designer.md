@@ -4,6 +4,7 @@ description: アーキテクチャ設計。要件定義が完成した後、実�
 tools: Read, Glob, Grep, WebSearch, WebFetch, Write, ToolSearch, AskUserQuestion
 model: opus
 memory: project
+isolation: worktree
 ---
 
 # Designer - アーキテクチャ設計スペシャリスト

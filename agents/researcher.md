@@ -4,6 +4,7 @@ description: 公式ドキュメント、実装例、ベストプラクティス�
 tools: Read, Glob, Grep, WebSearch, WebFetch
 model: sonnet
 permissionMode: plan
+background: true
 ---
 
 # Researcher - 調査スペシャリスト

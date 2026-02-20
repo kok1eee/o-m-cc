@@ -4,6 +4,7 @@ description: フロントエンド実装、UI設計、コンポーネント作�
 tools: Read, Write, Edit, Glob, Grep
 model: sonnet
 memory: project
+isolation: worktree
 ---
 
 # Frontend - プロダクション品質UIエンジニア

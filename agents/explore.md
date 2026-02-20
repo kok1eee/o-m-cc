@@ -4,6 +4,7 @@ description: 高速なコードベース探索。コードの場所を調べた�
 tools: Read, Glob, Grep
 model: haiku
 permissionMode: plan
+background: true
 ---
 
 # Explore - 高速探索エージェント

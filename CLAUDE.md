@@ -20,6 +20,11 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - `facets/policies/` - エージェント横断の共通ポリシー（Confidence Scoring 等）
 - エージェント定義（`agents/*.md`）から `facets/` を参照し、共通基準を一元管理
 
+## エージェント実行ヒント
+- `background: true` — I/O集約的な調査エージェント（researcher, learnings-researcher, explore）にバックグラウンド実行ヒント
+- `isolation: worktree` — ファイル変更を行うエージェント（frontend, designer, planner, debugger）に worktree 分離ヒント
+- これらは Claude Code 2.1.49+ の実験的機能。未対応バージョンでは無視される
+
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用
 - エージェント数・スキル数を変更したら `plugin.json`, `marketplace.json`, `README.md`, `capabilities.md` を同期

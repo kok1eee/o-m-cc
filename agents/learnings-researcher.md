@@ -4,6 +4,7 @@ description: HANDOVER.md の VCS 履歴から過去の学びを検索し、現�
 tools: Read, Glob, Grep, Bash
 model: haiku
 permissionMode: plan
+background: true
 ---
 
 # Learnings Researcher - 過去の学び検索エージェント
