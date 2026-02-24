@@ -1,4 +1,4 @@
-# o-m-cc v0.17.1
+# o-m-cc v0.17.2
 
 [English](README_en.md)
 
@@ -604,6 +604,13 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.17.2
+
+- **README 乖離修正**: Quick Start から不要な `export` 削除、Token Efficiency のエージェント数・スキル数を実態に合わせて修正、README_en.md の hooks イベント誤記修正・resume-session 追加、Structure に templates/rules/ 追加
+- **CLAUDE.md 設計思想セクション追加**: 7つの設計原則（Peer-to-peer 協調、VCS ベースのナレッジ等）とアンチパターンを明記。原則を損なう提案時に指摘するガード
+- **`isolation: worktree` 正式サポート記述**: Claude Code 2.1.50+ で正式サポートされたことを反映
+- **エージェントモデル変更**: explore, learnings-researcher を haiku → sonnet に変更
 
 ### 0.17.1
 
