@@ -2,7 +2,7 @@
 name: learnings-researcher
 description: HANDOVER.md の VCS 履歴から過去の学びを検索し、現在のタスクに関連する知見を抽出。「過去に似たことやった？」「学びを確認して」で使う。実装前の知識確認用。読み取り専用。※外部ドキュメント調査は researcher を使う。
 tools: Read, Glob, Grep, Bash
-model: haiku
+model: sonnet
 permissionMode: plan
 background: true
 ---

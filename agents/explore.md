@@ -2,7 +2,7 @@
 name: explore
 description: 高速なコードベース探索。コードの場所を調べたいとき、構造を把握したいときに使う。ファイル検索、コード検索、構造分析。読み取り専用。「どこにある？」「探して」「構造を教えて」「ファイルを見つけて」で発動。※外部ドキュメント調査は researcher を使う。
 tools: Read, Glob, Grep
-model: haiku
+model: sonnet
 permissionMode: plan
 background: true
 ---
