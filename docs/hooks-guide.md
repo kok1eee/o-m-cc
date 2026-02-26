@@ -19,6 +19,7 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 |------|------|------------|
 | `check-dependencies.sh` | 依存コマンド（jq, python3）の存在確認 | 3秒 |
 | `archive-plans.sh` | 1時間以上前のプランファイルをアーカイブ | 5秒 |
+| `memory-digest.sh` | サブエージェントの Memory ダイジェスト表示 | 3秒 |
 
 ### Stop (セッション終了時)
 

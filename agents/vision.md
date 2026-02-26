@@ -3,6 +3,7 @@ name: vision
 description: PDF・画像・スクリーンショットを分析。デザインモックを読み取りたいとき、エラー画面を解析したいとき、仕様書から情報を抽出したいときに使う。「この画像を見て」「PDFを読んで」「スクショを解析して」「モックを確認して」で発動。※UI実装は frontend を使う。
 tools: Read, Glob
 model: sonnet
+memory: project
 permissionMode: plan
 ---
 

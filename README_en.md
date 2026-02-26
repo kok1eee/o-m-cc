@@ -150,6 +150,7 @@ Agent Teams (Council + Pipeline Hybrid):
 |------|-------|-------------|
 | check-dependencies | SessionStart | Check required commands (jq, python3) |
 | archive-plans | SessionStart | Archive old plan files |
+| memory-digest | SessionStart | Display subagent Memory digest |
 | stop-guard | Stop | Sisyphus loop control (detect `<promise>DONE</promise>`) |
 | focus-guard | UserPromptSubmit | Keep focus on current tasks |
 | security-reminder | PreToolUse | Security review reminder |

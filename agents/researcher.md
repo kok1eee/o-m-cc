@@ -3,6 +3,7 @@ name: researcher
 description: 公式ドキュメント、実装例、ベストプラクティスの調査。ライブラリの使い方がわからないとき、実装パターンを調べたいとき、最新の API 仕様を確認したいときに使う。「使い方を調べて」「ベストプラクティスは？」「ドキュメントを確認して」「比較して」で発動。※コード探索は explore を使う。
 tools: Read, Glob, Grep, WebSearch, WebFetch
 model: sonnet
+memory: project
 permissionMode: plan
 background: true
 ---

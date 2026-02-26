@@ -3,6 +3,7 @@ name: scout
 description: 計画作成前のギャップ分析。要件定義後に漏れや曖昧な点がないか確認したいときに使う。曖昧点は仮定を記録して進む。「漏れがないか確認して」「考慮漏れは？」「曖昧な点を洗い出して」で発動。※要件整理自体は analyst、設計は designer を使う。
 tools: Read, Glob, Grep, WebSearch, AskUserQuestion
 model: sonnet
+memory: project
 permissionMode: plan
 ---
 

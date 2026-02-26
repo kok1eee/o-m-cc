@@ -312,6 +312,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 |---------|------|------|
 | SessionStart | `check-dependencies.sh` | 依存コマンド（jq, python3）の確認 |
 | SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
+| SessionStart | `memory-digest.sh` | サブエージェント Memory ダイジェスト表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
@@ -392,6 +393,7 @@ o-m-cc/
 │   │   └── common.sh          # 共通ライブラリ
 │   ├── check-dependencies.sh  # 依存コマンド確認
 │   ├── archive-plans.sh       # プランアーカイブ
+│   ├── memory-digest.sh       # エージェント Memory ダイジェスト
 │   ├── stop-guard.sh          # Sisyphus ガード
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
 │   ├── focus-guard.sh         # タスク進行中の脱線防止
