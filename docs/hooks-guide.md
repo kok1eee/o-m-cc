@@ -19,14 +19,12 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 |------|------|------------|
 | `check-dependencies.sh` | 依存コマンド（jq, python3）の存在確認 | 3秒 |
 | `archive-plans.sh` | 1時間以上前のプランファイルをアーカイブ | 5秒 |
-| `resume-session.sh` | 前回のセッション状態を表示 | 5秒 |
 
 ### Stop (セッション終了時)
 
 | Hook | 説明 | タイムアウト |
 |------|------|------------|
 | `stop-guard.sh` | Sisyphus ガード（DONE 検知時のレビュー確認） | 10秒 |
-| `generate-handover.sh` | セッション状態を HANDOVER.md に保存（/handover 未実行時のフォールバック） | 10秒 |
 
 ### UserPromptSubmit (ユーザー入力時)
 
@@ -105,7 +103,6 @@ bash hooks/reset-state.sh
 削除されるファイル:
 - `.claude/sisyphus-state.json`
 - `.claude/.completed-phases`
-- `plan/HANDOVER.md`
 - `.claude/hooks-error.log`
 
 ### hooks を無効化

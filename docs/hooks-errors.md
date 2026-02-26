@@ -50,17 +50,6 @@ sudo apt install python3
 
 ## SessionStart 関連
 
-### HOOK-101: HANDOVER.md の読み込み失敗
-
-**症状**: 前回のセッション情報が表示されない
-
-**原因**: `plan/HANDOVER.md` が破損している
-
-**対処法**:
-```bash
-rm plan/HANDOVER.md
-```
-
 ### HOOK-102: プランファイルのアーカイブ失敗
 
 **症状**: `~/.claude/plans/archive/` にファイルがコピーされない
@@ -86,17 +75,6 @@ mv ~/.claude/plans/*.md ~/.claude/plans/archive/$(date +%Y-%m-%d)/
 **対処法**:
 ```bash
 rm .claude/sisyphus-state.json
-```
-
-### HOOK-104: HANDOVER.md の生成失敗
-
-**症状**: セッション終了時に HANDOVER.md が作成されない
-
-**原因**: `plan/` ディレクトリがない、tasks.md が存在しない
-
-**対処法**:
-```bash
-mkdir -p plan
 ```
 
 ## PostToolUse 関連
@@ -141,7 +119,6 @@ bash hooks/reset-state.sh
 ```bash
 rm -f .claude/sisyphus-state.json
 rm -f .claude/.completed-phases
-rm -f plan/HANDOVER.md
 rm -f .claude/hooks-error.log
 ```
 
@@ -158,7 +135,6 @@ claude
 
 ```bash
 echo '{}' | bash hooks/check-dependencies.sh
-echo '{}' | bash hooks/resume-session.sh
 ```
 
 ## サポート

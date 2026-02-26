@@ -49,7 +49,6 @@ model: sonnet
 | 機能の計画が必要 | `/plan` — 要件 → 設計 → タスク分解 |
 | コードレビュー | `/review` — code + security 並列レビュー |
 | 行き詰まった | advisor エージェント — 戦略的判断 |
-| 過去の学びを確認 | learnings-researcher エージェント |
 
 ### 5. 検証してから完了する
 

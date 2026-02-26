@@ -9,7 +9,6 @@
 o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注入するプラグインです。
 
 - **Agent Teams**: TeammateTool による peer-to-peer マルチエージェント協調
-- **HANDOVER.md ナレッジ**: VCS 履歴から過去の学びを自動検索
 - **Sisyphus哲学**: タスク完了まで決して止まらない
 - **TODOドリブン**: 明確なタスクリストに基づいて作業
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
@@ -89,8 +88,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 |--------|------|---------|----------|
 | `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論） | fork | 「レビューして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
-| `/o-m-cc:promote [keyword]` | HANDOVER.md 履歴から繰り返すパターンをスキルに昇格 | - | 手動のみ |
-| `/o-m-cc:handover` | セッション引き継ぎ書を生成（意思決定・教訓・申し送り） | fork | 「引き継ぎ」で発動 |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
 
@@ -118,8 +115,8 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 Agent Teams (Council + Pipeline ハイブリッド):
 ┌─────────────────────────────────────────────────────┐
 │              Phase 1: Discovery Council               │
-│  learnings-researcher ◄─► analyst (Lead) ◄─► scout   │
-│  peer-to-peer で findings を共有                      │
+│         analyst (Lead) ◄─► scout                     │
+│         peer-to-peer で findings を共有               │
 └─────────────────────────────────────────────────────┘
           │ requirements.md
           ▼
@@ -187,7 +184,6 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|--------|
 | @advisor | デバッグ・戦略相談 | opus | **plan** | project |
 | @researcher | ドキュメント調査 | sonnet | **plan** | - |
-| @learnings-researcher | 過去の学び検索 | haiku | **plan** | - |
 | @debugger | 体系的デバッグ | sonnet | default | project |
 | @explore | 高速コード探索 | haiku | **plan** | - |
 | @vision | PDF/画像分析 | sonnet | **plan** | - |
@@ -221,8 +217,7 @@ plan/
 ├── brainstorm.md       # ブレインストーミング結果（オプション）
 ├── requirements.md     # 要件定義（FR-X, NFR-X）
 ├── design.md           # 設計書（コンポーネント、API）
-├── tasks.md            # 実装タスク（依存関係、見積もり）
-└── HANDOVER.md         # セッション引き継ぎ書（/handover で生成）
+└── tasks.md            # 実装タスク（依存関係、見積もり）
 ```
 
 ## Token Efficiency
@@ -233,9 +228,9 @@ o-m-cc プラグインの初期トークン消費:
 
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
-| エージェント | ~880 | 14 エージェント定義 |
-| スキル | ~130 | 6 スキル定義 |
-| **合計** | **~1010** | Opus 1M の約 **0.1%** |
+| エージェント | ~820 | 13 エージェント定義 |
+| スキル | ~90 | 4 スキル定義 |
+| **合計** | **~910** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
 
@@ -259,109 +254,6 @@ Teammate → 要約をメッセージで Lead に返却
 - path/to/file.ts:45-67
 **サマリー**: [1-2文で何をしたか]
 ```
-
-## Cross-Session Restoration
-
-セッション開始時に前回の状態を自動表示。`/compact` 後も継続作業可能。
-
-### 仕組み
-
-```
-SessionStart Hook
-    │
-    └─ plan/HANDOVER.md を検出
-         │
-         ├─ 30日以上古い → スキップ
-         │
-         └─ 有効 → 引き継ぎ書の案内を表示
-              ├─ 作業サマリー
-              └─ ネクストステップ
-```
-
-### HANDOVER.md の生成
-
-| 方法 | タイミング | 内容 |
-|------|-----------|------|
-| `/o-m-cc:handover` | 手動（セッション終了前） | リッチ（意思決定ログ、教訓、申し送り） |
-| `generate-handover.sh` | 自動（Stop hook） | 軽量フォールバック（進捗、変更ファイル） |
-
-`/o-m-cc:handover` で既に生成済みの場合、Stop hook はスキップします。
-
-### 表示例
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 前回の引き継ぎ書あり (plan/HANDOVER.md)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-【作業サマリー】
-- UserService の実装に取り組んだ
-- 認証は session-based を採用（JWT は既存インフラと非互換のため却下）
-
-【ネクストステップ】
-1. UserService のテスト追加
-2. エラーハンドリングの統一
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-💡 詳細: plan/HANDOVER.md を読んでください
-💡 続行: 作業内容を説明してください
-💡 リセット: /clear
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
-
-## Handover
-
-セッション状態を構造化して引き継ぐ仕組み。`/o-m-cc:handover` または Stop hook で `plan/HANDOVER.md` を生成。
-
-### 目的
-
-- `/compact` 後も状態を復元可能
-- 次回セッションへのスムーズな引き継ぎ
-- 意思決定の理由と教訓の記録
-
-### 構造
-
-```markdown
-# Session Handover
-> Generated: 2026-01-20 14:30
-
-## 作業サマリー
-- UserService の実装に取り組んだ
-- Phase 1 完了、Phase 2 は 70% 進捗
-
-## 意思決定ログ
-| 決定 | 理由 | 代替案 |
-|------|------|--------|
-| session-based 認証 | 既存インフラとの互換性 | JWT |
-
-## 教訓と注意点（Gotchas）
-- UserRepository のテストが不安定（CI で flaky）
-
-## ネクストステップ
-1. UserService のテスト追加
-```
-
-## Learning Flow
-
-セッション中の教訓・意思決定を HANDOVER.md に蓄積し、VCS 履歴から繰り返すパターンを自動スキル化するフロー。
-
-```
-セッション作業
-    ↓
-/handover → HANDOVER.md（意思決定、教訓、Gotchas）→ VCS commit で履歴蓄積
-    ↓
-promote-checker（自動）→ VCS 履歴と照合 → パターン検出
-    ├─ なし → 終了
-    └─ あり → ~/.claude/skill-candidates.md に蓄積 → 自動スキル昇格
-                ├─ 複数プロジェクトで出現 → グローバルルール（~/.claude/CLAUDE.md）
-                └─ 単一プロジェクトで頻出 → プロジェクトルール（CLAUDE.md）
-```
-
-`/promote` で手動実行も可能（クロスプロジェクト候補 + ローカル候補を統合して提示）。
-
-### HANDOVER.md の VCS 管理
-
-HANDOVER.md はバージョン管理対象。セッションごとに上書きされ、VCS の diff 履歴として教訓が蓄積される。`promote-checker` はこの履歴を自動検索して繰り返すパターンを発見・スキル化する。
 
 ## Agent Capabilities
 
@@ -420,10 +312,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 |---------|------|------|
 | SessionStart | `check-dependencies.sh` | 依存コマンド（jq, python3）の確認 |
 | SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
-| SessionStart | `resume-session.sh` | 前回のセッション状態を表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
-| Stop | `generate-handover.sh` | セッション状態を HANDOVER.md に保存 |
-| Stop | `promote-checker.sh` | HANDOVER.md 履歴から繰り返しパターンを検出し自動スキル昇格を実行 |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
@@ -475,7 +364,6 @@ o-m-cc/
 │       ├── code-review-criteria.md  # レビュー優先順位・Blast Radius
 │       ├── thinking-frameworks.md   # First Principles・Inversion・5 Whys
 │       ├── plan-review-checklist.md # 完全性・実現可能性・リスク管理チェック
-│       ├── learnings-search.md      # HANDOVER.md VCS 検索手順
 │       ├── vision-formats.md        # 画像/PDF分析フォーマット
 │       └── research-depth.md        # 調査深度レベル・回答フォーマット
 ├── agents/                    # エージェント定義（teammate spawn 時に参照）
@@ -491,26 +379,20 @@ o-m-cc/
 │   ├── frontend.md            # UI/UXエンジニア
 │   ├── vision.md              # マルチモーダル分析
 │   ├── debugger.md             # 体系的デバッグ
-│   ├── learnings-researcher.md # 過去の学び検索
 │   ├── code-reviewer.md       # コード品質レビュー
 │   ├── security-reviewer.md   # セキュリティレビュー（並列 spawn 推奨）
 ├── skills/                    # スラッシュコマンド（スキル）
 │   ├── init/SKILL.md          # プロジェクト初期化
 │   ├── audit/SKILL.md         # 品質監査
-│   ├── promote/SKILL.md       # スキル昇格
 │   ├── plan/SKILL.md          # 計画（要件→設計→タスク一括、Agent Teams）
-│   ├── review/SKILL.md        # コードレビュー（Agent Teams 並列）
-│   └── handover/SKILL.md      # セッション引き継ぎ書生成
+│   └── review/SKILL.md        # コードレビュー（Agent Teams 並列）
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
 │   ├── lib/
 │   │   └── common.sh          # 共通ライブラリ
 │   ├── check-dependencies.sh  # 依存コマンド確認
 │   ├── archive-plans.sh       # プランアーカイブ
-│   ├── resume-session.sh      # セッション復元
 │   ├── stop-guard.sh          # Sisyphus ガード
-│   ├── generate-handover.sh   # セッション状態保存（HANDOVER.md）
-│   ├── promote-checker.sh     # HANDOVER.md 履歴から繰り返しパターン検出
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
 │   ├── focus-guard.sh         # タスク進行中の脱線防止
 │   ├── teammate-idle.sh       # Teammate idle 時の再割り当て（Agent Teams）

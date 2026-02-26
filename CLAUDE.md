@@ -1,20 +1,18 @@
 # o-m-cc - Project Configuration
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeammateTool) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。14の専門エージェント + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeammateTool) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。13の専門エージェント + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
 - Python - セキュリティフック
 - Markdown - エージェント定義, スキル定義, ドキュメント
 - JSON - プラグイン設定, hooks設定
-- YAML - ハンドオフ
-
 ## アーキテクチャ
 - **Agent Teams**: TeammateTool (spawnTeam + teammates) による並列エージェント協調
 - **peer-to-peer 通信**: teammates 間でメッセージ交換
 - **共有タスクリスト**: TaskCreate/TaskUpdate で teammates が自律的にタスク管理
-- **HANDOVER.md VCS 履歴**: セッション引き継ぎの VCS 履歴をナレッジベースとして活用
+- **ナレッジ蓄積**: Claude Code の auto-memory に委ねる（プラグイン独自のナレッジ管理は行わない）
 
 ## Faceted Prompting
 - `facets/policies/` - エージェント横断の共通ポリシー（Confidence Scoring 等）
@@ -22,7 +20,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - エージェント定義（`agents/*.md`）から `facets/` を参照し、共通基準を一元管理
 
 ## エージェント実行ヒント
-- `background: true` — I/O集約的な調査エージェント（researcher, learnings-researcher, explore）にバックグラウンド実行ヒント
+- `background: true` — I/O集約的な調査エージェント（researcher, explore）にバックグラウンド実行ヒント
 - `isolation: worktree` — ファイル変更を行うエージェント（frontend, designer, planner, debugger）に worktree 分離（2.1.50+ で正式サポート）
 
 ## 設計思想と強み（変更提案時に必ず照合すること）
@@ -32,7 +30,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 | 原則 | 説明 | アンチパターン例 |
 |------|------|-----------------|
 | **Peer-to-peer 協調** | エージェント同士が対等に議論・共有する。中央オーケストレーターは置かない | 全エージェントを統括する「マスターエージェント」の導入 |
-| **VCS ベースのナレッジ** | HANDOVER.md の VCS 履歴がナレッジベース。外部 DB 不要 | 専用データベースやベクトルストアへの依存追加 |
+| **Claude Code ネイティブ活用** | ナレッジ蓄積は auto-memory に委ねる。Claude Code が提供する機能を最大限活用 | プラグイン独自のナレッジ管理機構の導入 |
 | **Sisyphus（止まらない）** | タスク完了まで止まらない。hooks の exit code で制御 | 途中で確認を求めて止まる設計、過剰な承認ステップ |
 | **Lightweight** | Markdown + Shell のみ。ビルド不要、ランタイム依存最小 | TypeScript/Python への書き換え、ビルドステップの導入 |
 | **Progressive Disclosure** | frontmatter → 本文 → 参照ファイルの3段階でトークン消費を最小化 | 全情報を1ファイルに詰め込む、エージェント定義の肥大化 |

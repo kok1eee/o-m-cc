@@ -14,7 +14,6 @@ STATE_FILES=(
   ".claude/sisyphus-state.json"
   ".claude/.task-counter"
   ".claude/.completed-phases"
-  "plan/HANDOVER.md"
   ".claude/hooks-error.log"
 )
 

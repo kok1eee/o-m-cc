@@ -9,7 +9,6 @@
 o-m-cc is a Claude Code plugin that injects an "unstoppable developer" mindset.
 
 - **Agent Teams**: Peer-to-peer multi-agent coordination via TeammateTool
-- **HANDOVER.md Knowledge**: Auto-search past learnings from VCS history
 - **Sisyphus Philosophy**: Never stop until the task is complete
 - **TODO-Driven**: Work based on clear task lists
 - **Spec-Driven Development**: Structured flow from requirements → design → tasks → implementation
@@ -89,10 +88,8 @@ After planning completes:
 |-------|-------------|---------|-------------|
 | `/o-m-cc:review [files]` | Code review with Agent Teams (peer-to-peer discussion) | fork | On "review this" |
 | `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
-| `/o-m-cc:promote [keyword]` | Promote repeated patterns from HANDOVER.md history to skills | - | Manual only |
-| `/o-m-cc:handover` | Generate session handover document | fork | On "handover" |
 
-## Agents (14 specialists)
+## Agents (13 specialists)
 
 ### Planning
 
@@ -110,7 +107,6 @@ After planning completes:
 |-------|------|-------|
 | @advisor | Strategy & debugging consultation | opus |
 | @researcher | Documentation research | sonnet |
-| @learnings-researcher | Past learnings search | haiku |
 | @debugger | Systematic debugging | sonnet |
 | @explore | Fast codebase exploration | haiku |
 | @vision | PDF/image analysis | sonnet |
@@ -132,11 +128,11 @@ After planning completes:
 
 ```
 Agent Teams (Council + Pipeline Hybrid):
-┌─────────────────────────────────────────────────────┐
-│              Phase 1: Discovery Council               │
-│  learnings-researcher ◄─► analyst (Lead) ◄─► scout   │
-│  Peer-to-peer findings sharing                       │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│       Phase 1: Discovery Council        │
+│       analyst (Lead) ◄─► scout          │
+│       Peer-to-peer findings sharing     │
+└─────────────────────────────────────────┘
           │ requirements.md
           ▼
   Phase 2 (designer) → Phase 3 (planner)
@@ -154,10 +150,7 @@ Agent Teams (Council + Pipeline Hybrid):
 |------|-------|-------------|
 | check-dependencies | SessionStart | Check required commands (jq, python3) |
 | archive-plans | SessionStart | Archive old plan files |
-| resume-session | SessionStart | Display previous session state |
 | stop-guard | Stop | Sisyphus loop control (detect `<promise>DONE</promise>`) |
-| generate-handover | Stop | Generate lightweight handover on session end |
-| promote-checker | Stop | Detect repeated patterns for skill promotion |
 | focus-guard | UserPromptSubmit | Keep focus on current tasks |
 | security-reminder | PreToolUse | Security review reminder |
 | auto-verify | PostToolUse | Run project tests automatically |

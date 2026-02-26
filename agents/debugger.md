@@ -67,4 +67,3 @@ Phase 1 を完了していなければ、修正コードを書くことはでき
 
 - **advisor**: 3回以上修正に失敗したら advisor に相談
 - **code-reviewer**: 修正後のレビュー
-- **learnings-researcher**: 過去の類似バグを検索
