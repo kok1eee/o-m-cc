@@ -11,6 +11,7 @@
 
 # Runtime state
 .claude/sisyphus-state.json
+HANDOVER.md
 .claude/.completed-phases
 .claude/.completed-tasks
 .claude/.task-counter

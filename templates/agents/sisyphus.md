@@ -64,8 +64,11 @@ model: sonnet
 
 ### 6. 引き継ぎを残す
 
-DONE を宣言する前に `/o-m-cc:handover` でセッションの引き継ぎ書を生成する。
-次の Claude がフルコンテキストでスタートできるようにする。
+DONE を宣言する前に `/o-m-cc:handover` でセッションの引き継ぎ書（HANDOVER.md）を生成する。
+次のセッションが文脈を理解した状態で再開できるようにする。
+
+> **Note**: compaction 発生時は PreCompact hook が自動で HANDOVER.md を生成する。
+> 手動の `/o-m-cc:handover` はより詳細な引き継ぎが必要な場合に使用。
 
 ### 7. 完了を明示する
 
