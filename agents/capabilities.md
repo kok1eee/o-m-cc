@@ -118,36 +118,36 @@ TeammateTool: spawnTeam
 
 ### 分析・調査系（READ のみ）
 
-| エージェント | Input | Processing | Output |
-|-------------|-------|------------|--------|
-| explore | ファイルパターン、検索キーワード | Glob/Grep で検索 | ファイル一覧、コード断片 |
-| analyst | コードベース、ユーザー要求 | 構造分析、要件抽出 | requirements.md |
-| researcher | 技術キーワード | Web検索、ドキュメント調査 | 調査レポート |
-| scout | requirements.md | スコープ確認、ギャップ分析 | IN/OUT SCOPE + 質問リスト |
-| vision | 画像/PDFファイル | 視覚分析 | 抽出情報レポート |
+| エージェント | Input | Processing | Output | Memory 蓄積 |
+|-------------|-------|------------|--------|------------|
+| explore | ファイルパターン、検索キーワード | Glob/Grep で検索 | ファイル一覧、コード断片 | 構造マップ、頻出パターンの場所、成熟度マップ |
+| analyst | コードベース、ユーザー要求 | 構造分析、要件抽出 | requirements.md | 制約・前提条件、要件パターン |
+| researcher | 技術キーワード | Web検索、ドキュメント調査 | 調査レポート | 技術選定の根拠、API の注意点 |
+| scout | requirements.md | スコープ確認、ギャップ分析 | IN/OUT SCOPE + 質問リスト | 曖昧性パターン、エッジケース、critic クロスリード |
+| vision | 画像/PDFファイル | 視覚分析 | 抽出情報レポート | ビジュアル慣習、UI パターン |
 
 ### 設計・計画系（READ のみ）
 
-| エージェント | Input | Processing | Output |
-|-------------|-------|------------|--------|
-| designer | requirements.md | アーキテクチャ設計 | design.md |
-| planner | design.md | タスク分解、依存関係整理 | tasks.md |
-| critic | requirements + design + tasks | 妥当性検証 | レビューレポート |
-| advisor | 問題の状況 | トレードオフ分析 | 推奨アプローチ + 根拠 |
+| エージェント | Input | Processing | Output | Memory 蓄積 |
+|-------------|-------|------------|--------|------------|
+| designer | requirements.md | アーキテクチャ設計 | design.md | ADR の要約、設計パターン適用実績、code-reviewer/advisor クロスリード |
+| planner | design.md | タスク分解、依存関係整理 | tasks.md | タスク粒度基準、依存関係パターン、debugger/code-reviewer クロスリード |
+| critic | requirements + design + tasks | 妥当性検証 | レビューレポート | レビューの落とし穴、リスク評価精度、Calibration Loop |
+| advisor | 問題の状況 | トレードオフ分析 | 推奨アプローチ + 根拠 | 意思決定の先例、解消パターン |
 
 ### 実装系（WRITE 可）
 
-| エージェント | Input | Processing | Output |
-|-------------|-------|------------|--------|
-| frontend | デザイン仕様 | UI実装 | コンポーネントファイル |
-| debugger | バグの症状 | 根本原因調査 → 修正 | デバッグレポート + 修正コード |
+| エージェント | Input | Processing | Output | Memory 蓄積 |
+|-------------|-------|------------|--------|------------|
+| frontend | デザイン仕様 | UI実装 | コンポーネントファイル | デザイン言語、コンポーネント規則 |
+| debugger | バグの症状 | 根本原因調査 → 修正 | デバッグレポート + 修正コード | バグパターン、修正の副作用 |
 
 ### 品質系
 
-| エージェント | Input | Processing | Output |
-|-------------|-------|------------|--------|
-| code-reviewer | diff、変更コード | 品質チェック | 問題レポート（Confidence付き） |
-| security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート |
+| エージェント | Input | Processing | Output | Memory 蓄積 |
+|-------------|-------|------------|--------|------------|
+| code-reviewer | diff、変更コード | 品質チェック | 問題レポート（Confidence付き） | 頻出指摘パターン、OK/NG 基準、Calibration Loop、security-reviewer クロスリード |
+| security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート | 脅威モデル、セキュリティ要件、Calibration Loop、code-reviewer クロスリード |
 
 > **並列 spawn 推奨**: `code-reviewer` + `security-reviewer` は同時 spawn でチェック。
 
