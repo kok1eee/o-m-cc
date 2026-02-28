@@ -311,9 +311,36 @@ plan/
 
 ---
 
-## 完了時の出力
+## Step 6: /batch 判定
 
-計画が完了したら、以下を出力してください：
+Review Council 承認後、tasks.md のタスクを分析して `/batch` の適用可否を判定する。
+
+### 判定基準
+
+以下の**すべて**に該当する場合、`/batch` を推奨：
+- 独立した同種の変更が **5件以上**
+- 各タスクが **他のタスクに依存しない**（並列実行可能）
+- 各タスクが **同じパターンの繰り返し**（import 書き換え、命名変更、テスト追加など）
+
+### /batch 推奨の場合
+
+```
+✅ 計画完了（Agent Teams）
+   📄 plan/requirements.md
+   📄 plan/design.md
+   📄 plan/tasks.md
+
+   - 機能要件: X件
+   - コンポーネント: X個
+   - タスク: X件 (S:X, M:X, L:X)
+
+   🚀 /batch 推奨: X件の独立した同種タスクを検出
+   → `/batch` で worktree 並列実行すると高速に完了できます
+
+<promise>DONE</promise>
+```
+
+### 通常の場合
 
 ```
 ✅ 計画完了（Agent Teams）
