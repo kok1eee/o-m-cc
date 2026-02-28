@@ -311,18 +311,22 @@ plan/
 
 ---
 
-## Step 6: /batch 判定
+## Step 6: 実行方式の自動選択
 
-Review Council 承認後、tasks.md のタスクを分析して `/batch` の適用可否を判定する。
+Review Council 承認後、tasks.md のタスクを分析して実行方式を**自動で決定**する。人間に判断を委ねない。
 
 ### 判定基準
 
-以下の**すべて**に該当する場合、`/batch` を推奨：
+以下の**すべて**に該当 → **`/batch` で並列実行**：
 - 独立した同種の変更が **5件以上**
 - 各タスクが **他のタスクに依存しない**（並列実行可能）
 - 各タスクが **同じパターンの繰り返し**（import 書き換え、命名変更、テスト追加など）
 
-### /batch 推奨の場合
+それ以外 → **通常の Sisyphus Loop で直列実行**
+
+### /batch 判定の場合
+
+計画完了を出力した後、**自動的に `/batch` を実行**する。止まらない。
 
 ```
 ✅ 計画完了（Agent Teams）
@@ -330,15 +334,13 @@ Review Council 承認後、tasks.md のタスクを分析して `/batch` の適�
    📄 plan/design.md
    📄 plan/tasks.md
 
-   - 機能要件: X件
-   - コンポーネント: X個
    - タスク: X件 (S:X, M:X, L:X)
+   - 実行方式: /batch（独立した同種タスク X件を検出）
 
-   🚀 /batch 推奨: X件の独立した同種タスクを検出
-   → `/batch` で worktree 並列実行すると高速に完了できます
-
-<promise>DONE</promise>
+→ /batch で並列実行を開始します
 ```
+
+その後、`/batch` を実行して計画に基づいた並列実装に進む。
 
 ### 通常の場合
 
@@ -348,14 +350,13 @@ Review Council 承認後、tasks.md のタスクを分析して `/batch` の適�
    📄 plan/design.md
    📄 plan/tasks.md
 
-   - 機能要件: X件
-   - コンポーネント: X個
    - タスク: X件 (S:X, M:X, L:X)
+   - 実行方式: Sisyphus Loop（依存関係のあるタスク）
 
-計画完了。「実装を開始して」と依頼してください。
-
-<promise>DONE</promise>
+計画に沿って実装を開始します。
 ```
+
+その後、tasks.md に基づいて直列で実装を進める。
 
 ---
 

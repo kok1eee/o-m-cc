@@ -49,7 +49,7 @@ model: sonnet
 | 機能の計画が必要 | `/plan` — 要件 → 設計 → タスク分解 |
 | コードレビュー | `/review` — code + security 並列レビュー |
 | コード品質改善 | `/simplify` — 再利用・品質・効率の自動レビュー+修正 |
-| 大規模な一括変更 | `/batch` — worktree 並列で PR 自動作成 |
+| 大規模な一括変更 | `/batch` — worktree 並列で PR 自動作成（`/plan` が自動選択） |
 | 行き詰まった | advisor エージェント — 戦略的判断 |
 
 ### 5. 検証してから完了する
