@@ -13,20 +13,23 @@ fi
 
 HANDOVER_FILE="HANDOVER.md"
 
-# 1. 最初のユーザーメッセージ（≒ 目標）を抽出
-FIRST_USER_MSG=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | head -1 | \
+# 1. 最初の実質的なユーザーメッセージ（≒ 目標）を抽出
+# セッション再開メッセージ等を除外し、最初の意味のあるメッセージを取得
+FIRST_USER_MSG=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
   jq -r '.message.content | if type == "array" then map(select(.type == "text")) | map(.text) | join(" ") else . end' 2>/dev/null | \
-  head -c 500 || echo "(抽出失敗)")
+  grep -v '^\[Request interrupted' | grep -v '^$' | sed -n '1p' | \
+  cut -c1-500 || echo "(抽出失敗)")
 
 # 2. 変更ファイル一覧（Write/Edit ツール使用から抽出）
 CHANGED_FILES=$(grep '"tool_use"' "$TRANSCRIPT_PATH" | \
   jq -r 'select(.message.content[]?.name == "Write" or .message.content[]?.name == "Edit") | .message.content[] | select(.type == "tool_use") | .input.file_path // empty' 2>/dev/null | \
   sort -u | head -20 || echo "")
 
-# 3. 最後のアシスタントメッセージ（≒ 現在の状態）
-LAST_ASSISTANT=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | tail -1 | \
-  jq -r '.message.content | if type == "array" then map(select(.type == "text")) | map(.text) | join("\n") else . end' 2>/dev/null | \
-  head -c 1000 || echo "(抽出失敗)")
+# 3. 最後のテキストを含むアシスタントメッセージ（≒ 現在の状態）
+# tool_use のみのメッセージをスキップし、テキストを含む最後のメッセージを取得
+LAST_ASSISTANT=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | \
+  jq -r 'select(.message.content | map(select(.type == "text")) | length > 0) | .message.content | map(select(.type == "text")) | map(.text) | join("\n")' 2>/dev/null | \
+  tail -c 1000 || echo "(抽出失敗)")
 
 # 4. HANDOVER.md 生成
 cat > "$HANDOVER_FILE" << 'HEADER'
