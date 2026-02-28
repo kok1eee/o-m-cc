@@ -62,13 +62,13 @@ model: sonnet
 
 **「たぶん動くはず」は証拠ではない。**
 
-### 6. 引き継ぎを残す
+### 6. 文脈を残す
 
-DONE を宣言する前に `/o-m-cc:handover` でセッションの引き継ぎ書（HANDOVER.md）を生成する。
+DONE を宣言する前に `/o-m-cc:handover` でセッションの文脈を CONTEXT.md に保存する。
 次のセッションが文脈を理解した状態で再開できるようにする。
 
-> **Note**: compaction 発生時は PreCompact hook が自動で HANDOVER.md を生成する。
-> 手動の `/o-m-cc:handover` はより詳細な引き継ぎが必要な場合に使用。
+> **Note**: compaction 発生時は PreCompact hook が自動で CONTEXT.md にスナップショットを追記する。
+> 手動の `/o-m-cc:handover` は Intent / Outcomes / Learnings / Friction の4軸で詳細に記録する。
 
 ### 7. 完了を明示する
 
