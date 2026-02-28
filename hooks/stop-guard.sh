@@ -165,17 +165,44 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
     exit 0
   fi
 
-  # Case 4: No code review evidence - block and require review
+  # Case 4: No /simplify evidence - block and require simplify + review
+  if ! echo "$LAST_OUTPUT" | grep -qiE '/simplify|simplify.*完了|simplify.*実行|修正.*0件'; then
+    echo ""
+    echo "════════════════════════════════════════════════════════"
+    echo "  ⚠️  SISYPHUS GUARD: /simplify + code-reviewer 未実行"
+    echo "════════════════════════════════════════════════════════"
+    echo ""
+    echo "  <promise>DONE</promise> が検知されましたが、"
+    echo "  /simplify と code-reviewer の実行結果が確認できません。"
+    echo ""
+    echo "  完了前に以下を実行してください："
+    echo "  1. /simplify でコード品質を改善"
+    echo "  2. /review でコードレビュー"
+    echo "  3. Critical な問題がないことを確認"
+    echo "  4. 結果を出力してから DONE を宣言"
+    echo ""
+    echo "════════════════════════════════════════════════════════"
+
+    increment_iteration_with_reason "no_simplify_or_review"
+    jq -n '{
+      "decision": "block",
+      "reason": "/simplify でコード品質を改善し、code-reviewer でレビューしてください。結果を出力し、Critical な問題がないことを確認してから <promise>DONE</promise> を出力してください。",
+      "systemMessage": "⚠️ Sisyphus Guard: /simplify → /review を実行してください"
+    }'
+    exit 0
+  fi
+
+  # Case 5: /simplify done but no code review evidence - block and require review
   echo ""
   echo "════════════════════════════════════════════════════════"
   echo "  ⚠️  SISYPHUS GUARD: code-reviewer 未実行"
   echo "════════════════════════════════════════════════════════"
   echo ""
   echo "  <promise>DONE</promise> が検知されましたが、"
-  echo "  code-reviewer subagent の実行結果が確認できません。"
+  echo "  code-reviewer の実行結果が確認できません。"
   echo ""
   echo "  完了前に以下を実行してください："
-  echo "  1. code-reviewer subagent で変更をレビュー"
+  echo "  1. /review でコードレビュー"
   echo "  2. Critical な問題がないことを確認"
   echo "  3. 結果を出力してから DONE を宣言"
   echo ""
@@ -184,8 +211,8 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
   increment_iteration_with_reason "no_code_review"
   jq -n '{
     "decision": "block",
-    "reason": "code-reviewer subagent で変更をレビューしてください。レビュー結果を出力し、Critical な問題がないことを確認してから <promise>DONE</promise> を出力してください。",
-    "systemMessage": "⚠️ Sisyphus Guard: code-reviewer を実行してください"
+    "reason": "code-reviewer でレビューしてください。結果を出力し、Critical な問題がないことを確認してから <promise>DONE</promise> を出力してください。",
+    "systemMessage": "⚠️ Sisyphus Guard: /review を実行してください"
   }'
   exit 0
 fi
