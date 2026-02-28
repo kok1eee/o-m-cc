@@ -1,4 +1,4 @@
-# o-m-cc v0.17.1
+# o-m-cc v0.18.0
 
 [日本語](README.md)
 
@@ -89,7 +89,7 @@ After planning completes:
 | `/o-m-cc:review [files]` | Code review with Agent Teams (peer-to-peer discussion) | fork | On "review this" |
 | `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
 
-## Agents (13 specialists)
+## Agents (12 specialists)
 
 ### Planning
 
@@ -106,9 +106,8 @@ After planning completes:
 | Agent | Role | Model |
 |-------|------|-------|
 | @advisor | Strategy & debugging consultation | opus |
-| @researcher | Documentation research | sonnet |
+| @researcher | Codebase exploration & documentation research | sonnet |
 | @debugger | Systematic debugging | sonnet |
-| @explore | Fast codebase exploration | haiku |
 | @vision | PDF/image analysis | sonnet |
 
 ### Implementation
@@ -130,7 +129,7 @@ After planning completes:
 Agent Teams (Council + Pipeline Hybrid):
 ┌─────────────────────────────────────────┐
 │       Phase 1: Discovery Council        │
-│       analyst (Lead) ◄─► scout          │
+│  researcher ◄─► analyst (Lead) ◄─► scout│
 │       Peer-to-peer findings sharing     │
 └─────────────────────────────────────────┘
           │ requirements.md
@@ -150,10 +149,12 @@ Agent Teams (Council + Pipeline Hybrid):
 |------|-------|-------------|
 | check-dependencies | SessionStart | Check required commands (jq, python3) |
 | archive-plans | SessionStart | Archive old plan files |
+| session-resume | SessionStart | Display `.claude/context.md` + `chronicle.md` context |
 | memory-digest | SessionStart | Display subagent Memory digest |
 | stop-guard | Stop | Sisyphus loop control (detect `<promise>DONE</promise>`) |
 | focus-guard | UserPromptSubmit | Keep focus on current tasks |
 | security-reminder | PreToolUse | Security review reminder |
+| pre-compact-handover | PreCompact | Auto-save context on compaction (3-layer rotation) |
 | auto-verify | PostToolUse | Run project tests automatically |
 | teammate-idle | TeammateIdle | Escalation protocol (3 stages) for idle teammates |
 | task-completed | TaskCompleted | Progress tracking & next task assignment |

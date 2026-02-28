@@ -1,4 +1,4 @@
-# o-m-cc v0.17.2
+# o-m-cc v0.18.0
 
 [English](README_en.md)
 
@@ -115,7 +115,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 Agent Teams (Council + Pipeline ハイブリッド):
 ┌─────────────────────────────────────────────────────┐
 │              Phase 1: Discovery Council               │
-│         analyst (Lead) ◄─► scout                     │
+│     researcher ◄─► analyst (Lead) ◄─► scout          │
 │         peer-to-peer で findings を共有               │
 └─────────────────────────────────────────────────────┘
           │ requirements.md
@@ -183,9 +183,8 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | Agent | 役割 | Model | Permission | Memory |
 |-------|------|-------|------------|--------|
 | @advisor | デバッグ・戦略相談 | opus | **plan** | project |
-| @researcher | ドキュメント調査 | sonnet | **plan** | - |
+| @researcher | コードベース探索・外部調査 | sonnet | **plan** | project |
 | @debugger | 体系的デバッグ | sonnet | default | project |
-| @explore | 高速コード探索 | haiku | **plan** | - |
 | @vision | PDF/画像分析 | sonnet | **plan** | - |
 
 ### Implementation Agents（実装系）
@@ -228,7 +227,7 @@ o-m-cc プラグインの初期トークン消費:
 
 | カテゴリ | トークン数 | 内訳 |
 |---------|-----------|------|
-| エージェント | ~820 | 13 エージェント定義 |
+| エージェント | ~780 | 12 エージェント定義 |
 | スキル | ~90 | 4 スキル定義 |
 | **合計** | **~910** | Opus 1M の約 **0.1%** |
 
@@ -270,7 +269,7 @@ Teammate → 要約をメッセージで Lead に返却
 
 | エージェント | 得意分野 | キーワード |
 |-------------|---------|-----------|
-| explore | 高速検索・構造把握 | 探索, 検索, どこ, where |
+| researcher | コードベース探索・外部調査 | 探索, 検索, どこ, 使い方, ベストプラクティス |
 | designer | アーキテクチャ設計 | 設計, design |
 | frontend | UI実装 | UI, 画面, component |
 | code-reviewer | コード品質 | レビュー, 品質, review |
@@ -312,10 +311,12 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 |---------|------|------|
 | SessionStart | `check-dependencies.sh` | 依存コマンド（jq, python3）の確認 |
 | SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
+| SessionStart | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
 | SessionStart | `memory-digest.sh` | サブエージェント Memory ダイジェスト表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
+| PreCompact | `pre-compact-handover.sh` | compaction 時の文脈自動保存（3層分離） |
 | PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
 | TeammateIdle | `teammate-idle.sh` | idle teammate への残タスク再割り当て示唆 |
 | TaskCompleted | `task-completed.sh` | タスク完了時の進捗表示・依存タスクアンブロック |
@@ -375,8 +376,7 @@ o-m-cc/
 │   ├── planner.md             # タスク分解
 │   ├── critic.md              # 計画レビュー
 │   ├── advisor.md             # 戦略アドバイザー
-│   ├── researcher.md          # 調査スペシャリスト
-│   ├── explore.md             # 高速探索
+│   ├── researcher.md          # コードベース探索・外部調査
 │   ├── frontend.md            # UI/UXエンジニア
 │   ├── vision.md              # マルチモーダル分析
 │   ├── debugger.md             # 体系的デバッグ
@@ -393,7 +393,9 @@ o-m-cc/
 │   │   └── common.sh          # 共通ライブラリ
 │   ├── check-dependencies.sh  # 依存コマンド確認
 │   ├── archive-plans.sh       # プランアーカイブ
+│   ├── session-resume.sh      # 文脈表示（context.md + chronicle.md）
 │   ├── memory-digest.sh       # エージェント Memory ダイジェスト
+│   ├── pre-compact-handover.sh # compaction 時の文脈自動保存
 │   ├── stop-guard.sh          # Sisyphus ガード
 │   ├── auto-verify.sh         # フェーズ完了時の自動検証
 │   ├── focus-guard.sh         # タスク進行中の脱線防止
@@ -488,6 +490,16 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.18.0
+
+- **CONTEXT.md 3層アーキテクチャ**: `CONTEXT.md`（1ファイル蓄積）→ `.claude/context.md`（最新1スナップショット）+ `.claude/chronicle.md`（直近30件）+ `.claude/context-archive.md`（全量アーカイブ）の3層分離。PreCompact hook で自動ローテーション
+- **explore → researcher 統合**: explore エージェントを researcher に統合。コードベース探索（内部）と外部ドキュメント調査を1エージェントに一本化。エージェント数 13 → 12
+- **Learnings → MEMORY.md 自動フロー**: `/o-m-cc:handover` スキルに Learnings チェック機能を追加。長期的価値のある知見を auto-memory に自動追記
+- **Skill 提案**: `/o-m-cc:handover` スキルで繰り返しパターンを検知し、プロジェクト専用スキルを提案（自動作成はしない）
+- **session-resume.sh**: SessionStart hook で `.claude/context.md` の最新文脈と `.claude/chronicle.md` の経緯を表示
+- **pre-compact-handover.sh**: PreCompact hook で compaction 時の文脈を自動保存・3層ローテーション
+- **plan スキル修正**: learnings-researcher（存在しないエージェント）→ researcher に統一。`.gitignore` の `plan/` → `/plan/` 修正（`skills/plan/` が VCS から除外されていた問題を解消）
 
 ### 0.17.2
 
