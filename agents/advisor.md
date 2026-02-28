@@ -70,6 +70,7 @@ Review Council では critic (Lead) と同時に spawn され、戦略的・ア�
 ## Memory ガイダンス
 
 > **共通ポリシー**: `facets/policies/agent-memory-guidance.md` を参照。
+> **アクション**: タスク完了前に知見を振り返り、あれば MEMORY.md に追記すること。
 
 **蓄積する:**
 - 技術的意思決定の先例（選択肢、トレードオフ、最終判断とその理由）

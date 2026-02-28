@@ -104,6 +104,7 @@ requirements.md を Write する前に、以下を確認：
 ## Memory ガイダンス
 
 > **共通ポリシー**: `facets/policies/agent-memory-guidance.md` を参照。
+> **アクション**: タスク完了前に知見を振り返り、あれば MEMORY.md に追記すること。
 
 **蓄積する:**
 - プロジェクト固有の制約・前提条件（技術的制約、ビジネスルール）

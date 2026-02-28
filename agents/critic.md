@@ -71,6 +71,7 @@ Review Council では advisor と同時に spawn され、Lead として両者�
 ## Memory ガイダンス
 
 > **共通ポリシー**: `facets/policies/agent-memory-guidance.md` を参照。
+> **アクション**: タスク完了前に知見を振り返り、あれば MEMORY.md に追記すること。
 
 **蓄積する:**
 - 計画レビューの落とし穴（このプロジェクトで見落としやすいリスク）

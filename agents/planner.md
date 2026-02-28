@@ -120,6 +120,7 @@ tasks.md 書き出し後、Claude Code のネイティブタスクシステム�
 ## Memory ガイダンス
 
 > **共通ポリシー**: `facets/policies/agent-memory-guidance.md` を参照。
+> **アクション**: タスク完了前に知見を振り返り、あれば MEMORY.md に追記すること。
 
 **蓄積する:**
 - タスク粒度の基準（このプロジェクトでの S/M/L の実績）

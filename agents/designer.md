@@ -105,6 +105,7 @@ isolation: worktree
 ## Memory ガイダンス
 
 > **共通ポリシー**: `facets/policies/agent-memory-guidance.md` を参照。
+> **アクション**: タスク完了前に知見を振り返り、あれば MEMORY.md に追記すること。
 
 **蓄積する:**
 - アーキテクチャ決定の根拠（ADR の要約: 何を選び、なぜ選んだか）

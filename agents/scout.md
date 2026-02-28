@@ -101,6 +101,7 @@ Discovery Council では analyst (Lead) と同時に spawn される。
 ## Memory ガイダンス
 
 > **共通ポリシー**: `facets/policies/agent-memory-guidance.md` を参照。
+> **アクション**: タスク完了前に知見を振り返り、あれば MEMORY.md に追記すること。
 
 **蓄積する:**
 - 曖昧性パターン（このプロジェクトで繰り返し曖昧になりやすい領域）
