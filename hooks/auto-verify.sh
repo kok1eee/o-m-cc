@@ -164,8 +164,8 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
 else
   echo "✅ 検証成功"
   echo ""
-  echo "🔍 code-reviewer subagent でレビューすること"
-  echo "💾 レビュー完了後、/compact を実行すること"
+  echo "🔧 /simplify でコード品質を改善すること"
+  echo "🔍 /review でコードレビューすること"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 fi
 

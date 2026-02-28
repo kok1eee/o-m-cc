@@ -141,23 +141,7 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 
 ## 完了時の出力
 
-### Critical なしの場合
-
-```
-✅ コードレビュー完了（Agent Teams 並列実行）
-
-📊 コード品質
-   🟢 Critical: なし
-   🟡 Warning: X件
-
-🔒 セキュリティ
-   🟢 Critical: なし
-   🟡 Warning: X件
-
-→ マージ可能
-
-<promise>DONE</promise>
-```
+### Critical なしの場合 → Step 6 へ
 
 ### Critical ありの場合
 
@@ -176,6 +160,42 @@ Critical が見つかった場合、**AskUserQuestion** で対応を確認：
 ```
 
 Critical がある場合は、問題点と修正方法を具体的に提案してください。
+
+### Step 6: /simplify で品質改善
+
+レビューで Critical がない（または修正済み）場合、`/simplify` を実行してコードを自動改善する。
+
+`/simplify` は以下の3観点で変更コードをチェックし、問題があれば自動修正する：
+- **再利用**: 既存ユーティリティとの重複がないか
+- **品質**: 冗長な状態管理、コピペコード、マジックナンバーがないか
+- **効率**: 不要な計算、並列化可能な直列処理がないか
+
+```
+/simplify
+```
+
+---
+
+## 完了時の出力
+
+```
+✅ コードレビュー完了（Agent Teams 並列実行 + /simplify）
+
+📊 コード品質
+   🟢 Critical: なし
+   🟡 Warning: X件
+
+🔒 セキュリティ
+   🟢 Critical: なし
+   🟡 Warning: X件
+
+🔧 /simplify
+   修正: X件
+
+→ マージ可能
+
+<promise>DONE</promise>
+```
 
 ---
 

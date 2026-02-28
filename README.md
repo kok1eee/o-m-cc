@@ -1,4 +1,4 @@
-# o-m-cc v0.18.1
+# o-m-cc v0.18.2
 
 [English](README_en.md)
 
@@ -105,7 +105,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ### 簡単なタスク
 
 ```
-「○○を修正して」→ TODO → 実装 → レビュー → 完了
+「○○を修正して」→ TODO → 実装 → /simplify → レビュー → 完了
 ※ hooks により <promise>DONE</promise> まで自動継続
 ```
 
@@ -135,7 +135,7 @@ Agent Teams (Council + Pipeline ハイブリッド):
 
 ```
 「実装開始して」
-  → Agent Teams → teammate 並列 spawn → レビュー → 完了
+  → Agent Teams → teammate 並列 spawn → /simplify → レビュー → 完了
 ```
 
 ## Dependencies
@@ -490,6 +490,13 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.18.1
+
+- **`/simplify` 統合**: Claude Code 2.1.63 で追加された `/simplify`（再利用・品質・効率の自動レビュー+修正）を Sisyphus ワークフローに組み込み。実装 → `/simplify` → レビュー → 完了の流れに
+- **`/batch` 対応**: 大規模一括変更用の `/batch` を Sisyphus テンプレートに追加
+- **Worktree auto-memory 共有**: 2.1.63 で worktree 間の auto-memory 共有が実装されたことを agent-memory-guidance に反映
+- **auto-verify.sh 改善**: 検証成功時に `/simplify` → `/review` の実行を提案するメッセージに変更
 
 ### 0.18.0
 

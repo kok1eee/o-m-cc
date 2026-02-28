@@ -53,6 +53,12 @@
 | 頻出するバグパターンと根本原因 | セッション内の修正履歴 |
 | プロジェクト固有の OK/NG 判定基準 | 汎用的な OWASP ルール |
 
+## Worktree での auto-memory 共有
+
+Claude Code 2.1.63+ では、**同一リポジトリの git worktree 間で project configs と auto-memory が自動的に共有される**。
+
+`isolation: worktree` で動作するエージェント（frontend, designer, planner, debugger）が worktree 内で memory に書き込んだ内容は、メインの worktree にも反映される。エージェントは worktree かどうかを意識する必要はない。
+
 ## 更新タイミング
 
 - **タスク完了時**: 新しいパターンや知見を発見したら蓄積
