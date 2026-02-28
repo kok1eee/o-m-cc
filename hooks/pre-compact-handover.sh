@@ -6,6 +6,13 @@
 #   .claude/context-archive.md — 全量（読み込まない、VCS で参照）
 set -euo pipefail
 
+# CTA ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
+  # shellcheck source=lib/cta.sh
+  source "${SCRIPT_DIR}/lib/cta.sh"
+fi
+
 HOOK_INPUT=$(cat)
 TRIGGER=$(echo "$HOOK_INPUT" | jq -r '.trigger // "unknown"')
 TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty')
@@ -133,5 +140,5 @@ fi
 } >> "$CONTEXT_FILE"
 
 echo "📝 .claude/context.md updated（chronicle: ${CHRONICLE_COUNT} entries）"
-echo "💡 .claude/context.md を Read して、Learnings があれば MEMORY.md に反映してください"
+emit_cta "Read .claude/context.md" "Learnings があれば MEMORY.md に反映"
 exit 0

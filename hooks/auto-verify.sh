@@ -16,6 +16,12 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
+# CTA ライブラリ読み込み
+if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
+  # shellcheck source=lib/cta.sh
+  source "${SCRIPT_DIR}/lib/cta.sh"
+fi
+
 TASKS_FILE="plan/tasks.md"
 COUNTER_FILE=".claude/.completed-phases"
 VERIFY_CONFIG=".claude/verify.json"
@@ -74,9 +80,7 @@ fi
 echo "$COMPLETED_PHASES" > "$COUNTER_FILE"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🔍 Phase $COMPLETED_PHASES 完了 - 自動検証開始"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # 検証コマンドを取得
 get_verify_commands() {
@@ -148,7 +152,6 @@ while IFS= read -r cmd; do
 done <<< "$COMMANDS"
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if [[ ${#ERRORS[@]} -gt 0 ]]; then
   echo "❌ 検証失敗: ${#ERRORS[@]} 件のエラー"
@@ -156,17 +159,12 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
   for err in "${ERRORS[@]}"; do
     echo "  - $err"
   done
-  echo ""
-  echo "上記のエラーを修正してから次のフェーズに進んでください。"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  # エラーがあっても hooks は exit 0 で終了（Claude に修正を促す）
+  emit_cta "上記のエラーを修正してから次のフェーズに進む"
+    # エラーがあっても hooks は exit 0 で終了（Claude に修正を促す）
   exit 0
 else
   echo "✅ 検証成功"
-  echo ""
-  echo "🔧 /simplify でコード品質を改善すること"
-  echo "🔍 /review でコードレビューすること"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-fi
+  emit_cta "/simplify でコード品質を改善" "/review でコードレビュー"
+  fi
 
 exit 0

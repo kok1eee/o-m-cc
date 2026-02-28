@@ -22,20 +22,14 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
+# CTA ライブラリ読み込み
+if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
+  # shellcheck source=lib/cta.sh
+  source "${SCRIPT_DIR}/lib/cta.sh"
+fi
+
 TASKS_FILE="plan/tasks.md"
 IDLE_COUNT_DIR=".claude/idle-counts"
-HAS_JQ=false
-check_command jq && HAS_JQ=true
-
-# jq なしでも動作する JSON 出力ヘルパー
-emit_system_message() {
-  local msg="$1"
-  if $HAS_JQ; then
-    jq -n --arg msg "$msg" '{ "systemMessage": $msg }'
-  else
-    echo "{\"systemMessage\": \"$(echo "$msg" | sed 's/"/\\"/g')\"}"
-  fi
-}
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
@@ -89,60 +83,44 @@ if [[ $REMAINING -gt 0 ]]; then
 
   # --- Stage 別メッセージ ---
   echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
+  
   if [[ $IDLE_COUNT -le 1 ]]; then
     # Stage 1: exit 2 で teammate に作業続行を指示
     echo "💤 Teammate Idle: $TEAMMATE_NAME"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
+        echo ""
     echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    echo "  → 未着手タスクを自分でクレームして作業を続行してください。"
-    echo ""
+    emit_cta "TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして続行"
 
-    emit_system_message "残タスク ${REMAINING}/${TOTAL_TASKS} 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。"
+    emit_cta_system "残タスク ${REMAINING}/${TOTAL_TASKS} 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。"
     exit 2
 
   elif [[ $IDLE_COUNT -eq 2 ]]; then
     # Stage 2: Lead に通知（teammate は停止）
     echo "⚠️  Teammate Idle (2回目): $TEAMMATE_NAME"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
+        echo ""
     echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    echo "  → この teammate は応答していません。"
-    echo "  → Lead が直接引き取るか、別の teammate に再割り当てしてください。"
+    emit_cta "Lead が直接引き取るか、別の teammate に再割り当て"
 
-    SYSTEM_MSG="⚠️ ${TEAMMATE_NAME} が2回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — Lead が直接引き取るか、別の teammate に再割り当てしてください。"
+    emit_cta_system "⚠️ ${TEAMMATE_NAME} が2回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — Lead が直接引き取るか、別の teammate に再割り当てしてください。"
 
   else
     # Stage 3: エスカレーション
     echo "🚨 Teammate Idle (${IDLE_COUNT}回目): $TEAMMATE_NAME"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
+        echo ""
     echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    echo "  → エスカレーション: この teammate のタスクは完了できない可能性があります。"
-    echo "  → 部分的な成果物で完了とするか、ユーザーに相談してください。"
+    emit_cta "部分的な成果物で完了とする" "ユーザーに相談"
 
-    SYSTEM_MSG="🚨 エスカレーション: ${TEAMMATE_NAME} が ${IDLE_COUNT} 回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 部分完了とするか、ユーザーに相談してください。"
+    emit_cta_system "🚨 エスカレーション: ${TEAMMATE_NAME} が ${IDLE_COUNT} 回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 部分完了とするか、ユーザーに相談してください。"
   fi
-
-  echo ""
-
-  emit_system_message "$SYSTEM_MSG"
 else
   # 全タスク完了 → 完了判定（カウントをリセット）
   rm -rf "$IDLE_COUNT_DIR" 2>/dev/null || true
 
   echo ""
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
-  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo ""
-  echo "  → code-reviewer teammate で最終レビューを実行し、"
-  echo "    問題がなければ <promise>DONE</promise> を出力してください。"
-  echo ""
+    echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
+    emit_cta "/simplify でコード品質を改善" "/review で最終レビュー" "<promise>DONE</promise> を出力"
 
-  emit_system_message "✅ 全タスク完了。code-reviewer teammate で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
+  emit_cta_system "✅ 全タスク完了。/simplify → /review で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
 fi
 
 exit 0

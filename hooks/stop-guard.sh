@@ -16,6 +16,12 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
+# CTA ライブラリ読み込み
+if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
+  # shellcheck source=lib/cta.sh
+  source "${SCRIPT_DIR}/lib/cta.sh"
+fi
+
 # jq がない場合はスキップ
 if ! check_command jq; then
   log_error "jq がインストールされていないため stop-guard をスキップ"
@@ -68,15 +74,8 @@ check_throttle() {
   if [[ "$reason_count" -gt 0 ]]; then
     local repeated_reason
     repeated_reason=$(jq -r '.last_reasons[-1]' "$STATE_FILE" 2>/dev/null || echo "unknown")
-    echo ""
-    echo "════════════════════════════════════════════════════════"
-    echo "  🔁 SISYPHUS GUARD: 同じ問題で ${MAX_SAME_REASON} 回ループ検出"
-    echo "════════════════════════════════════════════════════════"
-    echo ""
-    echo "  理由: ${repeated_reason}"
-    echo "  同じ問題が解決されていません。"
-    echo "  アプローチを変えるか、人間の判断が必要です。"
-    echo ""
+    echo "🔁 SISYPHUS GUARD: 同じ問題で ${MAX_SAME_REASON} 回ループ検出（理由: ${repeated_reason}）"
+    echo "アプローチを変えるか、人間の判断が必要です。"
     cleanup_state
     exit 0
   fi
@@ -92,14 +91,7 @@ check_throttle
 CURRENT_ITERATION=$(get_iteration)
 
 if [[ $CURRENT_ITERATION -ge $MAX_ITERATIONS ]]; then
-  echo ""
-  echo "════════════════════════════════════════════════════════"
-  echo "  🛑 SISYPHUS GUARD: Max iterations ($MAX_ITERATIONS) に到達"
-  echo "════════════════════════════════════════════════════════"
-  echo ""
-  echo "  安全弁が作動しました。"
-  echo "  SISYPHUS_MAX_ITERATIONS 環境変数で上限を変更できます。"
-  echo ""
+  echo "🛑 SISYPHUS GUARD: Max iterations ($MAX_ITERATIONS) に到達。安全弁が作動しました。"
   cleanup_state
   exit 0
 fi
@@ -130,22 +122,9 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
 
   # Case 1: Critical issues found - block and require fixes
   if echo "$LAST_OUTPUT" | grep -qiE 'Critical.*あり|🔴.*Critical|必須修正|Critical.*issue|Critical.*problem'; then
-    echo ""
-    echo "════════════════════════════════════════════════════════"
-    echo "  🔴 SISYPHUS GUARD: Critical な問題が検出されました"
-    echo "════════════════════════════════════════════════════════"
-    echo ""
-    echo "  code-reviewer が Critical な問題を指摘しています。"
-    echo "  修正してから再度レビューを実行してください。"
-    echo ""
-    echo "════════════════════════════════════════════════════════"
-
     increment_iteration_with_reason "critical_issues"
-    jq -n '{
-      "decision": "block",
-      "reason": "code-reviewer が Critical な問題を検出しました。問題を修正し、再度 code-reviewer subagent でレビューしてから <promise>DONE</promise> を出力してください。",
-      "systemMessage": "🔴 Sisyphus Guard: Critical な問題を修正してください"
-    }'
+    emit_cta_block "🔴 Sisyphus Guard: Critical な問題を修正してください" \
+      "Critical な問題を修正" "/review で再レビュー" "<promise>DONE</promise> を出力"
     exit 0
   fi
 
@@ -167,53 +146,16 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
 
   # Case 4: No /simplify evidence - block and require simplify + review
   if ! echo "$LAST_OUTPUT" | grep -qiE '/simplify|simplify.*完了|simplify.*実行|修正.*0件'; then
-    echo ""
-    echo "════════════════════════════════════════════════════════"
-    echo "  ⚠️  SISYPHUS GUARD: /simplify + code-reviewer 未実行"
-    echo "════════════════════════════════════════════════════════"
-    echo ""
-    echo "  <promise>DONE</promise> が検知されましたが、"
-    echo "  /simplify と code-reviewer の実行結果が確認できません。"
-    echo ""
-    echo "  完了前に以下を実行してください："
-    echo "  1. /simplify でコード品質を改善"
-    echo "  2. /review でコードレビュー"
-    echo "  3. Critical な問題がないことを確認"
-    echo "  4. 結果を出力してから DONE を宣言"
-    echo ""
-    echo "════════════════════════════════════════════════════════"
-
     increment_iteration_with_reason "no_simplify_or_review"
-    jq -n '{
-      "decision": "block",
-      "reason": "/simplify でコード品質を改善し、code-reviewer でレビューしてください。結果を出力し、Critical な問題がないことを確認してから <promise>DONE</promise> を出力してください。",
-      "systemMessage": "⚠️ Sisyphus Guard: /simplify → /review を実行してください"
-    }'
+    emit_cta_block "⚠️ Sisyphus Guard: /simplify → /review を実行してください" \
+      "/simplify でコード品質を改善" "/review でレビュー" "<promise>DONE</promise> を出力"
     exit 0
   fi
 
   # Case 5: /simplify done but no code review evidence - block and require review
-  echo ""
-  echo "════════════════════════════════════════════════════════"
-  echo "  ⚠️  SISYPHUS GUARD: code-reviewer 未実行"
-  echo "════════════════════════════════════════════════════════"
-  echo ""
-  echo "  <promise>DONE</promise> が検知されましたが、"
-  echo "  code-reviewer の実行結果が確認できません。"
-  echo ""
-  echo "  完了前に以下を実行してください："
-  echo "  1. /review でコードレビュー"
-  echo "  2. Critical な問題がないことを確認"
-  echo "  3. 結果を出力してから DONE を宣言"
-  echo ""
-  echo "════════════════════════════════════════════════════════"
-
   increment_iteration_with_reason "no_code_review"
-  jq -n '{
-    "decision": "block",
-    "reason": "code-reviewer でレビューしてください。結果を出力し、Critical な問題がないことを確認してから <promise>DONE</promise> を出力してください。",
-    "systemMessage": "⚠️ Sisyphus Guard: /review を実行してください"
-  }'
+  emit_cta_block "⚠️ Sisyphus Guard: /review を実行してください" \
+    "/review でレビュー" "<promise>DONE</promise> を出力"
   exit 0
 fi
 

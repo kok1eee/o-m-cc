@@ -1,6 +1,14 @@
 #!/bin/bash
 # SessionStart: .claude/context.md + chronicle.md の概要を表示
 set -euo pipefail
+
+# CTA ライブラリ読み込み
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
+  # shellcheck source=lib/cta.sh
+  source "${SCRIPT_DIR}/lib/cta.sh"
+fi
+
 HOOK_INPUT=$(cat)
 
 CONTEXT_FILE=".claude/context.md"
@@ -12,7 +20,6 @@ if [[ ! -f "$CONTEXT_FILE" ]] && [[ ! -f "$CHRONICLE_FILE" ]]; then
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # 最新スナップショットを表示
 if [[ -f "$CONTEXT_FILE" ]]; then
@@ -34,8 +41,6 @@ if [[ -f "$CHRONICLE_FILE" ]]; then
   fi
 fi
 
-echo ""
-echo "詳細は .claude/context.md を Read してください。"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+emit_cta ".claude/context.md を Read して文脈を復元"
 echo ""
 exit 0

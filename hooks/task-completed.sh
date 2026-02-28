@@ -17,19 +17,13 @@ else
   log_error() { echo "❌ $1" >&2; }
 fi
 
-TASKS_FILE="plan/tasks.md"
-HAS_JQ=false
-check_command jq && HAS_JQ=true
+# CTA ライブラリ読み込み
+if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
+  # shellcheck source=lib/cta.sh
+  source "${SCRIPT_DIR}/lib/cta.sh"
+fi
 
-# jq なしでも動作する JSON 出力ヘルパー
-emit_system_message() {
-  local msg="$1"
-  if $HAS_JQ; then
-    jq -n --arg msg "$msg" '{ "systemMessage": $msg }'
-  else
-    echo "{\"systemMessage\": \"$(echo "$msg" | sed 's/"/\\"/g')\"}"
-  fi
-}
+TASKS_FILE="plan/tasks.md"
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
@@ -76,29 +70,25 @@ if [[ $TOTAL_TASKS -gt 0 ]]; then
 fi
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Task Completed: $TASK_ID"
 if [[ -n "$TASK_SUBJECT" ]]; then
   echo "   $TASK_SUBJECT"
 fi
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 echo "  📊 進捗: ${COMPLETED_TASKS}/${TOTAL_TASKS} (${PROGRESS_PCT}%)"
 
 if [[ $REMAINING -gt 0 ]]; then
   echo "  📋 残タスク: ${REMAINING} 件"
-  echo "  → 次の未着手タスクをクレームして作業を続行してください。"
-  echo ""
+  emit_cta "TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行"
 
-  emit_system_message "✅ タスク ${TASK_ID} 完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})。残 ${REMAINING} 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。"
+  emit_cta_system "✅ タスク ${TASK_ID} 完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})。残 ${REMAINING} 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。"
   exit 2
 else
   echo ""
   echo "  🎉 全タスク完了！"
-  echo "  → code-reviewer teammate で最終レビューを実行してください。"
-  echo ""
+  emit_cta "/simplify でコード品質を改善" "/review で最終レビュー" "<promise>DONE</promise> を出力"
 
-  emit_system_message "🎉 全 ${COMPLETED_TASKS} タスク完了！code-reviewer teammate で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
+  emit_cta_system "🎉 全 ${COMPLETED_TASKS} タスク完了！/simplify → /review で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
 fi
 
 exit 0
