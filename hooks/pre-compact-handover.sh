@@ -1,7 +1,7 @@
 #!/bin/bash
 # PreCompact hook: compaction 前に失われる文脈を CONTEXT.md に退避
 # 蓄積型: スナップショットが CONSOLIDATE_THRESHOLD に達するとダイジェストに統合
-# 4軸構造: Intent（意図）, Outcomes（成果）, Context（文脈）
+# Chronicle は MAX_CHRONICLE でローテーション（古い履歴は VCS で参照）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -16,6 +16,7 @@ fi
 CONTEXT_FILE="CONTEXT.md"
 TIMESTAMP=$(date '+%m/%d %H:%M')
 CONSOLIDATE_THRESHOLD=5
+MAX_CHRONICLE=30
 
 # --- 初期化 ---
 if [[ ! -f "$CONTEXT_FILE" ]]; then
@@ -23,6 +24,7 @@ if [[ ! -f "$CONTEXT_FILE" ]]; then
 # Context
 
 > compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
+> このファイルを読んだら、Learnings に長期的価値があれば MEMORY.md に反映すること。
 
 ## Chronicle
 
@@ -81,6 +83,20 @@ if [[ "$CURRENT_SNAPSHOTS" -ge "$CONSOLIDATE_THRESHOLD" ]]; then
   fi
 fi
 
+# --- Chronicle ローテーション ---
+# MAX_CHRONICLE を超えたら古いエントリを削除（VCS に履歴は残る）
+CHRONICLE_COUNT=$(grep -c '^- \[' "$CONTEXT_FILE" 2>/dev/null || true)
+CHRONICLE_COUNT=${CHRONICLE_COUNT:-0}
+if [[ "$CHRONICLE_COUNT" -gt "$MAX_CHRONICLE" ]]; then
+  EXCESS=$((CHRONICLE_COUNT - MAX_CHRONICLE))
+  TEMP_FILE=$(mktemp)
+  awk -v excess="$EXCESS" '
+    /^- \[/ { count++; if (count <= excess) next }
+    { print }
+  ' "$CONTEXT_FILE" > "$TEMP_FILE"
+  mv "$TEMP_FILE" "$CONTEXT_FILE"
+fi
+
 # --- スナップショット追記 ---
 {
   echo "### Snapshot ($TIMESTAMP, $TRIGGER)"
@@ -104,5 +120,6 @@ fi
   echo ""
 } >> "$CONTEXT_FILE"
 
-echo "📝 Context saved → CONTEXT.md（snapshot #$((CURRENT_SNAPSHOTS + 1))）"
+echo "📝 CONTEXT.md updated（snapshot #$((CURRENT_SNAPSHOTS + 1)), chronicle: $((CHRONICLE_COUNT)) entries）"
+echo "💡 CONTEXT.md を Read して、Learnings があれば MEMORY.md に反映してください"
 exit 0

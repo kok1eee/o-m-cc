@@ -11,7 +11,7 @@
 
 # Runtime state
 .claude/sisyphus-state.json
-CONTEXT.md
+# CONTEXT.md は VCS 管理する（Chronicle の履歴を保持）
 .claude/.completed-phases
 .claude/.completed-tasks
 .claude/.task-counter
