@@ -43,15 +43,11 @@ if [[ -f "$CONTEXT_FILE" ]] && grep -q '^### Snapshot' "$CONTEXT_FILE" 2>/dev/nu
   if [[ -n "$SNAP_META" ]] && [[ -n "$SNAP_INTENT" ]]; then
     ENTRY="- [${SNAP_META}] ${SNAP_INTENT}"
     # chronicle.md の先頭（ヘッダーの後）に挿入
+    # ヘッダー部分と既存エントリを分離して再構築（空行の有無に依存しない）
     TEMP_FILE=$(mktemp)
-    awk -v entry="$ENTRY" '
-      /^$/ && !inserted && header_done {
-        print entry
-        inserted = 1
-      }
-      { print }
-      /^>/ { header_done = 1 }
-    ' "$CHRONICLE_FILE" > "$TEMP_FILE"
+    sed '/^- \[/,$d' "$CHRONICLE_FILE" > "$TEMP_FILE"
+    echo "$ENTRY" >> "$TEMP_FILE"
+    grep '^- \[' "$CHRONICLE_FILE" >> "$TEMP_FILE" || true
     mv "$TEMP_FILE" "$CHRONICLE_FILE"
   fi
 fi

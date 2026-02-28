@@ -20,7 +20,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - エージェント定義（`agents/*.md`）から `facets/` を参照し、共通基準を一元管理
 
 ## エージェント実行ヒント
-- `background: true` — I/O集約的な調査エージェント（researcher, explore）にバックグラウンド実行ヒント
+- `background: true` — I/O集約的な調査エージェント（researcher）にバックグラウンド実行ヒント
 - `isolation: worktree` — ファイル変更を行うエージェント（frontend, designer, planner, debugger）に worktree 分離（2.1.50+ で正式サポート）
 
 ## 設計思想と強み（変更提案時に必ず照合すること）

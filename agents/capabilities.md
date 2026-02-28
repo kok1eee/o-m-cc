@@ -78,7 +78,7 @@ TeammateTool: spawnTeam
 |---------|-----------|------|
 | **相互レビュー** | code-reviewer + security-reviewer | 品質とセキュリティを同時に、互いの発見を共有 |
 | **仮説競合** | debugger × 2-3 | 異なる仮説を並列検証、偏りを排除 |
-| **多角調査** | explore + researcher + analyst | コード・外部情報・要件を同時に調査 |
+| **多角調査** | researcher + analyst + scout | コード・外部情報・要件を同時に調査 |
 | **設計批評** | designer + critic | 設計しながらリアルタイムでレビュー |
 | **実装+品質** | frontend + code-reviewer | 実装しながら逐次レビュー |
 
@@ -96,21 +96,20 @@ TeammateTool: spawnTeam
 
 ## エージェント一覧
 
-| エージェント | 得意分野 | いつ使うか | キーワード |
-|-------------|---------|-----------|-----------|
-| **explore** | 高速検索・構造把握 | コードベース調査、ファイル探索 | 探索, 検索, どこ, 構造, find, search |
-| **analyst** | 現状分析・要件整理 | 新機能の計画前、要件定義作成 | 要件, 分析, 調査, requirements |
-| **designer** | アーキテクチャ設計 | 要件定義完成後、実装の前 | 設計, アーキテクチャ, design |
-| **planner** | タスク分解 | 設計書完成後、実装に入る前 | 計画, タスク, 分解, plan, tasks |
-| **scout** | ギャップ・スコープ分析 | 要件定義後、漏れや曖昧点の確認 | 漏れ, 曖昧, スコープ, gaps |
-| **critic** | 計画検証 | 設計書・タスク分解が完成した後 | 検証, 妥当性, リスク, validate |
-| **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作 | バグ, エラー, デバッグ, bug, error |
-| **advisor** | 戦略判断・思考フレームワーク | 行き詰まり、3回修正しても未解決、前提を疑いたいとき | 相談, 困った, 行き詰まり, stuck, なぜ |
-| **researcher** | 外部調査 | ライブラリの使い方、API仕様確認 | 調べて, 使い方, ベストプラクティス |
-| **frontend** | UI実装 | React/Vue コンポーネント作成 | UI, 画面, コンポーネント, screen |
-| **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | レビュー, 品質, review, quality |
-| **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | セキュリティ, 脆弱性, security |
-| **vision** | 画像・PDF分析 | デザインモック、エラー画面解析 | 画像, スクショ, PDF, screenshot |
+| エージェント | 得意分野 | いつ使うか | 呼び出し方 | キーワード |
+|-------------|---------|-----------|-----------|-----------|
+| **analyst** | 現状分析・要件整理 | 新機能の計画前、要件定義作成 | `/plan` Discovery Council | 要件, 分析, 調査, requirements |
+| **designer** | アーキテクチャ設計 | 要件定義完成後、実装の前 | `/plan` Phase 2 | 設計, アーキテクチャ, design |
+| **planner** | タスク分解 | 設計書完成後、実装に入る前 | `/plan` Phase 3 | 計画, タスク, 分解, plan, tasks |
+| **scout** | ギャップ・スコープ分析 | 要件定義後、漏れや曖昧点の確認 | `/plan` Discovery Council | 漏れ, 曖昧, スコープ, gaps |
+| **critic** | 計画検証 | 設計書・タスク分解が完成した後 | `/plan` Review Council | 検証, 妥当性, リスク, validate |
+| **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作 | ユーザー直接 | バグ, エラー, デバッグ, bug, error |
+| **advisor** | 戦略判断・思考フレームワーク | 行き詰まり、3回修正しても未解決 | `/plan` Review Council / ユーザー直接 | 相談, 困った, 行き詰まり, stuck |
+| **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/plan` Discovery Council / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
+| **frontend** | UI実装 | React/Vue コンポーネント作成 | ユーザー直接 | UI, 画面, コンポーネント, screen |
+| **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | `/review` | レビュー, 品質, review, quality |
+| **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | `/review` | セキュリティ, 脆弱性, security |
+| **vision** | 画像・PDF分析 | デザインモック、エラー画面解析 | ユーザー直接 | 画像, スクショ, PDF, screenshot |
 
 ---
 
@@ -120,9 +119,8 @@ TeammateTool: spawnTeam
 
 | エージェント | Input | Processing | Output | Memory 蓄積 |
 |-------------|-------|------------|--------|------------|
-| explore | ファイルパターン、検索キーワード | Glob/Grep で検索 | ファイル一覧、コード断片 | 構造マップ、頻出パターンの場所、成熟度マップ |
 | analyst | コードベース、ユーザー要求 | 構造分析、要件抽出 | requirements.md | 制約・前提条件、要件パターン |
-| researcher | 技術キーワード | Web検索、ドキュメント調査 | 調査レポート | 技術選定の根拠、API の注意点 |
+| researcher | ファイルパターン、技術キーワード | Glob/Grep + Web検索 | 探索結果、調査レポート | 構造マップ、技術選定の根拠、API の注意点 |
 | scout | requirements.md | スコープ確認、ギャップ分析 | IN/OUT SCOPE + 質問リスト | 曖昧性パターン、エッジケース、critic クロスリード |
 | vision | 画像/PDFファイル | 視覚分析 | 抽出情報レポート | ビジュアル慣習、UI パターン |
 
@@ -158,8 +156,14 @@ TeammateTool: spawnTeam
 ### 計画フロー（/o-m-cc:plan）
 
 ```
-Agent Teams:
-  analyst ──▶ scout ──▶ designer ──▶ planner ──▶ [critic]
+Phase 1: Discovery Council（同時 spawn + peer-to-peer）
+  researcher ◄──► analyst (Lead) ◄──► scout
+
+Phase 2-3: Pipeline（順次実行）
+  designer ──▶ planner
+
+Phase 4: Review Council（同時 spawn + peer-to-peer）
+  critic (Lead) ◄──► advisor
 ```
 
 ### レビューフロー（/o-m-cc:review）
@@ -171,10 +175,14 @@ Agent Teams:
   security-reviewer ┘
 ```
 
-### デバッグフロー
+### ユーザー直接呼び出し
 
 ```
-debugger → [advisor（3回失敗時）] → code-reviewer
+researcher — コードベース探索 + 外部ドキュメント調査
+debugger   — バグの根本原因調査 → 修正
+frontend   — UI コンポーネント実装
+vision     — 画像/PDF 分析
+advisor    — 行き詰まり時の戦略相談
 ```
 
 ---

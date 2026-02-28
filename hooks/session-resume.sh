@@ -17,7 +17,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 # 最新スナップショットを表示
 if [[ -f "$CONTEXT_FILE" ]]; then
   echo "📋 最新の文脈 (.claude/context.md)"
-  grep -E '^\*\*(Intent|Outcomes)\*\*' "$CONTEXT_FILE" 2>/dev/null | head -2 | while IFS= read -r line; do
+  { grep -E '^\*\*(Intent|Outcomes)' "$CONTEXT_FILE" 2>/dev/null || true; } | head -2 | while IFS= read -r line; do
     echo "  ${line}"
   done
 fi

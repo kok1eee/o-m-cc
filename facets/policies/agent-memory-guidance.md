@@ -21,7 +21,7 @@
 
 ## カテゴリ別ガイド
 
-### 調査系（explore, researcher, vision）
+### 調査系（researcher, vision）
 
 | 蓄積する | 蓄積しない |
 |---------|-----------|
@@ -117,9 +117,9 @@ reviewer 系（code-reviewer, security-reviewer, critic）が判定精度を振�
 
 MEMORY.md の `## Calibration` セクションに **傾向パターンのみ** 3-5行で保持。個別ケースは記録しない。
 
-## プロジェクト成熟度マップ（explore 専用）
+## プロジェクト成熟度マップ（researcher）
 
-explore が調査ごとにプロジェクト構造の知識を段階的に蓄積。
+researcher が調査ごとにプロジェクト構造の知識を段階的に蓄積。
 
 - **初回**: ディレクトリ構造スケルトン（主要ディレクトリと役割）
 - **2回目以降**: 責務、ホットスポット、暗黙の依存関係を追記
