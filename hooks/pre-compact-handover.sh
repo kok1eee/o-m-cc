@@ -1,10 +1,12 @@
 #!/bin/bash
 # PreCompact hook: compaction 前に session state を HANDOVER.md に退避
+# セッション内では蓄積型（追記）。セッション開始時にクリアされる前提。
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
 TRIGGER=$(echo "$HOOK_INPUT" | jq -r '.trigger // "unknown"')
 TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty')
+SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // "unknown"')
 
 # transcript がなければスキップ
 if [[ -z "$TRANSCRIPT_PATH" ]] || [[ ! -f "$TRANSCRIPT_PATH" ]]; then
@@ -12,52 +14,73 @@ if [[ -z "$TRANSCRIPT_PATH" ]] || [[ ! -f "$TRANSCRIPT_PATH" ]]; then
 fi
 
 HANDOVER_FILE="HANDOVER.md"
+TIMESTAMP=$(date '+%H:%M')
+MAX_SNAPSHOTS=10
 
-# 1. 最初の実質的なユーザーメッセージ（≒ 目標）を抽出
-# セッション再開メッセージ等を除外し、最初の意味のあるメッセージを取得
+# --- 蓄積ロジック ---
+# 既存の HANDOVER.md がなければヘッダーを作成
+if [[ ! -f "$HANDOVER_FILE" ]]; then
+  cat > "$HANDOVER_FILE" << 'HEADER'
+# Session Handover
+
+> このファイルは PreCompact hook により自動生成されました。
+> compaction のたびにスナップショットが追記されます。
+> compaction summary と合わせて文脈復元に使用してください。
+
+HEADER
+fi
+
+# スナップショット数チェック（MAX_SNAPSHOTS を超えたら古いものを削除）
+CURRENT_SNAPSHOTS=$(grep -c '^### Snapshot' "$HANDOVER_FILE" 2>/dev/null || true)
+CURRENT_SNAPSHOTS=${CURRENT_SNAPSHOTS:-0}
+if [[ "$CURRENT_SNAPSHOTS" -ge "$MAX_SNAPSHOTS" ]]; then
+  # 最初のスナップショットを削除（ヘッダーは残す）
+  # ヘッダー終了位置（最初の ### Snapshot）から次の ### Snapshot までを削除
+  sed -i '' '/^### Snapshot/{N;:a;/\n### Snapshot/!{N;ba};s/^[^\n]*\n//;}' "$HANDOVER_FILE" 2>/dev/null || true
+fi
+
+# --- 抽出 ---
+
+# 1. 最初の実質的なユーザーメッセージ（≒ 目標）
 FIRST_USER_MSG=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
   jq -r '.message.content | if type == "array" then map(select(.type == "text")) | map(.text) | join(" ") else . end' 2>/dev/null | \
   grep -v '^\[Request interrupted' | grep -v '^$' | sed -n '1p' | \
-  cut -c1-500 || echo "(抽出失敗)")
+  cut -c1-300 || echo "(抽出失敗)")
 
 # 2. 変更ファイル一覧（Write/Edit ツール使用から抽出）
 CHANGED_FILES=$(grep '"tool_use"' "$TRANSCRIPT_PATH" | \
   jq -r 'select(.message.content[]?.name == "Write" or .message.content[]?.name == "Edit") | .message.content[] | select(.type == "tool_use") | .input.file_path // empty' 2>/dev/null | \
-  sort -u | head -20 || echo "")
+  sort -u | head -15 || echo "")
 
 # 3. 最後のテキストを含むアシスタントメッセージ（≒ 現在の状態）
-# tool_use のみのメッセージをスキップし、テキストを含む最後のメッセージを取得
 LAST_ASSISTANT=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | \
   jq -r 'select(.message.content | map(select(.type == "text")) | length > 0) | .message.content | map(select(.type == "text")) | map(.text) | join("\n")' 2>/dev/null | \
-  tail -c 1000 || echo "(抽出失敗)")
+  tail -c 500 || echo "(抽出失敗)")
 
-# 4. HANDOVER.md 生成
-cat > "$HANDOVER_FILE" << 'HEADER'
-# Session Handover
+# --- スナップショット追記 ---
 
-> このファイルは PreCompact hook により自動生成されました。
-> セッション状態の引き継ぎ用です。次のセッション開始時に読み込まれます。
+{
+  echo "### Snapshot ($TIMESTAMP, $TRIGGER)"
+  echo ""
 
-HEADER
+  echo "**目標:** $FIRST_USER_MSG"
+  echo ""
 
-echo "## 目標" >> "$HANDOVER_FILE"
-echo "" >> "$HANDOVER_FILE"
-echo "$FIRST_USER_MSG" >> "$HANDOVER_FILE"
-echo "" >> "$HANDOVER_FILE"
+  if [[ -n "$CHANGED_FILES" ]]; then
+    echo "**変更ファイル:**"
+    echo "$CHANGED_FILES" | while IFS= read -r f; do
+      [[ -n "$f" ]] && echo "- \`$f\`"
+    done
+    echo ""
+  fi
 
-if [[ -n "$CHANGED_FILES" ]]; then
-  echo "## 変更ファイル" >> "$HANDOVER_FILE"
-  echo "" >> "$HANDOVER_FILE"
-  echo "$CHANGED_FILES" | while IFS= read -r f; do
-    [[ -n "$f" ]] && echo "- \`$f\`" >> "$HANDOVER_FILE"
-  done
-  echo "" >> "$HANDOVER_FILE"
-fi
+  echo "**最後のコンテキスト:**"
+  echo ""
+  echo "$LAST_ASSISTANT"
+  echo ""
+  echo "---"
+  echo ""
+} >> "$HANDOVER_FILE"
 
-echo "## 最後のコンテキスト" >> "$HANDOVER_FILE"
-echo "" >> "$HANDOVER_FILE"
-echo "$LAST_ASSISTANT" >> "$HANDOVER_FILE"
-echo "" >> "$HANDOVER_FILE"
-
-echo "📝 Session state → HANDOVER.md（compaction 前に自動保存）"
+echo "📝 Session state → HANDOVER.md（snapshot #$((CURRENT_SNAPSHOTS + 1)) 追記）"
 exit 0
