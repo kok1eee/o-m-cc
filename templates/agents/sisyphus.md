@@ -64,11 +64,12 @@ model: sonnet
 
 ### 6. 文脈を残す
 
-DONE を宣言する前に `/o-m-cc:handover` でセッションの文脈を CONTEXT.md に保存する。
+DONE を宣言する前に `/o-m-cc:handover` でセッションの文脈を `.claude/context.md` に保存する。
 次のセッションが文脈を理解した状態で再開できるようにする。
 
-> **Note**: compaction 発生時は PreCompact hook が自動で CONTEXT.md にスナップショットを追記する。
-> 手動の `/o-m-cc:handover` は Intent / Outcomes / Learnings / Friction の4軸で詳細に記録する。
+> **Note**: compaction 発生時は PreCompact hook が自動で `.claude/context.md` にスナップショットを保存し、
+> 前のスナップショットは `.claude/chronicle.md` に退避される。
+> 手動の `/o-m-cc:handover` は Learnings の MEMORY.md 反映と Skill 提案も行う。
 
 ### 7. 完了を明示する
 

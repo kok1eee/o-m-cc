@@ -1,7 +1,9 @@
 #!/bin/bash
-# PreCompact hook: compaction 前に失われる文脈を CONTEXT.md に退避
-# 蓄積型: スナップショットが CONSOLIDATE_THRESHOLD に達するとダイジェストに統合
-# Chronicle は MAX_CHRONICLE でローテーション（古い履歴は VCS で参照）
+# PreCompact hook: compaction 前に失われる文脈を .claude/context.md に退避
+# 3層アーキテクチャ:
+#   .claude/context.md        — 最新1スナップショット（常にロード）
+#   .claude/chronicle.md      — 直近30エントリ（SessionStart で概要表示）
+#   .claude/context-archive.md — 全量（読み込まない、VCS で参照）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -13,25 +15,79 @@ if [[ -z "$TRANSCRIPT_PATH" ]] || [[ ! -f "$TRANSCRIPT_PATH" ]]; then
   exit 0
 fi
 
-CONTEXT_FILE="CONTEXT.md"
+CONTEXT_FILE=".claude/context.md"
+CHRONICLE_FILE=".claude/chronicle.md"
+ARCHIVE_FILE=".claude/context-archive.md"
 TIMESTAMP=$(date '+%m/%d %H:%M')
-CONSOLIDATE_THRESHOLD=5
 MAX_CHRONICLE=30
 
-# --- 初期化 ---
-if [[ ! -f "$CONTEXT_FILE" ]]; then
-  cat > "$CONTEXT_FILE" << 'HEADER'
-# Context
+# --- ディレクトリ確保 ---
+mkdir -p .claude
 
-> compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
-> このファイルを読んだら、Learnings に長期的価値があれば MEMORY.md に反映すること。
+# --- chronicle.md 初期化 ---
+if [[ ! -f "$CHRONICLE_FILE" ]]; then
+  cat > "$CHRONICLE_FILE" << 'HEADER'
+# Chronicle
 
-## Chronicle
+> context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
+> 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
 HEADER
 fi
 
-# --- 抽出 ---
+# --- 1. 既存 Snapshot を chronicle に退避 ---
+if [[ -f "$CONTEXT_FILE" ]] && grep -q '^### Snapshot' "$CONTEXT_FILE" 2>/dev/null; then
+  SNAP_META=$(grep '^### Snapshot' "$CONTEXT_FILE" | head -1 | sed 's/### Snapshot (\(.*\))/\1/')
+  SNAP_INTENT=$(grep '^\*\*Intent:\*\*' "$CONTEXT_FILE" | head -1 | sed 's/\*\*Intent:\*\* //' | cut -c1-80)
+
+  if [[ -n "$SNAP_META" ]] && [[ -n "$SNAP_INTENT" ]]; then
+    ENTRY="- [${SNAP_META}] ${SNAP_INTENT}"
+    # chronicle.md の先頭（ヘッダーの後）に挿入
+    TEMP_FILE=$(mktemp)
+    awk -v entry="$ENTRY" '
+      /^$/ && !inserted && header_done {
+        print entry
+        inserted = 1
+      }
+      { print }
+      /^>/ { header_done = 1 }
+    ' "$CHRONICLE_FILE" > "$TEMP_FILE"
+    mv "$TEMP_FILE" "$CHRONICLE_FILE"
+  fi
+fi
+
+# --- 2. chronicle ローテーション → archive ---
+CHRONICLE_COUNT=$(grep -c '^- \[' "$CHRONICLE_FILE" 2>/dev/null || true)
+CHRONICLE_COUNT=${CHRONICLE_COUNT:-0}
+
+if [[ "$CHRONICLE_COUNT" -gt "$MAX_CHRONICLE" ]]; then
+  EXCESS=$((CHRONICLE_COUNT - MAX_CHRONICLE))
+
+  # archive ファイル初期化
+  if [[ ! -f "$ARCHIVE_FILE" ]]; then
+    cat > "$ARCHIVE_FILE" << 'HEADER'
+# Context Archive
+
+> chronicle.md から溢れたエントリの保管庫。時系列順（古い→新しい）。
+> 通常は読み込まない。VCS で参照可能。
+
+HEADER
+  fi
+
+  # 超過分（末尾の古いエントリ）を archive に追記
+  grep '^- \[' "$CHRONICLE_FILE" | tail -"$EXCESS" >> "$ARCHIVE_FILE"
+
+  # chronicle から超過分を削除（末尾の古いエントリを削除）
+  TEMP_FILE=$(mktemp)
+  awk -v keep="$MAX_CHRONICLE" '
+    /^- \[/ { count++ }
+    /^- \[/ && count > keep { next }
+    { print }
+  ' "$CHRONICLE_FILE" > "$TEMP_FILE"
+  mv "$TEMP_FILE" "$CHRONICLE_FILE"
+fi
+
+# --- 3. 抽出 ---
 
 # Intent: 最初の実質的なユーザーメッセージ
 INTENT=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
@@ -51,75 +107,35 @@ LAST_CONTEXT=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | \
   jq -r 'select(.message.content | map(select(.type == "text")) | length > 0) | .message.content | map(select(.type == "text")) | map(.text) | join("\n")' 2>/dev/null | \
   tail -c 500 || echo "(抽出失敗)")
 
-# --- 統合チェック ---
-CURRENT_SNAPSHOTS=$(grep -c '^### Snapshot' "$CONTEXT_FILE" 2>/dev/null || true)
-CURRENT_SNAPSHOTS=${CURRENT_SNAPSHOTS:-0}
+# --- 4. context.md を新しい Snapshot で上書き ---
+cat > "$CONTEXT_FILE" << EOF
+# Context
 
-if [[ "$CURRENT_SNAPSHOTS" -ge "$CONSOLIDATE_THRESHOLD" ]]; then
-  DIGEST_ENTRIES=""
-  while IFS= read -r line; do
-    if [[ "$line" =~ ^###\ Snapshot\ \((.+)\) ]]; then
-      SNAP_TIME="${BASH_REMATCH[1]}"
-    elif [[ "$line" =~ ^\*\*Intent:\*\*\ (.+) ]]; then
-      SNAP_INTENT="${BASH_REMATCH[1]}"
-      SNAP_INTENT_SHORT=$(echo "$SNAP_INTENT" | cut -c1-80)
-      DIGEST_ENTRIES="${DIGEST_ENTRIES}- [${SNAP_TIME}] ${SNAP_INTENT_SHORT}
-"
-    fi
-  done < "$CONTEXT_FILE"
+> compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
+> Learnings に長期的価値があれば MEMORY.md に反映すること。
 
-  if [[ -n "$DIGEST_ENTRIES" ]]; then
-    TEMP_FILE=$(mktemp)
-    awk '
-      /^### Snapshot/ { skip=1; next }
-      /^---$/ && skip { skip=0; next }
-      skip { next }
-      { print }
-    ' "$CONTEXT_FILE" | sed '/^$/N;/^\n$/d' > "$TEMP_FILE"
+### Snapshot ($TIMESTAMP, $TRIGGER)
 
-    printf "%s\n" "$DIGEST_ENTRIES" >> "$TEMP_FILE"
-    mv "$TEMP_FILE" "$CONTEXT_FILE"
-    CURRENT_SNAPSHOTS=0
-  fi
-fi
+**Intent:** $INTENT
 
-# --- Chronicle ローテーション ---
-# MAX_CHRONICLE を超えたら古いエントリを削除（VCS に履歴は残る）
-CHRONICLE_COUNT=$(grep -c '^- \[' "$CONTEXT_FILE" 2>/dev/null || true)
-CHRONICLE_COUNT=${CHRONICLE_COUNT:-0}
-if [[ "$CHRONICLE_COUNT" -gt "$MAX_CHRONICLE" ]]; then
-  EXCESS=$((CHRONICLE_COUNT - MAX_CHRONICLE))
-  TEMP_FILE=$(mktemp)
-  awk -v excess="$EXCESS" '
-    /^- \[/ { count++; if (count <= excess) next }
-    { print }
-  ' "$CONTEXT_FILE" > "$TEMP_FILE"
-  mv "$TEMP_FILE" "$CONTEXT_FILE"
-fi
+EOF
 
-# --- スナップショット追記 ---
-{
-  echo "### Snapshot ($TIMESTAMP, $TRIGGER)"
-  echo ""
-  echo "**Intent:** $INTENT"
-  echo ""
-
-  if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
+if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
+  {
     echo "**Outcomes:** $FILE_COUNT files changed"
     echo "$CHANGED_FILES" | while IFS= read -r f; do
       [[ -n "$f" ]] && echo "- \`$f\`"
     done
     echo ""
-  fi
+  } >> "$CONTEXT_FILE"
+fi
 
+{
   echo "**Context:**"
   echo ""
   echo "$LAST_CONTEXT"
-  echo ""
-  echo "---"
-  echo ""
 } >> "$CONTEXT_FILE"
 
-echo "📝 CONTEXT.md updated（snapshot #$((CURRENT_SNAPSHOTS + 1)), chronicle: $((CHRONICLE_COUNT)) entries）"
-echo "💡 CONTEXT.md を Read して、Learnings があれば MEMORY.md に反映してください"
+echo "📝 .claude/context.md updated（chronicle: ${CHRONICLE_COUNT} entries）"
+echo "💡 .claude/context.md を Read して、Learnings があれば MEMORY.md に反映してください"
 exit 0
