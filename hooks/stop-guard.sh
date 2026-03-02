@@ -120,43 +120,23 @@ fi
 # Check for <promise>DONE</promise>
 if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
 
-  # Case 1: Critical issues found - block and require fixes
-  if echo "$LAST_OUTPUT" | grep -qiE 'Critical.*あり|🔴.*Critical|必須修正|Critical.*issue|Critical.*problem'; then
-    increment_iteration_with_reason "critical_issues"
-    emit_cta_block "🔴 Sisyphus Guard: Critical な問題を修正してください" \
-      "Critical な問題を修正" "/review で再レビュー" "<promise>DONE</promise> を出力"
-    exit 0
-  fi
+  # /simplify と /review の両方の実行証拠があるか？
+  HAS_SIMPLIFY=$(echo "$LAST_OUTPUT" | grep -qiE '/simplify|simplify.*完了|simplify.*実行' && echo "1" || echo "0")
+  HAS_REVIEW=$(echo "$LAST_OUTPUT" | grep -qiE 'code-reviewer|コードレビュー|レビュー.*完了|Critical.*なし' && echo "1" || echo "0")
 
-  # Case 2: Code review completed with no critical issues - allow exit
-  if echo "$LAST_OUTPUT" | grep -qiE 'Critical.*なし|Critical.*ありません|🟢|レビュー.*完了.*問題なし|no.*critical|all.*pass'; then
+  if [[ "$HAS_SIMPLIFY" == "1" && "$HAS_REVIEW" == "1" ]]; then
+    # 証拠あり → 終了許可
     echo ""
-    echo "✅ Sisyphus Guard: code-reviewer完了、Critical なし - 終了を許可"
+    echo "✅ Sisyphus Guard: /simplify + /review 完了を確認 - 終了を許可"
     cleanup_state
     exit 0
-  fi
-
-  # Case 3: Code review seems done but result unclear
-  if echo "$LAST_OUTPUT" | grep -qiE 'code-reviewer|コードレビュー|レビュー結果'; then
-    echo ""
-    echo "✅ Sisyphus Guard: code-reviewer実行を確認 - 終了を許可"
-    cleanup_state
-    exit 0
-  fi
-
-  # Case 4: No /simplify evidence - block and require simplify + review
-  if ! echo "$LAST_OUTPUT" | grep -qiE '/simplify|simplify.*完了|simplify.*実行|修正.*0件'; then
-    increment_iteration_with_reason "no_simplify_or_review"
+  else
+    # 証拠なし → ブロック
+    increment_iteration_with_reason "no_quality_check"
     emit_cta_block "⚠️ Sisyphus Guard: /simplify → /review を実行してください" \
       "/simplify でコード品質を改善" "/review でレビュー" "<promise>DONE</promise> を出力"
     exit 0
   fi
-
-  # Case 5: /simplify done but no code review evidence - block and require review
-  increment_iteration_with_reason "no_code_review"
-  emit_cta_block "⚠️ Sisyphus Guard: /review を実行してください" \
-    "/review でレビュー" "<promise>DONE</promise> を出力"
-  exit 0
 fi
 
 # No DONE detected - allow normal exit

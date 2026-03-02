@@ -43,20 +43,10 @@ $ARGUMENTS
        │                   │
        ▼                   ▼
    design.md           tasks.md
-                           │
-                           ▼
-┌──────────────────────────────────────────┐
-│         Phase 4: Review Council           │
-│                                           │
-│  critic (Lead) ◄─► advisor               │
-│  peer-to-peer で指摘を共有               │
-│  critic が統合してレビュー結果を確定      │
-└──────────────────────────────────────────┘
 ```
 
 **Phase 1 は Discovery Council（3エージェント同時 spawn + peer-to-peer 共有）**
 **Phase 2-3 は Pipeline 型（順次実行）**
-**Phase 4 は Review Council（2エージェント同時 spawn + peer-to-peer 共有）**
 
 ---
 
@@ -231,75 +221,6 @@ TeammateTool: spawnTeammate
 
 ---
 
-## Step 5: Phase 4 - Review Council
-
-**planner 完了後、2つの teammate を同時 spawn：**
-
-Phase 4 集約ルール:
-- `all("承認")` → 計画確定
-- `any("要修正")` → 該当フェーズに差し戻し
-
-```
-1. TeammateTool: spawnTeammate
-   teamName: "planning"
-   name: "critic"
-   prompt: |
-     ## エージェント定義
-     agents/critic.md の指示に従ってください。
-
-     ## コンテキスト
-     - タスク: 計画全体をレビュー
-     - スコープ: 完全性・実現可能性・リスク・明確性
-
-     ## 入力
-     - plan/requirements.md
-     - plan/design.md
-     - plan/tasks.md
-
-     ## チーム連携
-     あなたは Review Council の Lead です。
-     - 主要な指摘を advisor にメッセージで共有し、戦略的観点からのフィードバックを促してください
-     - advisor からのアーキテクチャ懸念・代替案を受け取り、レビューに反映してください
-     - 両者の指摘を統合してレビューレポートを確定してください
-
-     ## 出力
-     - レビュー結果を Lead にメッセージで報告
-     - 判定: "承認" または "要修正"（差し戻し先フェーズを明記）
-
-2. TeammateTool: spawnTeammate
-   teamName: "planning"
-   name: "advisor"
-   prompt: |
-     ## エージェント定義
-     agents/advisor.md の指示に従ってください。
-
-     ## コンテキスト
-     - タスク: 計画全体を戦略的・アーキテクチャ的観点からレビュー
-     - スコープ: アーキテクチャ妥当性、スケーラビリティ、保守性
-
-     ## 入力
-     - plan/requirements.md
-     - plan/design.md
-     - plan/tasks.md
-
-     ## チーム連携
-     あなたは Review Council のメンバーです。
-     - アーキテクチャ懸念や代替案を critic にメッセージで共有してください
-     - critic からの確認依頼には思考フレームワークを活用して分析してください
-     - 分析完了時、戦略的観点の指摘一覧を critic に送信してください
-
-     ## 出力
-     - 戦略的観点の指摘を critic にメッセージで報告
-```
-
-**Review Council の動作:**
-- critic と advisor が同時に計画全体をレビュー
-- critic は完全性・実現可能性・リスク・明確性を検証
-- advisor はアーキテクチャ・戦略的妥当性を検証
-- 両者が peer-to-peer で指摘を共有し、critic が統合してレビュー結果を確定
-
----
-
 ## 出力ファイル
 
 ```
@@ -311,9 +232,9 @@ plan/
 
 ---
 
-## Step 6: 実行方式の自動選択
+## Step 5: 実行方式の自動選択
 
-Review Council 承認後、tasks.md のタスクを分析して実行方式を**自動で決定**する。人間に判断を委ねない。
+planner 完了後、tasks.md のタスクを分析して実行方式を**自動で決定**する。人間に判断を委ねない。
 
 ### 判定基準
 
