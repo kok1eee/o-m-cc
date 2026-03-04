@@ -36,6 +36,24 @@ if [[ -f "$PROJECT_MEMORY_FILE" ]]; then
   fi
 fi
 
+# Context Evaluator: MEMORY.md 内のファイルパス参照の実在チェック
+# 存在しないファイルへの言及 = 古くなった記述の可能性
+STALE_REFS=()
+if [[ -f "$PROJECT_MEMORY_FILE" ]]; then
+  while IFS= read -r ref_path; do
+    # 相対パス → CWD 基準で解決
+    if [[ "$ref_path" != /* ]]; then
+      resolved="${CWD}/${ref_path}"
+    else
+      resolved="$ref_path"
+    fi
+    if [[ ! -e "$resolved" ]]; then
+      STALE_REFS+=("$ref_path")
+    fi
+  done < <(grep -oE '`[a-zA-Z0-9_./-]+\.(md|sh|py|json|yaml|yml|toml|ts|js|txt)`' "$PROJECT_MEMORY_FILE" 2>/dev/null \
+    | tr -d '`' | sort -u)
+fi
+
 # memory ファイルを収集
 MEMORY_FILES=()
 
@@ -53,7 +71,7 @@ if [[ -d "$AGENT_MEMORY_DIR" ]]; then
 fi
 
 # memory がなければ何も表示しない
-if [[ ${#MEMORY_FILES[@]} -eq 0 && ${#BLOATED_FILES[@]} -eq 0 ]]; then
+if [[ ${#MEMORY_FILES[@]} -eq 0 && ${#BLOATED_FILES[@]} -eq 0 && ${#STALE_REFS[@]} -eq 0 ]]; then
   exit 0
 fi
 
@@ -71,6 +89,16 @@ if [[ ${#BLOATED_FILES[@]} -gt 0 ]]; then
     echo "     - ${bloated}"
   done
   echo "     → トピック別ファイルに分離してください"
+  echo ""
+fi
+
+# 古い参照の警告
+if [[ ${#STALE_REFS[@]} -gt 0 ]]; then
+  echo "  🔍 MEMORY.md 古い参照（ファイルが存在しません）"
+  for ref in "${STALE_REFS[@]}"; do
+    echo "     - ${ref}"
+  done
+  echo "     → 該当する記述を確認・更新してください"
   echo ""
 fi
 

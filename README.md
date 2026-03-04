@@ -87,6 +87,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
 | `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論） | fork | 「レビューして」で発動 |
+| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + 静的解析で品質最終確認 | fork | 「品質チェックして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
@@ -221,6 +222,8 @@ plan/
 
 ## Token Efficiency
 
+> o-m-cc のトークン管理は、"Everything is Context" ([arXiv:2512.05470](https://arxiv.org/abs/2512.05470)) の **Context Constructor**（トークン予算内で選択的にコンテキストをロード）と **Bounded Reasoning**（有限なコンテキスト窓での戦略的取捨選択）を実践的に実装したものです。
+
 ### 初期読み込みコスト
 
 o-m-cc プラグインの初期トークン消費:
@@ -232,6 +235,18 @@ o-m-cc プラグインの初期トークン消費:
 | **合計** | **~910** | Opus 1M の約 **0.1%** |
 
 > **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
+
+### Progressive Disclosure（段階的開示）
+
+エージェント定義を3層に分離し、必要な時だけ深い情報をロードする:
+
+```
+Layer 1: frontmatter（常時ロード）  → ~60 tokens/agent
+Layer 2: 本文（エージェント起動時）   → ~100-200 tokens/agent
+Layer 3: facets/references/（必要時に Read） → ~200-500 tokens/file
+```
+
+これにより全情報を常時ロードする場合と比べ、**通常時のトークン消費を約 1/3 に削減**。
 
 ### 実行時の効率化
 
@@ -386,6 +401,7 @@ o-m-cc/
 │   ├── init/SKILL.md          # プロジェクト初期化
 │   ├── audit/SKILL.md         # 品質監査
 │   ├── plan/SKILL.md          # 計画（要件→設計→タスク一括、Agent Teams）
+│   ├── quality-gate/SKILL.md  # 品質ゲート（/simplify + Review Council）
 │   └── review/SKILL.md        # コードレビュー（Agent Teams 並列）
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
