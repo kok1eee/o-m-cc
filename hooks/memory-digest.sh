@@ -13,8 +13,28 @@ source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 # Read hook input
 HOOK_INPUT=$(cat)
 
+# 肥大化チェック閾値（200行の80%で警告）
+MEMORY_WARN_THRESHOLD="${MEMORY_WARN_THRESHOLD:-160}"
+
 # サブエージェント memory ディレクトリ
 AGENT_MEMORY_DIR=".claude/agent-memory"
+
+# プロジェクト MEMORY.md の肥大化チェック
+# auto-memory パス: ~/.claude/projects/-<escaped-cwd>/memory/MEMORY.md
+CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // empty' 2>/dev/null || echo "")
+if [[ -z "$CWD" ]]; then
+  CWD="$(pwd)"
+fi
+PROJECT_MEMORY_KEY=$(echo "$CWD" | sed 's|/|-|g')
+PROJECT_MEMORY_FILE="${HOME}/.claude/projects/${PROJECT_MEMORY_KEY}/memory/MEMORY.md"
+BLOATED_FILES=()
+
+if [[ -f "$PROJECT_MEMORY_FILE" ]]; then
+  line_count=$(wc -l < "$PROJECT_MEMORY_FILE" 2>/dev/null | tr -d ' ')
+  if [[ "$line_count" -ge "$MEMORY_WARN_THRESHOLD" ]]; then
+    BLOATED_FILES+=("project MEMORY.md (${line_count}/200行)")
+  fi
+fi
 
 # memory ファイルを収集
 MEMORY_FILES=()
@@ -22,11 +42,18 @@ MEMORY_FILES=()
 if [[ -d "$AGENT_MEMORY_DIR" ]]; then
   while IFS= read -r -d '' f; do
     MEMORY_FILES+=("$f")
+    # エージェント memory の肥大化チェック
+    line_count=$(wc -l < "$f" 2>/dev/null | tr -d ' ')
+    if [[ "$line_count" -ge "$MEMORY_WARN_THRESHOLD" ]]; then
+      agent_dir=$(basename "$(dirname "$f")")
+      agent_name="${agent_dir#o-m-cc-}"
+      BLOATED_FILES+=("${agent_name} (${line_count}/200行)")
+    fi
   done < <(find "$AGENT_MEMORY_DIR" -name "MEMORY.md" -print0 2>/dev/null)
 fi
 
 # memory がなければ何も表示しない
-if [[ ${#MEMORY_FILES[@]} -eq 0 ]]; then
+if [[ ${#MEMORY_FILES[@]} -eq 0 && ${#BLOATED_FILES[@]} -eq 0 ]]; then
   exit 0
 fi
 
@@ -36,6 +63,16 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo "🧠 エージェント Memory ダイジェスト"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
+
+# 肥大化警告
+if [[ ${#BLOATED_FILES[@]} -gt 0 ]]; then
+  echo "  ⚠️ MEMORY.md 肥大化警告（200行でトランケートされます）"
+  for bloated in "${BLOATED_FILES[@]}"; do
+    echo "     - ${bloated}"
+  done
+  echo "     → トピック別ファイルに分離してください"
+  echo ""
+fi
 
 for f in "${MEMORY_FILES[@]}"; do
   # エージェント名を抽出 (o-m-cc-code-reviewer → code-reviewer)
