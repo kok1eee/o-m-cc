@@ -59,10 +59,9 @@ model: sonnet
 | ステップ | やること |
 |---------|---------|
 | テスト/ビルド | テスト実行: 0 failures、ビルド: exit 0 |
-| `/simplify` | 変更コードの再利用・品質・効率を自動チェック+修正 |
-| レビュー | `/review` または code-reviewer エージェント |
+| `/quality-gate` | /simplify + Review Council + 静的解析を一括実行 |
 
-**「たぶん動くはず」は証拠ではない。**
+**`/quality-gate` が `<proof>QUALITY_GATE_PASSED</proof>` を出力しないと DONE できない。** stop-guard が強制する。
 
 ### 6. 文脈を残す
 

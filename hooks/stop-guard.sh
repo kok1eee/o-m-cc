@@ -120,21 +120,20 @@ fi
 # Check for <promise>DONE</promise>
 if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
 
-  # /simplify と /review の両方の実行証拠があるか？
-  HAS_SIMPLIFY=$(echo "$LAST_OUTPUT" | grep -qiE '/simplify|simplify.*完了|simplify.*実行' && echo "1" || echo "0")
-  HAS_REVIEW=$(echo "$LAST_OUTPUT" | grep -qiE 'code-reviewer|コードレビュー|レビュー.*完了|Critical.*なし' && echo "1" || echo "0")
+  # /quality-gate 通過の証拠（proof マーカー）があるか？
+  HAS_QUALITY_GATE=$(echo "$LAST_OUTPUT" | grep -q '<proof>QUALITY_GATE_PASSED</proof>' && echo "1" || echo "0")
 
-  if [[ "$HAS_SIMPLIFY" == "1" && "$HAS_REVIEW" == "1" ]]; then
-    # 証拠あり → 終了許可
+  if [[ "$HAS_QUALITY_GATE" == "1" ]]; then
+    # proof マーカーあり → 終了許可
     echo ""
-    echo "✅ Sisyphus Guard: /simplify + /review 完了を確認 - 終了を許可"
+    echo "✅ Sisyphus Guard: Quality Gate 通過を確認 - 終了を許可"
     cleanup_state
     exit 0
   else
-    # 証拠なし → ブロック
-    increment_iteration_with_reason "no_quality_check"
-    emit_cta_block "⚠️ Sisyphus Guard: /simplify → /review を実行してください" \
-      "/simplify でコード品質を改善" "/review でレビュー" "<promise>DONE</promise> を出力"
+    # proof マーカーなし → ブロック
+    increment_iteration_with_reason "no_quality_gate"
+    emit_cta_block "⚠️ Sisyphus Guard: /quality-gate を実行してください" \
+      "/quality-gate で品質チェック（/simplify + Review Council + Lint）" "<promise>DONE</promise> を出力"
     exit 0
   fi
 fi
