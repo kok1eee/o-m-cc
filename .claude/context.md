@@ -3,27 +3,32 @@
 > compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
 > Learnings に長期的価値があれば MEMORY.md に反映すること。
 
-### Snapshot (03/04 13:30, auto)
+### Snapshot (03/05 12:22, auto)
 
 **Intent:** Implement the following plan:
 
-**Outcomes:** 10 files changed
+**Outcomes:** 13 files changed
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/marketplace.json`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/plugin.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/settings.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/capabilities.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/articles/everything-is-context.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/auto-verify.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/lib/cta.sh`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/memory-digest.sh`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/stop-guard.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/task-completed.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/teammate-idle.sh`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/README_en.md`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/README.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/plan/SKILL.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/review/SKILL.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/quality-gate/SKILL.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/templates/agents/sisyphus.md`
 
 **Context:**
 
-�� + 手動キュレーションより自動化が進んでいます。
-プロジェクトの MEMORY.md も確認します。
-memory-digest.sh にプロジェクト MEMORY.md とエージェント MEMORY.md 両方の肥大化チェックを追加します。
-テストします。
-プロジェクト MEMORY.md のパスが合っていなかった。auto-memory は `~/.claude/projects/` 配下にあるので修正します。
-警告が出ました。通常閾値（160行）でも確認します。
+iency 論文参照 |
+| `e5007be` | quality-gate 強制化（proof マーカー + stop-guard 検証） |
+| `a5257af` | 2.1.69 対応（agent_type ガード + continue:false + CTA 統一） |
+更新完了です。
+現在 0.19.0。今回の変更は機能追加（quality-gate、proof マーカー、2.1.69 対応）なので minor bump で 0.20.0 ですね。
+v0.19.1 プッシュ完了。`claude plugin update o-m-cc@kok1eee` で更新できます。
+v0.19.1 に更新完了。
+No response requested.

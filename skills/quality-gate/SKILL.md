@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: "/simplify → Review Council → 静的解析(ruff/ty/shellcheck) を連続実行してコード品質を最終確認。「品質チェックして」「品質ゲート通して」で使用。"
+description: "/simplify → Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。「品質チェックして」「品質ゲート通して」で使用。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool, Skill]
 model: sonnet
@@ -184,6 +184,8 @@ Critical が見つかった場合、**自動で修正を試みる**（ノンス�
 |-------------|---------|---------|
 | `*.py` | ruff + ty | `ruff check . && ty check .` |
 | `*.sh` | shellcheck | `shellcheck <files>` |
+| `*.ts` / `*.tsx` | tsc + eslint | `npx tsc --noEmit && npx eslint .` |
+| `*.rs` | cargo clippy + cargo test | `cargo clippy -- -D warnings && cargo test` |
 
 ```bash
 # Python ファイルがある場合
@@ -195,6 +197,18 @@ fi
 # Shell スクリプトがある場合
 if compgen -G "**/*.sh" > /dev/null 2>&1; then
   shellcheck **/*.sh
+fi
+
+# TypeScript ファイルがある場合
+if compgen -G "**/*.ts" > /dev/null 2>&1 || compgen -G "**/*.tsx" > /dev/null 2>&1; then
+  npx tsc --noEmit
+  npx eslint .
+fi
+
+# Rust ファイルがある場合（既にビルド/テスト済みならスキップ可）
+if [[ -f "Cargo.toml" ]]; then
+  cargo clippy -- -D warnings
+  cargo test
 fi
 ```
 
@@ -227,6 +241,10 @@ fi
    ruff: ✅ (or N/A)
    ty: ✅ (or N/A)
    shellcheck: ✅ (or N/A)
+   tsc: ✅ (or N/A)
+   eslint: ✅ (or N/A)
+   clippy: ✅ (or N/A)
+   cargo test: ✅ (or N/A)
 
 → 品質ゲート通過
 
