@@ -95,22 +95,24 @@ if [[ $REMAINING -gt 0 ]]; then
     exit 2
 
   elif [[ $IDLE_COUNT -eq 2 ]]; then
-    # Stage 2: Lead に通知（teammate は停止）
-    echo "⚠️  Teammate Idle (2回目): $TEAMMATE_NAME"
-        echo ""
+    # Stage 2: teammate を停止し、Lead に通知
+    echo "⚠️  Teammate Idle (2回目): $TEAMMATE_NAME → 停止"
+    echo ""
     echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    emit_cta "Lead が直接引き取るか、別の teammate に再割り当て"
 
-    emit_cta_system "⚠️ ${TEAMMATE_NAME} が2回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — Lead が直接引き取るか、別の teammate に再割り当てしてください。"
+    emit_cta_system "⚠️ ${TEAMMATE_NAME} が2回目の idle のため停止しました。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — Lead が直接引き取るか、別の teammate に再割り当てしてください。"
+    # 2.1.69+: teammate を明示的に停止
+    echo '{"continue": false, "stopReason": "2回目の idle — Lead が引き取るか再割り当て"}'
 
   else
-    # Stage 3: エスカレーション
-    echo "🚨 Teammate Idle (${IDLE_COUNT}回目): $TEAMMATE_NAME"
-        echo ""
+    # Stage 3: teammate を停止し、エスカレーション
+    echo "🚨 Teammate Idle (${IDLE_COUNT}回目): $TEAMMATE_NAME → 停止"
+    echo ""
     echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    emit_cta "部分的な成果物で完了とする" "ユーザーに相談"
 
-    emit_cta_system "🚨 エスカレーション: ${TEAMMATE_NAME} が ${IDLE_COUNT} 回目の idle です。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 部分完了とするか、ユーザーに相談してください。"
+    emit_cta_system "🚨 エスカレーション: ${TEAMMATE_NAME} が ${IDLE_COUNT} 回目の idle のため停止しました。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 部分完了とするか、ユーザーに相談してください。"
+    # 2.1.69+: teammate を明示的に停止
+    echo '{"continue": false, "stopReason": "エスカレーション — 部分完了 or ユーザー相談"}'
   fi
 else
   # 全タスク完了 → 完了判定（カウントをリセット）
@@ -118,9 +120,9 @@ else
 
   echo ""
     echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
-    emit_cta "/simplify でコード品質を改善" "/review で最終レビュー" "<promise>DONE</promise> を出力"
+    emit_cta "/quality-gate で品質チェック" "<promise>DONE</promise> を出力"
 
-  emit_cta_system "✅ 全タスク完了。/simplify → /review で最終レビューを実行し、<promise>DONE</promise> を出力してください。"
+  emit_cta_system "✅ 全タスク完了。/quality-gate で品質チェックを実行し、<promise>DONE</promise> を出力してください。"
 fi
 
 exit 0

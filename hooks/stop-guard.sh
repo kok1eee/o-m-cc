@@ -32,12 +32,20 @@ fi
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 MAX_SAME_REASON="${SISYPHUS_MAX_SAME_REASON:-3}"
+QUALITY_GATE_PROOF='<proof>QUALITY_GATE_PASSED</proof>'
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)
 
 # Get transcript path from hook input
 TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path' 2>/dev/null || echo "")
+
+# 2.1.69+: サブエージェント（teammate）からの Stop はスキップ
+AGENT_TYPE=$(echo "$HOOK_INPUT" | jq -r '.agent_type // empty' 2>/dev/null || echo "")
+if [[ -n "$AGENT_TYPE" && "$AGENT_TYPE" != "main" ]]; then
+  log_debug "Skipping stop-guard for agent_type: $AGENT_TYPE"
+  exit 0
+fi
 
 # Initialize or update state file
 init_state() {
@@ -121,7 +129,7 @@ fi
 if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
 
   # /quality-gate 通過の証拠（proof マーカー）があるか？
-  HAS_QUALITY_GATE=$(echo "$LAST_OUTPUT" | grep -q '<proof>QUALITY_GATE_PASSED</proof>' && echo "1" || echo "0")
+  HAS_QUALITY_GATE=$(echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF" && echo "1" || echo "0")
 
   if [[ "$HAS_QUALITY_GATE" == "1" ]]; then
     # proof マーカーあり → 終了許可

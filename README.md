@@ -269,6 +269,12 @@ Teammate → 要約をメッセージで Lead に返却
 **サマリー**: [1-2文で何をしたか]
 ```
 
+## 推奨設定（Optional）
+
+| 設定 | 説明 | 設定方法 |
+|------|------|---------|
+| `includeGitInstructions: false` | git 組み込み指示を無効化（jj 等の代替 VCS ユーザー向け）。システムプロンプトのトークン節約 | `claude config set includeGitInstructions false` |
+
 ## Agent Capabilities
 
 エージェント選択の効率化。`agents/capabilities.md` で能力サマリーとキーワードを管理。

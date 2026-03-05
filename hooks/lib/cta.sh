@@ -6,14 +6,14 @@
 #   source "${SCRIPT_DIR}/lib/cta.sh"
 #
 #   # テキスト CTA（人間にも読みやすい）
-#   emit_cta "/simplify でコード品質を改善" "/review でコードレビュー"
+#   emit_cta "/quality-gate で品質チェック"
 #
 #   # systemMessage 付き CTA（Claude Code の systemMessage に注入）
 #   emit_cta_system "次のタスクに進んでください"
 #
 #   # ブロック CTA（バナー + JSON。exit は呼び出し元で）
-#   emit_cta_block "⚠️ SISYPHUS GUARD: /simplify → /review を実行してください" \
-#     "/simplify でコード品質を改善" "/review でレビュー" "DONE を出力"
+#   emit_cta_block "⚠️ Sisyphus Guard: /quality-gate を実行してください" \
+#     "/quality-gate で品質チェック" "DONE を出力"
 
 # =============================================================================
 # テキスト CTA

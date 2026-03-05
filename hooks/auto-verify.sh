@@ -164,7 +164,7 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
   exit 0
 else
   echo "✅ 検証成功"
-  emit_cta "/simplify でコード品質を改善" "/review でコードレビュー"
+  emit_cta "/quality-gate で品質チェック"
   fi
 
 exit 0
