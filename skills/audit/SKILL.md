@@ -1,6 +1,6 @@
 ---
 name: audit
-description: "エージェント・コマンド・フックの品質を監査しレポート生成。「品質チェックして」「監査して」で使用。"
+description: "エージェント・コマンド・フックの品質を監査しレポート生成。プラグインの整合性、定義の漏れ、設定の不備を検出する。「監査して」「プラグインの状態を確認」「整合性チェック」で発動。"
 allowed-tools: [Task, Read, Glob, Grep, AskUserQuestion]
 disable-model-invocation: true
 ---

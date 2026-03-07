@@ -1,6 +1,6 @@
 ---
 name: review
-description: "Agent Teams で code-reviewer, security-reviewer, critic を並列実行してコード品質・セキュリティ・計画整合性をチェック。「レビューして」「コードを確認して」で使用。"
+description: "Agent Teams で code-reviewer, security-reviewer, critic を並列実行してコード品質・セキュリティ・計画整合性をチェック。コード変更後、PR 作成前、実装の妥当性を確認したいときに使う。「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」で発動。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool]
 model: sonnet

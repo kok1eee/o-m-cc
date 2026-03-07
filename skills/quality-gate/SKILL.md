@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: "/simplify → Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。「品質チェックして」「品質ゲート通して」で使用。"
+description: "/simplify → Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「simplify して」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool, Skill]
 model: sonnet
