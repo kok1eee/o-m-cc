@@ -31,7 +31,7 @@ fi
 
 # chronicle.md の直近5件を表示
 if [[ -f "$CHRONICLE_FILE" ]]; then
-  ENTRIES=$(grep '^- \[' "$CHRONICLE_FILE" 2>/dev/null | head -5)
+  ENTRIES=$(grep '^- \[' "$CHRONICLE_FILE" 2>/dev/null | head -5 || true)
   if [[ -n "$ENTRIES" ]]; then
     echo ""
     echo "📜 最近の経緯 (.claude/chronicle.md)"
