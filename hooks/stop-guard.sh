@@ -138,11 +138,11 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
     cleanup_state
     exit 0
   else
-    # proof マーカーなし → ブロック
+    # proof マーカーなし → exit 2 でブロック（Claude に /quality-gate 実行を強制）
     increment_iteration_with_reason "no_quality_gate"
     emit_cta_block "⚠️ Sisyphus Guard: /quality-gate を実行してください" \
       "/quality-gate で品質チェック（/simplify + Review Council + Lint）" "<promise>DONE</promise> を出力"
-    exit 0
+    exit 2
   fi
 fi
 
