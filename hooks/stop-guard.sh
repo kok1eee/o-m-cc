@@ -1,6 +1,6 @@
 #!/bin/bash
-# Sisyphus Stop Guard (simplified)
-# DONE + Quality Gate proof の2段チェック。max_iterations で安全弁。
+# Sisyphus Stop Guard (diff-based)
+# ファイル変更量ベースで quality-gate を強制。DONE マーカー不要。
 
 set -euo pipefail
 
@@ -24,6 +24,7 @@ fi
 # Configuration
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
+MIN_DIFF="${SISYPHUS_MIN_DIFF:-10}"
 QUALITY_GATE_PROOF='<proof>QUALITY_GATE_PASSED</proof>'
 
 HOOK_INPUT=$(cat)
@@ -33,6 +34,30 @@ AGENT_TYPE=$(echo "$HOOK_INPUT" | jq -r '.agent_type // empty' 2>/dev/null || ec
 if [[ -n "$AGENT_TYPE" && "$AGENT_TYPE" != "main" ]]; then
   exit 0
 fi
+
+# 変更行数を取得（jj → git fallback）
+get_diff_lines() {
+  local stat_line
+  if check_command jj; then
+    stat_line=$(jj diff --stat 2>/dev/null | tail -1)
+  elif check_command git; then
+    stat_line=$(git diff --stat HEAD 2>/dev/null | tail -1)
+  fi
+  # "3 files changed, 42 insertions(+), 10 deletions(-)" → 42 + 10 = 52
+  local ins del
+  ins=$(echo "$stat_line" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
+  del=$(echo "$stat_line" | grep -oE '[0-9]+ deletion' | grep -oE '[0-9]+' || echo "0")
+  echo $(( ${ins:-0} + ${del:-0} ))
+}
+
+DIFF_LINES=$(get_diff_lines)
+
+# 変更が閾値未満 → 素通り（雑談・軽微な変更）
+if [[ $DIFF_LINES -lt $MIN_DIFF ]]; then
+  exit 0
+fi
+
+# --- 以下、変更が閾値以上の場合のみ実行 ---
 
 # Iteration counter
 if [[ -f "$STATE_FILE" ]]; then
@@ -52,28 +77,15 @@ increment() { echo "{\"iteration\": $((ITERATION + 1))}" > "$STATE_FILE"; }
 
 LAST_OUTPUT=$(echo "$HOOK_INPUT" | jq -r '.last_assistant_message // empty' 2>/dev/null || echo "")
 
-# DONE あり → proof チェック
-if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
-  if echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF"; then
-    echo "✅ Sisyphus Guard: Quality Gate 通過を確認 - 終了を許可"
-    rm -f "$STATE_FILE"
-    exit 0
-  else
-    increment
-    emit_cta_block "⚠️ Sisyphus Guard: /quality-gate を実行してください" \
-      "/quality-gate で品質チェック" "<promise>DONE</promise> を出力"
-    exit 2
-  fi
+# proof マーカーあり → 通過
+if echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF"; then
+  echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${DIFF_LINES} 行）"
+  rm -f "$STATE_FILE"
+  exit 0
 fi
 
-# DONE なし + 既にループ中 → 再ブロック
-STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
-if [[ "$STOP_HOOK_ACTIVE" == "true" ]]; then
-  increment
-  emit_cta_block "⚠️ Sisyphus Guard: タスクが未完了です" \
-    "タスクを完了させる" "<promise>DONE</promise> を出力して終了"
-  exit 2
-fi
-
-# 初回 Stop → 素通り
-exit 0
+# proof なし → ブロック
+increment
+emit_cta_block "⚠️ Sisyphus Guard: ${DIFF_LINES} 行の変更があります。/quality-gate を実行してください" \
+  "/quality-gate で品質チェック" "完了後に再度停止"
+exit 2
