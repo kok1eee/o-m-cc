@@ -1,4 +1,4 @@
-# o-m-cc v0.19.3
+# o-m-cc v0.19.4
 
 [English](README_en.md)
 
@@ -334,7 +334,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
 | SessionStart | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
 | SessionStart | `memory-digest.sh` | サブエージェント Memory ダイジェスト表示 |
-| Stop | `stop-guard.sh` | Sisyphus ガード（レビュー確認） |
+| Stop | `stop-guard.sh` | Sisyphus ガード（diff ベース quality-gate 強制） |
 | UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PreCompact | `pre-compact-handover.sh` | compaction 時の文脈自動保存（3層分離） |
@@ -489,9 +489,11 @@ Implement feature X following TDD:
 
 ### 4. 安全弁
 
-環境変数 `SISYPHUS_MAX_ITERATIONS` で最大イテレーション数を設定（デフォルト: 50）
-
 ```bash
+# quality-gate 強制の最小変更行数（デフォルト: 50行）
+export SISYPHUS_MIN_DIFF=50
+
+# 最大イテレーション数（デフォルト: 50）
 export SISYPHUS_MAX_ITERATIONS=30
 ```
 
@@ -512,6 +514,13 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.19.4
+
+- **stop-guard diff ベース判定**: `<promise>DONE</promise>` マーカー依存を廃止。`jj diff` / `git diff` の変更行数（デフォルト50行以上）で `/quality-gate` を自動強制する設計に切り替え。Claude の出力に依存しない、hooks だけで完結する品質ゲート
+- **stop-guard 簡素化**: 160行 → 82行。スロットリング・transcript フォールバック・複雑な state 管理を削除。ralph-loop 並みのシンプルさで2段チェック（diff + proof）を維持
+- **DONE マーカー除去**: templates, skills, hooks, README から `<promise>DONE</promise>` への依存を全面除去
+- **`SISYPHUS_MIN_DIFF`**: quality-gate 強制の最小変更行数を環境変数で設定可能（デフォルト: 50行）
 
 ### 0.18.1
 
