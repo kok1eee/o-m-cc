@@ -146,5 +146,15 @@ if echo "$LAST_OUTPUT" | grep -q '<promise>DONE</promise>'; then
   fi
 fi
 
-# No DONE detected - allow normal exit
+# No DONE detected
+# stop_hook_active が true → 既にブロック済みなのに DONE なしで再停止 → 再ブロック
+STOP_HOOK_ACTIVE=$(echo "$HOOK_INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo "false")
+if [[ "$STOP_HOOK_ACTIVE" == "true" ]]; then
+  increment_iteration_with_reason "no_done_reblock"
+  emit_cta_block "⚠️ Sisyphus Guard: タスクが未完了です" \
+    "タスクを完了させる" "<promise>DONE</promise> を出力して終了"
+  exit 2
+fi
+
+# 初回の Stop（カジュアル会話など）→ 素通り
 exit 0
