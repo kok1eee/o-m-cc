@@ -52,6 +52,9 @@ get_diff_lines() {
 
 DIFF_LINES=$(get_diff_lines)
 
+# デバッグ出力（stderr → hook feedback に表示）
+echo "stop-guard: diff=${DIFF_LINES} lines, min=${MIN_DIFF}" >&2
+
 # 変更が閾値未満 → 素通り（雑談・軽微な変更）
 if [[ $DIFF_LINES -lt $MIN_DIFF ]]; then
   exit 0
