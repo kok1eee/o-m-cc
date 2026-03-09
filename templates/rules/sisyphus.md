@@ -12,11 +12,8 @@
 
 ## 完了条件
 
-全てのTODOが完了し、レビューで Critical がない場合のみ：
-
-```
-<promise>DONE</promise>
-```
+全てのTODOが完了し、レビューで Critical がない場合のみ完了。
+stop-guard が diff の変更量を検知し、閾値以上なら `/quality-gate` を強制する（`<proof>QUALITY_GATE_PASSED</proof>` が必要）。
 
 ## Verification - 証拠なき完了は完了ではない
 
@@ -66,7 +63,6 @@
 ## 禁止事項
 
 - 途中放棄禁止 - TODOが残っている状態で「完了」と言わない
-- 嘘の完了禁止 - `<promise>DONE</promise>` は本当に完了した時だけ
 - レビュースキップ禁止 - 完了前に必ずレビュー
 - 検証スキップ禁止 - 証拠なき完了宣言は禁止
 

@@ -249,7 +249,6 @@ fi
 → 品質ゲート通過
 
 <proof>QUALITY_GATE_PASSED</proof>
-<promise>DONE</promise>
 ```
 
 ---

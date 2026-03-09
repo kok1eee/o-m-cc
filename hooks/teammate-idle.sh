@@ -120,9 +120,9 @@ else
 
   echo ""
     echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
-    emit_cta "/quality-gate で品質チェック" "<promise>DONE</promise> を出力"
+    emit_cta "/quality-gate で品質チェック" "完了後に停止"
 
-  emit_cta_system "✅ 全タスク完了。/quality-gate で品質チェックを実行し、<promise>DONE</promise> を出力してください。"
+  emit_cta_system "✅ 全タスク完了。/quality-gate で品質チェックを実行してください。"
 fi
 
 exit 0

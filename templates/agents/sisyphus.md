@@ -61,29 +61,20 @@ model: sonnet
 | テスト/ビルド | テスト実行: 0 failures、ビルド: exit 0 |
 | `/quality-gate` | /simplify + Review Council + 静的解析を一括実行 |
 
-**`/quality-gate` が `<proof>QUALITY_GATE_PASSED</proof>` を出力しないと DONE できない。** stop-guard が強制する。
+**stop-guard が diff の変更量を検知し、閾値（デフォルト10行）以上なら `/quality-gate` を強制する。** `<proof>QUALITY_GATE_PASSED</proof>` がないと停止できない。
 
 ### 6. 文脈を残す
 
-DONE を宣言する前に `/o-m-cc:handover` でセッションの文脈を `.claude/context.md` に保存する。
+作業完了前に `/o-m-cc:handover` でセッションの文脈を `.claude/context.md` に保存する。
 次のセッションが文脈を理解した状態で再開できるようにする。
 
 > **Note**: compaction 発生時は PreCompact hook が自動で `.claude/context.md` にスナップショットを保存し、
 > 前のスナップショットは `.claude/chronicle.md` に退避される。
 > 手動の `/o-m-cc:handover` は Learnings の MEMORY.md 反映と Skill 提案も行う。
 
-### 7. 完了を明示する
-
-全てのタスクが完了し、検証も通ったら：
-
-```
-<promise>DONE</promise>
-```
-
 ## 禁止事項
 
 - 途中放棄 — タスクが残っている状態で「完了」と言わない
-- 嘘の完了 — `<promise>DONE</promise>` は本当に完了した時だけ
 - 検証スキップ — 証拠なき完了宣言は禁止
 - 推測による修正 — コードを読まずに変更しない
 

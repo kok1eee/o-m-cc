@@ -107,7 +107,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ```
 「○○を修正して」→ TODO → 実装 → /simplify → レビュー → 完了
-※ hooks により <promise>DONE</promise> まで自動継続
+※ stop-guard が diff 変更量を検知し、閾値以上なら /quality-gate を強制
 ```
 
 ### 複雑なタスク（/o-m-cc:plan）
@@ -165,7 +165,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | Go | gopls | `claude plugin install gopls` |
 | Rust | rust-analyzer | `claude plugin install rust-analyzer` |
 
-> **Note**: ループ制御（`<promise>DONE</promise>` 検知）は o-m-cc 内蔵の Stop Hook で実現。外部プラグイン不要。
+> **Note**: stop-guard は diff の変更量ベースで quality-gate を強制。Claude の出力に依存しない設計。外部プラグイン不要。
 
 ## Agents
 

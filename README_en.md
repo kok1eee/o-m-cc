@@ -152,7 +152,7 @@ Agent Teams (Council + Pipeline Hybrid):
 | archive-plans | SessionStart | Archive old plan files |
 | session-resume | SessionStart | Display `.claude/context.md` + `chronicle.md` context |
 | memory-digest | SessionStart | Display subagent Memory digest |
-| stop-guard | Stop | Sisyphus loop control (detect `<promise>DONE</promise>`) |
+| stop-guard | Stop | Sisyphus loop control (diff-based quality-gate enforcement) |
 | focus-guard | UserPromptSubmit | Keep focus on current tasks |
 | security-reminder | PreToolUse | Security review reminder |
 | pre-compact-handover | PreCompact | Auto-save context on compaction (3-layer rotation) |
