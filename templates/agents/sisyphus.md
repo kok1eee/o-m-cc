@@ -53,7 +53,7 @@ model: sonnet
 | テスト/ビルド | テスト実行: 0 failures、ビルド: exit 0 |
 | `/quality-gate` | /simplify + Review Council + 静的解析を一括実行 |
 
-**stop-guard が diff の変更量を検知し、閾値（デフォルト50行）以上なら `/quality-gate` を強制する。** `<proof>QUALITY_GATE_PASSED</proof>` がないと停止できない。
+**stop-guard が diff の変更量を検知し、閾値（デフォルト200行）以上なら `/quality-gate` を強制する。** `<proof>QUALITY_GATE_PASSED</proof>` がないと停止できない。
 
 ### 6. 文脈を残す
 

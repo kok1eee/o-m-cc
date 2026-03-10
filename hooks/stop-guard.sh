@@ -24,7 +24,7 @@ fi
 # Configuration
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
-MIN_DIFF="${SISYPHUS_MIN_DIFF:-50}"
+MIN_DIFF="${SISYPHUS_MIN_DIFF:-200}"
 QUALITY_GATE_PROOF='<proof>QUALITY_GATE_PASSED</proof>'
 
 HOOK_INPUT=$(cat)
@@ -97,7 +97,11 @@ fi
 
 # proof なし → ブロック
 increment
-emit_cta_block \
-  "停止できません。${EFFECTIVE_DIFF} 行の変更があります（セッション中の変更のみ）。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
-  "/quality-gate を実行" "quality-gate 通過後に停止可能"
+cat <<EOF
+⚠️ SISYPHUS GUARD: 停止をブロックしました。
+セッション中に ${EFFECTIVE_DIFF} 行の変更があります。
+品質ゲートを通過するまで停止できません。
+
+今すぐ実行してください: /quality-gate
+EOF
 exit 2
