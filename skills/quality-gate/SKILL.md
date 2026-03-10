@@ -247,9 +247,18 @@ fi
    cargo test: ✅ (or N/A)
 
 → 品質ゲート通過
-
-<proof>QUALITY_GATE_PASSED</proof>
 ```
+
+### Step 5: Proof ファイル書き込み
+
+**全ステップ完了後**、以下のコマンドを実行して proof ファイルを書き込む。
+stop-guard はこのファイルを検証して品質ゲート通過を判定する。
+
+```bash
+mkdir -p .claude && echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"diff_lines\": $(jj diff --stat 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo 0)}" > .claude/quality-gate-proof.json
+```
+
+> **重要**: このコマンドは品質ゲートの全ステップが正常に完了した場合のみ実行すること。スキップしたり、ステップを省略して実行してはならない。
 
 ---
 

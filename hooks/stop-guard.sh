@@ -25,7 +25,7 @@ fi
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 MIN_DIFF="${SISYPHUS_MIN_DIFF:-500}"
-QUALITY_GATE_PROOF='<proof>QUALITY_GATE_PASSED</proof>'
+PROOF_FILE=".claude/quality-gate-proof.json"
 
 HOOK_INPUT=$(cat)
 
@@ -101,13 +101,14 @@ increment() {
     '{iteration: $iter, passed_at_diff: $pat}' > "$STATE_FILE"
 }
 
-LAST_OUTPUT=$(echo "$HOOK_INPUT" | jq -r '.last_assistant_message // empty' 2>/dev/null || echo "")
-
-# proof マーカーあり → 通過（現在の diff をベースラインとして記録）
-if echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF"; then
-  echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${EFFECTIVE_DIFF} 行）"
-  jq -n --argjson pat "$DIFF_LINES" '{iteration: 0, passed_at_diff: $pat}' > "$STATE_FILE"
-  exit 0
+# proof ファイル検証（quality-gate スキルが書き込む）
+if [[ -f "$PROOF_FILE" ]]; then
+  # セッション開始後に書かれた proof か確認（baseline ファイルより新しい）
+  if [[ "$PROOF_FILE" -nt "$BASELINE_FILE" ]]; then
+    echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${EFFECTIVE_DIFF} 行）"
+    jq -n --argjson pat "$DIFF_LINES" '{iteration: 0, passed_at_diff: $pat}' > "$STATE_FILE"
+    exit 0
+  fi
 fi
 
 # proof なし → ブロック（exit 0 + JSON decision で制御）
