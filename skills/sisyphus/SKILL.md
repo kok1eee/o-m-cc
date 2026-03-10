@@ -50,6 +50,30 @@ $ARGUMENTS
 
 ---
 
+## Step 0: フェーズタスクを登録（進捗の可視化）
+
+**メイン会話でタスクを登録し、各フェーズの進捗を可視化する。**
+
+```
+TaskCreate: "Phase 1: Discovery Council（要件分析）"
+TaskCreate: "Phase 2: 設計"
+TaskCreate: "Phase 3: タスク分解"
+TaskCreate: "Phase 4: 実装"
+TaskCreate: "Phase 5: Quality Gate"
+```
+
+各フェーズの TaskUpdate タイミング：
+
+| Phase | in_progress にするタイミング | completed にするタイミング |
+|-------|--------------------------|--------------------------|
+| Phase 1 | Step 1 完了後 | Step 3 開始前 |
+| Phase 2 | Step 3 開始前 | Step 4 開始前 |
+| Phase 3 | Step 4 開始前 | Step 5 開始前 |
+| Phase 4 | Step 5 開始前 | 全実装タスク完了後 |
+| Phase 5 | /quality-gate 開始前 | quality-gate 通過後 |
+
+---
+
 ## Step 1: プランニングチーム作成
 
 **TeammateTool の spawnTeam でチームを作成：**
@@ -58,6 +82,8 @@ $ARGUMENTS
 TeammateTool: spawnTeam
   teamName: "planning"
 ```
+
+→ `TaskUpdate: Phase 1 → in_progress`
 
 ---
 
@@ -164,9 +190,13 @@ Phase 1 集約ルール:
 - scout は requirements.md を待たず、ユーザーの要求とコードベースから直接ギャップ分析
 - analyst は自身の分析 + scout のギャップ報告 + researcher の知見を統合して requirements.md を確定
 
+> **Note**: teammate の出力ファイルはメインリポジトリに直接書き込まれる。worktree からのコピーは不要。次の Phase に進む前にファイルの存在を確認するだけでよい。
+
 ---
 
 ## Step 3: Phase 2 - 設計
+
+→ `TaskUpdate: Phase 1 → completed`, `TaskUpdate: Phase 2 → in_progress`
 
 **Discovery Council 完了後、designer teammate を spawn：**
 
@@ -194,6 +224,8 @@ TeammateTool: spawnTeammate
 ---
 
 ## Step 4: Phase 3 - タスク分解
+
+→ `TaskUpdate: Phase 2 → completed`, `TaskUpdate: Phase 3 → in_progress`
 
 **design.md 完了後、planner teammate を spawn：**
 
@@ -234,7 +266,9 @@ plan/
 
 ## Step 5: 実行方式の自動選択
 
-planner 完了後、tasks.md のタスクを分析して実行方式を**自動で決定**する。人間に判断を委ねない。
+→ `TaskUpdate: Phase 3 → completed`, `TaskUpdate: Phase 4 → in_progress`
+
+planner 完了後、tasks.md を分析して実行方式を**自動で決定**する。人間に判断を委ねない。
 
 ### 判定基準
 
@@ -281,4 +315,18 @@ planner 完了後、tasks.md のタスクを分析して実行方式を**自動�
 
 ---
 
-**Step 1 からチーム作成し、Discovery Council（3エージェント同時 spawn）を開始してください。**
+## Step 6: 実装中のタスク管理
+
+実装中は各タスクの進捗を `TaskUpdate` で更新する：
+- タスク着手時: `in_progress`
+- タスク完了時: `completed`
+- 同時に `in_progress` は1つだけ
+
+全タスク完了後:
+→ `TaskUpdate: Phase 4 → completed`, `TaskUpdate: Phase 5 → in_progress`
+→ `/quality-gate` を実行
+→ 通過後: `TaskUpdate: Phase 5 → completed`
+
+---
+
+**Step 0 のタスク登録から開始し、Step 1 でチーム作成、Discovery Council（3エージェント同時 spawn）へ進んでください。**
