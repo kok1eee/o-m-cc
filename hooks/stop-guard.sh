@@ -52,9 +52,6 @@ get_diff_lines() {
 
 DIFF_LINES=$(get_diff_lines)
 
-# デバッグ出力（stderr → hook feedback に表示）
-echo "stop-guard: diff=${DIFF_LINES} lines, min=${MIN_DIFF}" >&2
-
 # 変更が閾値未満 → 素通り（雑談・軽微な変更）
 if [[ $DIFF_LINES -lt $MIN_DIFF ]]; then
   exit 0
@@ -89,6 +86,7 @@ fi
 
 # proof なし → ブロック
 increment
-emit_cta_block "⚠️ Sisyphus Guard: ${DIFF_LINES} 行の変更があります。/quality-gate を実行してください" \
-  "/quality-gate で品質チェック" "完了後に再度停止"
+emit_cta_block \
+  "停止できません。${DIFF_LINES} 行の変更があります。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
+  "/quality-gate を実行" "quality-gate 通過後に停止可能"
 exit 2
