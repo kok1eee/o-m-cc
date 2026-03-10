@@ -52,8 +52,19 @@ get_diff_lines() {
 
 DIFF_LINES=$(get_diff_lines)
 
-# 変更が閾値未満 → 素通り（雑談・軽微な変更）
-if [[ $DIFF_LINES -lt $MIN_DIFF ]]; then
+# セッション開始時のベースラインを差し引く（既存の未コミット差分を除外）
+BASELINE_FILE=".claude/sisyphus-baseline.json"
+BASELINE=0
+if [[ -f "$BASELINE_FILE" ]]; then
+  BASELINE=$(jq -r '.baseline_diff // 0' "$BASELINE_FILE" 2>/dev/null || echo "0")
+fi
+EFFECTIVE_DIFF=$(( DIFF_LINES - BASELINE ))
+if [[ $EFFECTIVE_DIFF -lt 0 ]]; then
+  EFFECTIVE_DIFF=0
+fi
+
+# 実効変更が閾値未満 → 素通り（雑談・軽微な変更・既存差分のみ）
+if [[ $EFFECTIVE_DIFF -lt $MIN_DIFF ]]; then
   exit 0
 fi
 
@@ -79,7 +90,7 @@ LAST_OUTPUT=$(echo "$HOOK_INPUT" | jq -r '.last_assistant_message // empty' 2>/d
 
 # proof マーカーあり → 通過
 if echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF"; then
-  echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${DIFF_LINES} 行）"
+  echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${EFFECTIVE_DIFF} 行）"
   rm -f "$STATE_FILE"
   exit 0
 fi
@@ -87,6 +98,6 @@ fi
 # proof なし → ブロック
 increment
 emit_cta_block \
-  "停止できません。${DIFF_LINES} 行の変更があります。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
+  "停止できません。${EFFECTIVE_DIFF} 行の変更があります（セッション中の変更のみ）。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
   "/quality-gate を実行" "quality-gate 通過後に停止可能"
 exit 2
