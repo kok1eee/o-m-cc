@@ -98,14 +98,14 @@ TeammateTool: spawnTeam
 
 | エージェント | 得意分野 | いつ使うか | 呼び出し方 | キーワード |
 |-------------|---------|-----------|-----------|-----------|
-| **analyst** | 現状分析・要件整理 | 新機能の計画前、要件定義作成 | `/plan` Discovery Council | 要件, 分析, 調査, requirements |
-| **designer** | アーキテクチャ設計 | 要件定義完成後、実装の前 | `/plan` Phase 2 | 設計, アーキテクチャ, design |
-| **planner** | タスク分解 | 設計書完成後、実装に入る前 | `/plan` Phase 3 | 計画, タスク, 分解, plan, tasks |
-| **scout** | ギャップ・スコープ分析 | 要件定義後、漏れや曖昧点の確認 | `/plan` Discovery Council | 漏れ, 曖昧, スコープ, gaps |
+| **analyst** | 現状分析・要件整理 | 新機能の計画前、要件定義作成 | `/sisyphus` Discovery Council | 要件, 分析, 調査, requirements |
+| **designer** | アーキテクチャ設計 | 要件定義完成後、実装の前 | `/sisyphus` Phase 2 | 設計, アーキテクチャ, design |
+| **planner** | タスク分解 | 設計書完成後、実装に入る前 | `/sisyphus` Phase 3 | 計画, タスク, 分解, plan, tasks |
+| **scout** | ギャップ・スコープ分析 | 要件定義後、漏れや曖昧点の確認 | `/sisyphus` Discovery Council | 漏れ, 曖昧, スコープ, gaps |
 | **critic** | 計画整合性チェック | 実装後、計画・設計との乖離確認 | `/review` / ユーザー直接 | 検証, 妥当性, リスク, validate, 整合性 |
 | **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作 | ユーザー直接 | バグ, エラー, デバッグ, bug, error |
 | **advisor** | 戦略判断・思考フレームワーク | 行き詰まり、3回修正しても未解決 | ユーザー直接 | 相談, 困った, 行き詰まり, stuck |
-| **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/plan` Discovery Council / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
+| **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/sisyphus` Discovery Council / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
 | **frontend** | UI実装 | React/Vue コンポーネント作成 | ユーザー直接 | UI, 画面, コンポーネント, screen |
 | **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | `/review` | レビュー, 品質, review, quality |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | `/review` | セキュリティ, 脆弱性, security |
@@ -153,7 +153,7 @@ TeammateTool: spawnTeam
 
 ## フロー別のエージェント構成
 
-### 計画フロー（/o-m-cc:plan）
+### 計画フロー（/o-m-cc:sisyphus）
 
 ```
 Phase 1: Discovery Council（同時 spawn + peer-to-peer）

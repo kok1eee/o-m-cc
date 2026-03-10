@@ -57,14 +57,10 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 計画フェーズを先に実行：
 
 ```bash
-/o-m-cc:plan "認証システムを実装"
+/o-m-cc:sisyphus "認証システムを実装"
 ```
 
-計画が完了したら、普通に実装を依頼：
-
-```
-「計画に沿って実装を開始して」
-```
+計画→実装→品質ゲートまで自動で進行。
 
 ## Skills
 
@@ -80,7 +76,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:plan <task>` | 要件 → 設計 → タスク分解を一括実行（Agent Teams で並列化 + scout ギャップ分析） | fork | 「計画して」で発動 |
+| `/o-m-cc:sisyphus <task>` | 計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー（Agent Teams） | fork | 「計画して」で発動 |
 
 ### 品質
 
@@ -110,7 +106,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ※ stop-guard が diff 変更量を検知し、閾値以上なら /quality-gate を強制
 ```
 
-### 複雑なタスク（/o-m-cc:plan）
+### 複雑なタスク（/o-m-cc:sisyphus）
 
 ```
 Agent Teams (Council + Pipeline ハイブリッド):
@@ -406,7 +402,7 @@ o-m-cc/
 ├── skills/                    # スラッシュコマンド（スキル）
 │   ├── init/SKILL.md          # プロジェクト初期化
 │   ├── audit/SKILL.md         # 品質監査
-│   ├── plan/SKILL.md          # 計画（要件→設計→タスク一括、Agent Teams）
+│   ├── sisyphus/SKILL.md      # Sisyphus ワークフロー（計画→実装→品質ゲート）
 │   ├── quality-gate/SKILL.md  # 品質ゲート（/simplify + Review Council）
 │   └── review/SKILL.md        # コードレビュー（Agent Teams 並列）
 ├── hooks/                     # フック

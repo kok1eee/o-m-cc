@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 ```
 /o-m-cc:audit agents/planner.md
-/o-m-cc:audit skills/plan/SKILL.md
+/o-m-cc:audit skills/sisyphus/SKILL.md
 /o-m-cc:audit all agents
 ```
 

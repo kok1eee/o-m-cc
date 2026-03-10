@@ -1,13 +1,13 @@
 ---
-name: plan
-description: "Agent Teams で要件→設計→タスクを一括実行する仕様駆動開発フロー。新機能の実装、大規模リファクタリング、アーキテクチャ変更など、複数ステップの作業を始めるときに使う。「計画して」「設計から始めて」「この機能を実装したい」「要件を整理して」「タスクに分解して」で発動。"
+name: sisyphus
+description: "計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー。Agent Teams で要件→設計→タスク分解→実装→quality-gate を一括実行。「計画して」「設計から始めて」「この機能を実装したい」「要件を整理して」「タスクに分解して」で発動。"
 argument-hint: "<feature description>"
 allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion, TeammateTool]
 model: opus
 context: fork
 ---
 
-# Plan - 仕様駆動開発オーケストレーター（Agent Teams）
+# Sisyphus - 仕様駆動開発オーケストレーター（Agent Teams）
 
 **要件 → 設計 → タスク** を Agent Teams で一括実行します。
 

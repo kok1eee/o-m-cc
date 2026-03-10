@@ -59,7 +59,7 @@ Automatically runs: TODO creation → Implementation → Review → Done.
 Run the planning phase first:
 
 ```bash
-/o-m-cc:plan "Implement authentication system"
+/o-m-cc:sisyphus "Implement authentication system"
 ```
 
 After planning completes:
@@ -80,7 +80,7 @@ After planning completes:
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:plan <task>` | Requirements → Design → Tasks (Agent Teams parallel + gap analysis) | fork | On "plan this" |
+| `/o-m-cc:sisyphus <task>` | Plan → Implement → Quality Gate (Agent Teams, never stops) | fork | On "plan this" |
 
 ### Quality
 
