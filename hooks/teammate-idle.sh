@@ -85,44 +85,26 @@ if [[ $REMAINING -gt 0 ]]; then
   echo ""
   
   if [[ $IDLE_COUNT -le 1 ]]; then
-    # Stage 1: exit 2 で teammate に作業続行を指示
-    echo "💤 Teammate Idle: $TEAMMATE_NAME"
-        echo ""
-    echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-    emit_cta "TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして続行"
-
-    emit_cta_system "残タスク ${REMAINING}/${TOTAL_TASKS} 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。"
+    # Stage 1: exit 2 → stderr が teammate にフィードバックされる
+    echo "残タスク ${REMAINING}/${TOTAL_TASKS} 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。" >&2
     exit 2
 
   elif [[ $IDLE_COUNT -eq 2 ]]; then
-    # Stage 2: teammate を停止し、Lead に通知
-    echo "⚠️  Teammate Idle (2回目): $TEAMMATE_NAME → 停止"
-    echo ""
-    echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-
-    emit_cta_system "⚠️ ${TEAMMATE_NAME} が2回目の idle のため停止しました。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — Lead が直接引き取るか、別の teammate に再割り当てしてください。"
-    # 2.1.69+: teammate を明示的に停止
-    echo '{"continue": false, "stopReason": "2回目の idle — Lead が引き取るか再割り当て"}'
+    # Stage 2: exit 0 + JSON で teammate を停止
+    echo '{"continue": false, "stopReason": "2回目の idle — Lead が引き取るか再割り当て（残タスク '"${REMAINING}/${TOTAL_TASKS}"' 件）"}'
+    exit 0
 
   else
-    # Stage 3: teammate を停止し、エスカレーション
-    echo "🚨 Teammate Idle (${IDLE_COUNT}回目): $TEAMMATE_NAME → 停止"
-    echo ""
-    echo "  📋 残タスク: ${REMAINING}/${TOTAL_TASKS}"
-
-    emit_cta_system "🚨 エスカレーション: ${TEAMMATE_NAME} が ${IDLE_COUNT} 回目の idle のため停止しました。残タスク ${REMAINING}/${TOTAL_TASKS} 件 — 部分完了とするか、ユーザーに相談してください。"
-    # 2.1.69+: teammate を明示的に停止
-    echo '{"continue": false, "stopReason": "エスカレーション — 部分完了 or ユーザー相談"}'
+    # Stage 3: exit 0 + JSON で teammate を停止（エスカレーション）
+    echo '{"continue": false, "stopReason": "エスカレーション（'"${IDLE_COUNT}"'回目の idle）— 部分完了 or ユーザー相談（残タスク '"${REMAINING}/${TOTAL_TASKS}"' 件）"}'
+    exit 0
   fi
 else
   # 全タスク完了 → 完了判定（カウントをリセット）
   rm -rf "$IDLE_COUNT_DIR" 2>/dev/null || true
 
-  echo ""
-    echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
-    emit_cta "/quality-gate で品質チェック" "完了後に停止"
-
-  emit_cta_system "✅ 全タスク完了。/quality-gate で品質チェックを実行してください。"
+  # 全タスク完了: exit 0 で素通り（stdout はユーザーに表示）
+  echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
 fi
 
 exit 0

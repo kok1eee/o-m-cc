@@ -95,13 +95,13 @@ if echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF"; then
   exit 0
 fi
 
-# proof なし → ブロック
+# proof なし → ブロック（exit 0 + JSON decision で制御）
 increment
-cat <<EOF
-⚠️ SISYPHUS GUARD: 停止をブロックしました。
-セッション中に ${EFFECTIVE_DIFF} 行の変更があります。
-品質ゲートを通過するまで停止できません。
-
-今すぐ実行してください: /quality-gate
-EOF
-exit 2
+if check_command jq; then
+  jq -n \
+    --arg reason "セッション中に ${EFFECTIVE_DIFF} 行の変更があります。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
+    '{ "decision": "block", "reason": $reason }'
+else
+  printf '{"decision":"block","reason":"セッション中に %d 行の変更があります。今すぐ /quality-gate を実行してください。"}\n' "$EFFECTIVE_DIFF"
+fi
+exit 0

@@ -78,17 +78,10 @@ echo ""
 echo "  📊 進捗: ${COMPLETED_TASKS}/${TOTAL_TASKS} (${PROGRESS_PCT}%)"
 
 if [[ $REMAINING -gt 0 ]]; then
-  echo "  📋 残タスク: ${REMAINING} 件"
-  emit_cta "TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行"
-
-  emit_cta_system "✅ タスク ${TASK_ID} 完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})。残 ${REMAINING} 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。"
+  # exit 2 → stderr が model にフィードバックされる
+  echo "タスク ${TASK_ID} 完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})。残 ${REMAINING} 件 — TaskList を確認し、次の未着手・ブロック解除済みタスクをクレームして続行してください。" >&2
   exit 2
 else
-  echo ""
-  echo "  🎉 全タスク完了！"
-  emit_cta "/quality-gate で品質チェック" "完了後に停止"
-
-  emit_cta_system "🎉 全 ${COMPLETED_TASKS} タスク完了！/quality-gate で品質チェックを実行してください。"
+  echo "  🎉 全 ${COMPLETED_TASKS} タスク完了！"
+  exit 0
 fi
-
-exit 0
