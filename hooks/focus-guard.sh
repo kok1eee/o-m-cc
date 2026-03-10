@@ -53,16 +53,20 @@ while IFS= read -r line; do
   fi
 done < "$TASKS_FILE"
 
-# jq がない場合はプレーンテキストで出力
-if ! check_command jq; then
-  echo ""
-  echo "📋 タスク進行中 (残り ${TOTAL_REMAINING} 件)"
-  exit 0
+# systemMessage を注入（UserPromptSubmit は stdout がコンテキストとして追加される）
+MSG="タスク進行中 (残り ${TOTAL_REMAINING} 件"
+if [[ -n "$CURRENT_PHASE" ]]; then
+  MSG="${MSG}: ${CURRENT_PHASE}"
+fi
+MSG="${MSG})"
+if [[ -n "$CURRENT_TASK" ]]; then
+  MSG="${MSG} 次: ${CURRENT_TASK}"
 fi
 
-# systemMessage を注入
-jq -n --arg remaining "$TOTAL_REMAINING" --arg phase "$CURRENT_PHASE" --arg task "$CURRENT_TASK" '{
-  "systemMessage": ("📋 タスク進行中 (残り " + $remaining + " 件" + (if $phase != "" then ": " + $phase else "" end) + ")" + (if $task != "" then "\n   → 次: " + $task else "" end) + "\n\nSisyphus原則: タスク完了まで止まらない。完了時は code-reviewer でレビューしてから DONE。\n\n作業中の割り込み対応:\n- 現在の作業に関連する修正・方向転換 → 反映する\n- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答し、必要ならメモを残す")
-}'
+if check_command jq; then
+  jq -n --arg msg "$MSG" '{ "systemMessage": $msg }'
+else
+  echo "$MSG"
+fi
 
 exit 0
