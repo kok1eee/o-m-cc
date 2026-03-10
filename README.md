@@ -445,6 +445,46 @@ Sisyphus Loop の背後にある哲学：
 | **Operator Skill Matters** | 成功は良いプロンプトを書くスキルに依存する |
 | **Persistence Wins** | 成功するまで試し続ける。ループがリトライを自動処理 |
 
+### なぜマルチエージェントか
+
+「single Claude Code セッションで繰り返すだけで十分では？」— 正当な疑問だ。
+
+マルチエージェントの利点は **専門性の分離** にある。同じモデルでも system prompt が異なれば出力の傾向が変わる。例えば：
+
+- **analyst vs scout**: analyst は要件を構造化する（FR-X, NFR-X 形式）。scout は「漏れ」を探す。同じ入力に対して異なる視点を出力する
+- **code-reviewer vs security-reviewer**: code-reviewer はロジック・可読性に集中し、security-reviewer は OWASP Top 10 ベースで脆弱性を探す。単一エージェントに「両方やれ」と言うより精度が高い
+- **Council パターン**: 複数エージェントが同時に分析し peer-to-peer でメッセージ交換することで、見落としが減る
+
+ただし正直に言うと、12体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, code-reviewer, researcher の5〜6体。残りは特定の状況（セキュリティ監査、UI 実装、デバッグ等）で呼ばれる専門家だ。
+
+## Token & Cost
+
+Sisyphus Loop は「止まらない」ことが特徴だが、止まらないことにはコストがある。
+
+### 見積もり
+
+| 設定 | 1イテレーションあたり | 最大（50イテレーション） |
+|------|---------------------|----------------------|
+| **ループ（メイン）** | ~10K-50K tokens | ~500K-2.5M tokens |
+| **Council（Agent Teams）** | ~50K-200K tokens/Council | 計画+レビューで ~400K tokens |
+| **合計（大規模タスク）** | — | ~1M-3M tokens |
+
+Max plan（$200/月）でも、大規模タスクを1日に何本も回すとコンテキストが問題になりえる。
+
+### コスト管理の推奨
+
+```bash
+# イテレーション数を制限（デフォルト: 50）
+export SISYPHUS_MAX_ITERATIONS=20
+
+# quality-gate の閾値を調整（デフォルト: 500行）
+export SISYPHUS_MIN_DIFF=500
+```
+
+- **小規模タスク**: `MAX_ITERATIONS=10` で十分
+- **大規模タスク**: デフォルト（50）のまま。ただし途中で compaction が走る前提で設計されている
+- **コストを意識する場合**: エージェントの `model` を `sonnet` に統一する（デフォルト）。`opus` は advisor と designer のみ
+
 ## Prompt Design Guide
 
 効果的なプロンプト設計のパターン：

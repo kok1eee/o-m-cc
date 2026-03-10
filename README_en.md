@@ -168,6 +168,44 @@ Agent Teams (Council + Pipeline Hybrid):
 claude plugin update o-m-cc@kok1eee
 ```
 
+## Why Multi-Agent?
+
+"Can't a single Claude Code session just loop?" — Fair question.
+
+The advantage of multi-agent is **separation of expertise**. Even with the same model, different system prompts produce different output tendencies:
+
+- **analyst vs scout**: analyst structures requirements (FR-X, NFR-X), scout looks for gaps. Different perspectives from the same input
+- **code-reviewer vs security-reviewer**: code-reviewer focuses on logic/readability, security-reviewer hunts OWASP Top 10 vulnerabilities. More accurate than asking one agent to do both
+- **Council pattern**: multiple agents analyze simultaneously and exchange messages peer-to-peer, reducing blind spots
+
+Honestly, not all 12 agents are needed for every task. The frequently used core is analyst, designer, planner, code-reviewer, and researcher (5-6 agents). The rest are specialists called for specific situations.
+
+## Token & Cost
+
+The Sisyphus Loop's "never stop" philosophy has a cost.
+
+### Estimates
+
+| Setting | Per iteration | Max (50 iterations) |
+|---------|-------------|---------------------|
+| **Loop (main)** | ~10K-50K tokens | ~500K-2.5M tokens |
+| **Council (Agent Teams)** | ~50K-200K tokens/Council | ~400K tokens for plan+review |
+| **Total (large task)** | — | ~1M-3M tokens |
+
+### Cost Management
+
+```bash
+# Limit iterations (default: 50)
+export SISYPHUS_MAX_ITERATIONS=20
+
+# Adjust quality-gate threshold (default: 500 lines)
+export SISYPHUS_MIN_DIFF=500
+```
+
+- **Small tasks**: `MAX_ITERATIONS=10` is sufficient
+- **Large tasks**: Default (50). Designed to handle compaction mid-session
+- **Cost-conscious**: Keep all agents on `sonnet` (default). Only advisor and designer use `opus`
+
 ## Inspired By
 
 - [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — Multi-agent blueprint. Redesigned from central orchestrator to peer-to-peer
