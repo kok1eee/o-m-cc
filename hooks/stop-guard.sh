@@ -62,6 +62,13 @@ PASSED_AT=0
 if [[ -f "$STATE_FILE" ]]; then
   PASSED_AT=$(jq -r '.passed_at_diff // 0' "$STATE_FILE" 2>/dev/null || echo "0")
 fi
+
+# コミット検出: 総 diff が passed_at を下回った → コミットが行われたのでリセット
+if [[ $PASSED_AT -gt 0 && $DIFF_LINES -lt $PASSED_AT ]]; then
+  PASSED_AT=0
+  rm -f "$STATE_FILE"
+fi
+
 EFFECTIVE_BASELINE=$(( BASELINE > PASSED_AT ? BASELINE : PASSED_AT ))
 EFFECTIVE_DIFF=$(( DIFF_LINES - EFFECTIVE_BASELINE ))
 if [[ $EFFECTIVE_DIFF -lt 0 ]]; then

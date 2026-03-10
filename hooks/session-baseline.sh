@@ -35,4 +35,8 @@ DIFF_LINES=$(get_diff_lines)
 mkdir -p "$(dirname "$BASELINE_FILE")"
 echo "{\"baseline_diff\": ${DIFF_LINES}}" > "$BASELINE_FILE"
 
+# 新セッション開始 → 前セッションの state をクリア（passed_at_diff リセット）
+STATE_FILE=".claude/sisyphus-state.json"
+rm -f "$STATE_FILE"
+
 exit 0
