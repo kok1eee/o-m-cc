@@ -146,6 +146,18 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
+            "timeout": 10000
+          }
+        ]
+      }
     ]
   }
 }

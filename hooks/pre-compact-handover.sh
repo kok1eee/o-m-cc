@@ -14,7 +14,12 @@ if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
 fi
 
 HOOK_INPUT=$(cat)
-TRIGGER=$(echo "$HOOK_INPUT" | jq -r '.trigger // "unknown"')
+EVENT=$(echo "$HOOK_INPUT" | jq -r '.hook_event_name // "unknown"')
+if [[ "$EVENT" == "SessionEnd" ]]; then
+  TRIGGER=$(echo "$HOOK_INPUT" | jq -r '.source // "end"')
+else
+  TRIGGER=$(echo "$HOOK_INPUT" | jq -r '.trigger // "unknown"')
+fi
 TRANSCRIPT_PATH=$(echo "$HOOK_INPUT" | jq -r '.transcript_path // empty')
 
 # transcript がなければスキップ
@@ -140,5 +145,7 @@ fi
 } >> "$CONTEXT_FILE"
 
 echo "📝 .claude/context.md updated（chronicle: ${CHRONICLE_COUNT} entries）"
-emit_cta "Read .claude/context.md" "Learnings があれば MEMORY.md に反映"
+if [[ "$EVENT" != "SessionEnd" ]]; then
+  emit_cta "Read .claude/context.md" "Learnings があれば MEMORY.md に反映"
+fi
 exit 0
