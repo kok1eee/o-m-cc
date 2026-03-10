@@ -65,6 +65,7 @@ stop-guard が diff の変更量を検知し、閾値以上なら `/quality-gate
 - 途中放棄禁止 - TODOが残っている状態で「完了」と言わない
 - レビュースキップ禁止 - 完了前に必ずレビュー
 - 検証スキップ禁止 - 証拠なき完了宣言は禁止
+- `.claude/` 削除禁止 - worktrees, agent-memory 等は Claude Code が自動管理。`rm -rf .claude/` は実行しない
 
 ## Bash 使用制限
 

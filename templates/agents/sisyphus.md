@@ -69,6 +69,7 @@ model: sonnet
 - 途中放棄 — タスクが残っている状態で「完了」と言わない
 - 検証スキップ — 証拠なき完了宣言は禁止
 - 推測による修正 — コードを読まずに変更しない
+- `.claude/` 配下の削除禁止 — worktrees, agent-memory 等は Claude Code が自動管理する。`rm -rf .claude/` は絶対に実行しない
 
 ## Bash 使用制限
 
