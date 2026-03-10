@@ -24,7 +24,7 @@ fi
 # Configuration
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
-MIN_DIFF="${SISYPHUS_MIN_DIFF:-200}"
+MIN_DIFF="${SISYPHUS_MIN_DIFF:-500}"
 QUALITY_GATE_PROOF='<proof>QUALITY_GATE_PASSED</proof>'
 
 HOOK_INPUT=$(cat)
@@ -52,13 +52,18 @@ get_diff_lines() {
 
 DIFF_LINES=$(get_diff_lines)
 
-# セッション開始時のベースラインを差し引く（既存の未コミット差分を除外）
+# ベースライン計算: max(セッション開始時, 前回 quality-gate 通過時)
 BASELINE_FILE=".claude/sisyphus-baseline.json"
 BASELINE=0
 if [[ -f "$BASELINE_FILE" ]]; then
   BASELINE=$(jq -r '.baseline_diff // 0' "$BASELINE_FILE" 2>/dev/null || echo "0")
 fi
-EFFECTIVE_DIFF=$(( DIFF_LINES - BASELINE ))
+PASSED_AT=0
+if [[ -f "$STATE_FILE" ]]; then
+  PASSED_AT=$(jq -r '.passed_at_diff // 0' "$STATE_FILE" 2>/dev/null || echo "0")
+fi
+EFFECTIVE_BASELINE=$(( BASELINE > PASSED_AT ? BASELINE : PASSED_AT ))
+EFFECTIVE_DIFF=$(( DIFF_LINES - EFFECTIVE_BASELINE ))
 if [[ $EFFECTIVE_DIFF -lt 0 ]]; then
   EFFECTIVE_DIFF=0
 fi
@@ -84,14 +89,17 @@ if [[ $ITERATION -ge $MAX_ITERATIONS ]]; then
   exit 0
 fi
 
-increment() { echo "{\"iteration\": $((ITERATION + 1))}" > "$STATE_FILE"; }
+increment() {
+  jq -n --argjson iter "$((ITERATION + 1))" --argjson pat "$PASSED_AT" \
+    '{iteration: $iter, passed_at_diff: $pat}' > "$STATE_FILE"
+}
 
 LAST_OUTPUT=$(echo "$HOOK_INPUT" | jq -r '.last_assistant_message // empty' 2>/dev/null || echo "")
 
-# proof マーカーあり → 通過
+# proof マーカーあり → 通過（現在の diff をベースラインとして記録）
 if echo "$LAST_OUTPUT" | grep -qF "$QUALITY_GATE_PROOF"; then
   echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${EFFECTIVE_DIFF} 行）"
-  rm -f "$STATE_FILE"
+  jq -n --argjson pat "$DIFF_LINES" '{iteration: 0, passed_at_diff: $pat}' > "$STATE_FILE"
   exit 0
 fi
 

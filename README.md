@@ -486,8 +486,8 @@ Implement feature X following TDD:
 ### 4. 安全弁
 
 ```bash
-# quality-gate 強制の最小変更行数（デフォルト: 200行）
-export SISYPHUS_MIN_DIFF=200
+# quality-gate 強制の最小変更行数（デフォルト: 500行）
+export SISYPHUS_MIN_DIFF=500
 
 # 最大イテレーション数（デフォルト: 50）
 export SISYPHUS_MAX_ITERATIONS=30
@@ -513,10 +513,10 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 ### 0.19.4
 
-- **stop-guard diff ベース判定**: `<promise>DONE</promise>` マーカー依存を廃止。`jj diff` / `git diff` の変更行数（デフォルト200行以上）で `/quality-gate` を自動強制する設計に切り替え。Claude の出力に依存しない、hooks だけで完結する品質ゲート
+- **stop-guard diff ベース判定**: `<promise>DONE</promise>` マーカー依存を廃止。`jj diff` / `git diff` の変更行数（デフォルト500行以上）で `/quality-gate` を自動強制する設計に切り替え。Claude の出力に依存しない、hooks だけで完結する品質ゲート
 - **stop-guard 簡素化**: 160行 → 82行。スロットリング・transcript フォールバック・複雑な state 管理を削除。ralph-loop 並みのシンプルさで2段チェック（diff + proof）を維持
 - **DONE マーカー除去**: templates, skills, hooks, README から `<promise>DONE</promise>` への依存を全面除去
-- **`SISYPHUS_MIN_DIFF`**: quality-gate 強制の最小変更行数を環境変数で設定可能（デフォルト: 200行）
+- **`SISYPHUS_MIN_DIFF`**: quality-gate 強制の最小変更行数を環境変数で設定可能（デフォルト: 500行）
 
 ### 0.18.1
 
