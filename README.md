@@ -656,8 +656,8 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 ## Inspired By
 
-- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode)
-- [ralph-wiggum](https://ghuntley.com/ralph/)
+- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — マルチエージェントの原型。中央オーケストレーター型を peer-to-peer に再設計
+- [ralph-wiggum](https://ghuntley.com/ralph/) — Stop Hook によるループ継続パターン
 
 ## License
 

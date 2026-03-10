@@ -168,6 +168,11 @@ Agent Teams (Council + Pipeline Hybrid):
 claude plugin update o-m-cc@kok1eee
 ```
 
+## Inspired By
+
+- [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — Multi-agent blueprint. Redesigned from central orchestrator to peer-to-peer
+- [ralph-wiggum](https://ghuntley.com/ralph/) — Stop Hook loop continuation pattern
+
 ## License
 
 MIT
