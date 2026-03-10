@@ -111,7 +111,15 @@ if [[ -f "$PROOF_FILE" ]]; then
   fi
 fi
 
-# proof なし → ブロック（exit 0 + JSON decision で制御）
+# proof なし → ブロック
+# 再ブロック（ITERATION > 0）: exit 2 で強制ブロック（stderr のみが model に届く）
+if [[ $ITERATION -gt 0 ]]; then
+  increment
+  echo "🛑 Sisyphus Guard: セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate を実行してください。他のことはしないでください。" >&2
+  exit 2
+fi
+
+# 初回ブロック: exit 0 + decision:block で CTA
 increment
 if check_command jq; then
   jq -n \

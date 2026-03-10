@@ -3,7 +3,7 @@
 > compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
 > Learnings に長期的価値があれば MEMORY.md に反映すること。
 
-### Snapshot (03/10 14:49, auto)
+### Snapshot (03/11 00:27, auto)
 
 **Intent:** Implement the following plan:
 
@@ -26,8 +26,12 @@
 
 **Context:**
 
-�と。proof マーカーが `last_assistant_message` にないと毎回ブロックされるので、デバッグ関数1つ追加しただけでフル quality-gate が走ります。
+��合わせ。
 
-これは今の設計通りですが、もし煩わしくなったら：
-- quality-gate 通過後の状態を state ファイルに記録して、新規追加分が少なければスキップする
-- という改善ができます。ただ複雑になるので、まずは今の動作で様子を見ましょう。
+1. **proof bash に静的解析を組み込む** → ゲーミング不可能な物理ゲート
+2. **SKILL.md で `/review` の Skill 呼び出しを明示** → スキップしにくくする
+3. **CTA で各ステップ完了を確認** → 視覚的リマインダー
+SKILL.md を修正:
+1. Review Council の実行を明示的に強制（CTA + 注意書き）
+2. proof bash に静的解析チェックを組み込む
+次に proof bash コマンドに静的解析を組み込む。
