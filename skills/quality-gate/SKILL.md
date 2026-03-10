@@ -43,6 +43,8 @@ jj diff  # または git diff
 
 ### Step 3: レビューチーム作成
 
+> **必須**: Step 3〜5 は `/simplify` とは完全に別のステップです。「/simplify で既に実行済み」ということはありえません。必ず以下の TeammateTool を実行してください。
+
 **TeammateTool の spawnTeam でレビューチームを作成：**
 
 ```
@@ -249,17 +251,51 @@ fi
 → 品質ゲート通過
 ```
 
-### Step 5: Proof ファイル書き込み
+### Step 5: Proof ファイル書き込み（静的解析ゲート付き）
 
-**全ステップ完了後**、以下のコマンドを実行して proof ファイルを書き込む。
-stop-guard はこのファイルを検証して品質ゲート通過を判定する。
+**全ステップ完了後**、以下のコマンドを **1つの Bash ツール呼び出し** で実行する。
+静的解析が通った場合のみ proof ファイルが書き込まれる。stop-guard はこのファイルを検証して品質ゲート通過を判定する。
 
 ```bash
-mkdir -p .claude && echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"diff_lines\": $(jj diff --stat 2>/dev/null | tail -1 | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo 0)}" > .claude/quality-gate-proof.json
+# 静的解析ゲート: 該当ファイルがあればチェック、失敗したら proof を書かない
+PASS=true
+
+# Python
+if compgen -G "**/*.py" > /dev/null 2>&1; then
+  ruff check . || PASS=false
+fi
+
+# Shell
+SHELL_FILES=$(find . -name "*.sh" -not -path "./.claude/*" -not -path "./node_modules/*" 2>/dev/null)
+if [[ -n "$SHELL_FILES" ]]; then
+  echo "$SHELL_FILES" | xargs shellcheck || PASS=false
+fi
+
+# TypeScript
+if compgen -G "**/*.ts" > /dev/null 2>&1 || compgen -G "**/*.tsx" > /dev/null 2>&1; then
+  npx tsc --noEmit || PASS=false
+fi
+
+# Rust
+if [[ -f "Cargo.toml" ]]; then
+  cargo clippy -- -D warnings || PASS=false
+fi
+
+# 全チェック通過時のみ proof を書き込む
+if [[ "$PASS" == "true" ]]; then
+  mkdir -p .claude && echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-proof.json
+  echo "✅ 静的解析通過 — proof ファイル書き込み完了"
+else
+  echo "❌ 静的解析失敗 — proof ファイルは書き込まれません。エラーを修正して再実行してください。"
+fi
 ```
 
-> **重要**: このコマンドは品質ゲートの全ステップが正常に完了した場合のみ実行すること。スキップしたり、ステップを省略して実行してはならない。
+> **重要**: このコマンドは Step 1〜4（/simplify + Review Council + 静的解析修正）が完了した後に実行すること。静的解析が失敗すると proof は書き込まれない。
 
 ---
 
-**品質ゲートを開始します。まず `/simplify` を実行し、Review Council で並列レビュー、最後に静的解析で最終チェックを行ってください。**
+**品質ゲートを開始します。**
+
+1. **`/simplify`** を実行（Step 1）
+2. **Review Council** を TeammateTool で実行（Step 3〜5） — /simplify とは別ステップ、省略不可
+3. **静的解析 + proof 書き込み**（Step 7 + proof）
