@@ -38,6 +38,7 @@ echo "{\"baseline_diff\": ${DIFF_LINES}}" > "$BASELINE_FILE"
 # 新セッション開始 → 前セッションの state + proof をクリア
 STATE_FILE=".claude/sisyphus-state.json"
 PROOF_FILE=".claude/quality-gate-proof.json"
-rm -f "$STATE_FILE" "$PROOF_FILE"
+RUNNING_FILE=".claude/quality-gate-running"
+rm -f "$STATE_FILE" "$PROOF_FILE" "$RUNNING_FILE"
 
 exit 0

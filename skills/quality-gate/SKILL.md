@@ -281,6 +281,9 @@ if [[ -f "Cargo.toml" ]]; then
   cargo clippy -- -D warnings || PASS=false
 fi
 
+# running マーカー削除（quality-gate 完了）
+rm -f .claude/quality-gate-running
+
 # 全チェック通過時のみ proof を書き込む
 if [[ "$PASS" == "true" ]]; then
   mkdir -p .claude && echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-proof.json
@@ -295,6 +298,11 @@ fi
 ---
 
 **品質ゲートを開始します。**
+
+**まず running マーカーを作成**（stop-guard が実行中を認識してブロックしない）：
+```bash
+mkdir -p .claude && echo "{\"started_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-running
+```
 
 1. **`/simplify`** を実行（Step 1）
 2. **Review Council** を TeammateTool で実行（Step 3〜5） — /simplify とは別ステップ、省略不可

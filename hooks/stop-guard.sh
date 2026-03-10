@@ -26,6 +26,7 @@ STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 MIN_DIFF="${SISYPHUS_MIN_DIFF:-500}"
 PROOF_FILE=".claude/quality-gate-proof.json"
+RUNNING_FILE=".claude/quality-gate-running"
 
 HOOK_INPUT=$(cat)
 
@@ -78,6 +79,14 @@ fi
 # 実効変更が閾値未満 → 素通り（雑談・軽微な変更・既存差分のみ）
 if [[ $EFFECTIVE_DIFF -lt $MIN_DIFF ]]; then
   exit 0
+fi
+
+# quality-gate 実行中 → ブロックしない（エージェント待機中の誤ブロック防止）
+if [[ -f "$RUNNING_FILE" ]]; then
+  # running マーカーが baseline より新しい場合のみ有効
+  if [[ "$RUNNING_FILE" -nt "$BASELINE_FILE" ]]; then
+    exit 0
+  fi
 fi
 
 # --- 以下、変更が閾値以上の場合のみ実行 ---
