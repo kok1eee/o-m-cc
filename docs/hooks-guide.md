@@ -33,9 +33,9 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 |------|------|------------|
 | `focus-guard.sh` | タスク進行中の脱線防止（systemMessage 注入） | 3秒 |
 
-タスク進行中（`plan/tasks.md` に未完了タスクがある）の場合、以下のルールを systemMessage として注入します:
-- 現在の作業に関連する修正・方向転換 → 反映する
-- 全く別の作業の依頼 → 「現在のタスク完了後に対応します」と返答
+タスク進行中（`plan/tasks.md` に未完了タスクがある）の場合、systemMessage を注入します。
+
+> **Note**: `plan/tasks.md` は廃止済み。タスク管理は Claude Code ネイティブの TaskCreate/TaskList を使用。この hook は tasks.md が存在しない場合は自動的にスキップします。
 
 ### PreToolUse (ツール実行前)
 

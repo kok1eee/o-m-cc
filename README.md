@@ -112,13 +112,13 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 Agent Teams (Council + Pipeline ハイブリッド):
 ┌─────────────────────────────────────────────────────┐
 │              Phase 1: Discovery Council               │
-│     researcher ◄─► analyst (Lead) ◄─► scout          │
+│     researcher ◄──► analyst ◄──► scout                │
 │         peer-to-peer で findings を共有               │
 └─────────────────────────────────────────────────────┘
           │ requirements.md
           ▼
   Phase 2 (designer) → Phase 3 (planner)
-  design.md             tasks.md
+  design.md             TaskCreate
                            │
           ┌────────────────────────────────┐
           │    Phase 4: Review Council      │
@@ -212,8 +212,9 @@ claude plugin marketplace add anthropics/claude-plugins-official
 plan/
 ├── brainstorm.md       # ブレインストーミング結果（オプション）
 ├── requirements.md     # 要件定義（FR-X, NFR-X）
-├── design.md           # 設計書（コンポーネント、API）
-└── tasks.md            # 実装タスク（依存関係、見積もり）
+└── design.md           # 設計書（コンポーネント、API）
+
+TaskCreate               # 実装タスク（ネイティブタスクシステムで管理）
 ```
 
 ## Token Efficiency

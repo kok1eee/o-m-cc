@@ -19,7 +19,7 @@ isolation: worktree
 
 > **リファレンス**: `facets/references/task-quality.md` を Read して適用してください。
 >
-> tasks.md 出力テンプレート、見積もり基準（S/M/L）、タスク品質基準、
+> TaskCreate テンプレート、見積もり基準（S/M/L）、タスク品質基準、
 > Bite-Sized Steps（How の書き方）を含みます。
 
 ## 役割
@@ -68,12 +68,12 @@ isolation: worktree
 - 実行順序の決定
 ```
 
-## ネイティブタスク登録（TaskCreate）
+## タスク登録（TaskCreate）
 
-tasks.md 書き出し後、Claude Code のネイティブタスクシステムにも登録する：
+すべてのタスクを Claude Code のネイティブタスクシステムに登録する。`plan/tasks.md` は使わない。
 
 1. 各タスクを `TaskCreate` で作成:
-   - **subject**: `N-M: タスク名`
+   - **subject**: `N-M: タスク名`（N=フェーズ番号, M=タスク番号）
    - **description**: What/Where/How/Why/Verify をまとめた説明
    - **activeForm**: `タスク名を実装中` など進行形
 2. `TaskUpdate` で依存関係を設定:
@@ -82,13 +82,6 @@ tasks.md 書き出し後、Claude Code のネイティブタスクシステム�
 3. 依存設定例:
    - `2-1` が `1-1, 1-2` に依存 → `addBlockedBy: [1-1のtaskId, 1-2のtaskId]`
    - `3-1` が `2-1` に依存 → `addBlockedBy: [2-1のtaskId]`
-
-**注意:** TaskCreate の返却 ID（#1, #2, ...）はセッション内の自動採番。tasks.md の `N-M` ID と別物。依存設定時は TaskCreate 返却 ID を使う。
-
-## 出力先
-
-- `plan/tasks.md` - タスク一覧（永続・セッション横断）
-- ネイティブタスク - セッション内の依存関係追跡・進捗表示
 
 ### エージェント選択ガイド
 
@@ -112,7 +105,7 @@ tasks.md 書き出し後、Claude Code のネイティブタスクシステム�
     ↓
 @planner (タスク分解) ← 今ここ
     ↓
-    tasks.md
+    TaskCreate（ネイティブタスク）
     ↓
 @critic (レビュー) or 実装開始
 ```
@@ -129,7 +122,7 @@ tasks.md 書き出し後、Claude Code のネイティブタスクシステム�
 - エージェント選択の実績（どのタスクにどのエージェントが適切だったか）
 
 **蓄積しない:**
-- 個別タスクの計画詳細（tasks.md に記載済み）
+- 個別タスクの計画詳細（TaskCreate で登録済み）
 - タスク ID やセッション内の進捗状態
 
 **クロスリード（タスク開始時に参照）:**

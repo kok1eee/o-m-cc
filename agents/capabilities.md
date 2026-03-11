@@ -37,7 +37,7 @@
 
 | 規模 | 判断基準 | 方式 | 例 |
 |------|---------|------|-----|
-| **S** | ファイル特定、grep 1回、単純な事実確認 | Lead が直接実行 | 「このクラスどこにある？」 |
+| **S** | ファイル特定、grep 1回、単純な事実確認 | 直接実行 | 「このクラスどこにある？」 |
 | **M** | 調査+判断、レビュー、デバッグ、設計相談 | Agent Teams (2-3) | 「このバグの原因を調べて」「レビューして」 |
 | **L** | 複数フェーズ、並列実装、計画全体 | Agent Teams (5+) | 「認証機能を実装して」「並列で作って」 |
 
@@ -45,7 +45,7 @@
 
 **【S】直接実行** — エージェントを使わない
 ```
-Lead が Glob/Grep/Read で直接回答
+Glob/Grep/Read で直接回答
 ```
 
 **【M】Agent Teams** — 議論で質を上げる
@@ -53,7 +53,7 @@ Lead が Glob/Grep/Read で直接回答
 TeammateTool: spawnTeam
   → 2-3 teammates spawn
   → 互いの発見を共有・議論
-  → Lead が統合
+  → 結果を統合
 ```
 
 例: デバッグなら competing hypotheses パターン
@@ -129,7 +129,7 @@ TeammateTool: spawnTeam
 | エージェント | Input | Processing | Output | Memory 蓄積 |
 |-------------|-------|------------|--------|------------|
 | designer | requirements.md | アーキテクチャ設計 | design.md | ADR の要約、設計パターン適用実績、code-reviewer/advisor クロスリード |
-| planner | design.md | タスク分解、依存関係整理 | tasks.md | タスク粒度基準、依存関係パターン、debugger/code-reviewer クロスリード |
+| planner | design.md | タスク分解、依存関係整理 | TaskCreate（ネイティブタスク） | タスク粒度基準、依存関係パターン、debugger/code-reviewer クロスリード |
 | critic | requirements + design + tasks | 妥当性検証 | レビューレポート | レビューの落とし穴、リスク評価精度、Calibration Loop |
 | advisor | 問題の状況 | トレードオフ分析 | 推奨アプローチ + 根拠 | 意思決定の先例、解消パターン |
 
@@ -157,7 +157,7 @@ TeammateTool: spawnTeam
 
 ```
 Phase 1: Discovery Council（同時 spawn + peer-to-peer）
-  researcher ◄──► analyst (Lead) ◄──► scout
+  researcher ◄──► analyst ◄──► scout
 
 Phase 2-3: Pipeline（順次実行）
   designer ──▶ planner
@@ -168,7 +168,6 @@ Phase 2-3: Pipeline（順次実行）
 ```
 Review Council（同時 spawn + peer-to-peer）
   code-reviewer ◄──► security-reviewer ◄──► critic
-  Lead が統合レポート
 ```
 
 ### ユーザー直接呼び出し

@@ -30,7 +30,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 | 原則 | 説明 | アンチパターン例 |
 |------|------|-----------------|
 | **Peer-to-peer 協調** | エージェント同士が対等に議論・共有する。中央オーケストレーターは置かない | 全エージェントを統括する「マスターエージェント」の導入 |
-| **Claude Code ネイティブ活用** | ナレッジ蓄積は auto-memory に委ねる。Claude Code が提供する機能を最大限活用 | プラグイン独自のナレッジ管理機構の導入 |
+| **Claude Code ネイティブ活用** | ネイティブであるほど美しい。Claude Code が提供する機能（TaskCreate, auto-memory, hooks 等）を最大限活用し、独自の再実装を避ける | プラグイン独自のナレッジ管理機構の導入、ネイティブ機能と重複するファイルベースの仕組み（例: tasks.md） |
 | **Sisyphus（止まらない）** | タスク完了まで止まらない。hooks の exit code で制御 | 途中で確認を求めて止まる設計、過剰な承認ステップ |
 | **Lightweight** | Markdown + Shell のみ。ビルド不要、ランタイム依存最小 | TypeScript/Python への書き換え、ビルドステップの導入 |
 | **Progressive Disclosure** | frontmatter → 本文 → 参照ファイルの3段階でトークン消費を最小化 | 全情報を1ファイルに詰め込む、エージェント定義の肥大化 |

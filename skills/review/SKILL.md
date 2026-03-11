@@ -173,12 +173,7 @@ TeammateTool: spawnTeam
 
      ## 入力
      [変更差分を含める]
-     - plan/requirements.md（存在する場合）
-     - plan/design.md（存在する場合）
-     - plan/tasks.md（存在する場合）
-
-     ## 条件
-     - plan/ ディレクトリが存在しない場合は「計画なし - スキップ」と報告して終了
+     - plan/ ディレクトリ内のファイルを自分で確認してください
 
      ## Council プロトコル
      1. 独立に計画整合性レビューを実施

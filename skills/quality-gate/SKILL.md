@@ -124,18 +124,13 @@ TeammateTool: spawnTeam
 
      ## 入力
      [変更差分を含める]
-     - plan/requirements.md（存在する場合）
-     - plan/design.md（存在する場合）
-     - plan/tasks.md（存在する場合）
+     - plan/ ディレクトリ内のファイルを自分で確認してください
 
      ## Council プロトコル
      1. 独立に計画整合性レビューを実施
      2. findings を code-reviewer・security-reviewer にメッセージで共有
      3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
      4. 相互検証を経た最終 findings のみを報告
-
-     ## 条件
-     - plan/ ディレクトリが存在しない場合は「計画なし - スキップ」と報告して終了
 
      ## 出力
      - 計画との乖離があれば Critical/Warning で報告

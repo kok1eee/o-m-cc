@@ -42,7 +42,7 @@ $ARGUMENTS
 └──────────────┘    └──────────────┘
        │                   │
        ▼                   ▼
-   design.md           tasks.md
+   design.md           TaskCreate
 ```
 
 **Phase 1 は Discovery Council（3エージェント同時 spawn + peer-to-peer 共有）**
@@ -246,21 +246,22 @@ TeammateTool: spawnTeammate
     - plan/requirements.md
 
     ## 完了
-    - タスクリストの出力が完了したらその旨を報告
+    - 全タスクの TaskCreate 登録が完了したらその旨を報告
 
     ## 出力
-    - plan/tasks.md にタスクリストを出力
+    - TaskCreate でネイティブタスクシステムに登録（plan/tasks.md は使わない）
 ```
 
 ---
 
-## 出力ファイル
+## 出力
 
 ```
 plan/
 ├── requirements.md  # 要件定義
-├── design.md        # 設計書
-└── tasks.md         # 実装タスク
+└── design.md        # 設計書
+
+TaskCreate           # 実装タスク（ネイティブタスクシステム）
 ```
 
 ---
@@ -269,7 +270,7 @@ plan/
 
 → `TaskUpdate: Phase 3 → completed`, `TaskUpdate: Phase 4 → in_progress`
 
-planner 完了後、tasks.md を分析して実行方式を**自動で決定**する。人間に判断を委ねない。
+planner 完了後、登録されたタスクを分析して実行方式を**自動で決定**する。人間に判断を委ねない。
 
 ### 判定基準
 
@@ -288,7 +289,7 @@ planner 完了後、tasks.md を分析して実行方式を**自動で決定**�
 ✅ 計画完了（Agent Teams）
    📄 plan/requirements.md
    📄 plan/design.md
-   📄 plan/tasks.md
+   📋 TaskCreate: X件登録済み
 
    - タスク: X件 (S:X, M:X, L:X)
    - 実行方式: /batch（独立した同種タスク X件を検出）
@@ -304,7 +305,7 @@ planner 完了後、tasks.md を分析して実行方式を**自動で決定**�
 ✅ 計画完了（Agent Teams）
    📄 plan/requirements.md
    📄 plan/design.md
-   📄 plan/tasks.md
+   📋 TaskCreate: X件登録済み
 
    - タスク: X件 (S:X, M:X, L:X)
    - 実行方式: Sisyphus Loop（依存関係のあるタスク）
@@ -312,7 +313,7 @@ planner 完了後、tasks.md を分析して実行方式を**自動で決定**�
 計画に沿って実装を開始します。
 ```
 
-その後、tasks.md に基づいて直列で実装を進める。
+その後、登録されたタスクに基づいて直列で実装を進める。
 
 ---
 
@@ -322,6 +323,7 @@ planner 完了後、tasks.md を分析して実行方式を**自動で決定**�
 - タスク着手時: `in_progress`
 - タスク完了時: `completed`
 - 同時に `in_progress` は1つだけ
+- `TaskList` で残タスクを確認し、次の未着手・ブロック解除済みタスクに着手
 
 全タスク完了後:
 → `TaskUpdate: Phase 4 → completed`, `TaskUpdate: Phase 5 → in_progress`

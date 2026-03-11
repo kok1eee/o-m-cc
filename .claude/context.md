@@ -3,7 +3,7 @@
 > compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
 > Learnings に長期的価値があれば MEMORY.md に反映すること。
 
-### Snapshot (03/11 00:27, auto)
+### Snapshot (03/11 16:47, auto)
 
 **Intent:** Implement the following plan:
 
@@ -26,12 +26,13 @@
 
 **Context:**
 
-��合わせ。
+��ります:
 
-1. **proof bash に静的解析を組み込む** → ゲーミング不可能な物理ゲート
-2. **SKILL.md で `/review` の Skill 呼び出しを明示** → スキップしにくくする
-3. **CTA で各ステップ完了を確認** → 視覚的リマインダー
-SKILL.md を修正:
-1. Review Council の実行を明示的に強制（CTA + 注意書き）
-2. proof bash に静的解析チェックを組み込む
-次に proof bash コマンドに静的解析を組み込む。
+**hooks は shell スクリプトなので TaskList API を呼べない。** tasks.md をパースしているのはそのため。
+
+アプローチ:
+1. **planner → TaskCreate のみ**（tasks.md 出力を廃止）
+2. **hooks は tasks.md がなければスキップ**（既に graceful degradation あり）
+3. **参照の更新**（sisyphus, review, quality-gate, docs 等）
+
+hooks が tasks.md なしで自然に no-op になるので、結果的にシンプルになります。

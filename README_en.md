@@ -130,17 +130,17 @@ After planning completes:
 Agent Teams (Council + Pipeline Hybrid):
 ┌─────────────────────────────────────────┐
 │       Phase 1: Discovery Council        │
-│  researcher ◄─► analyst (Lead) ◄─► scout│
+│  researcher ◄──► analyst ◄──► scout     │
 │       Peer-to-peer findings sharing     │
 └─────────────────────────────────────────┘
           │ requirements.md
           ▼
   Phase 2 (designer) → Phase 3 (planner)
-  design.md             tasks.md
+  design.md             TaskCreate
                            │
           ┌────────────────────────────────┐
           │    Phase 4: Review Council      │
-          │    critic (Lead) ◄─► advisor    │
+          │    critic ◄──► advisor          │
           └────────────────────────────────┘
 ```
 
