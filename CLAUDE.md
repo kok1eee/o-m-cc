@@ -47,6 +47,8 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 
 **原則: 迷ったら `/plan` に入る。** 計画なしで進むと後戻りが大きい。Plan mode は後戻りを防ぐための最も安価な投資。
 
+**エスカレーション:** `/plan` で計画中に「設計判断が多い」「影響範囲が広い」と判明したら、途中で `/sisyphus` にエスカレーションする。小さく始めて必要に応じて上げる。
+
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用
 - エージェント数・スキル数を変更したら `plugin.json`, `marketplace.json`, `README.md`, `capabilities.md` を同期
