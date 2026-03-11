@@ -1,4 +1,4 @@
-# o-m-cc v0.20.0
+# o-m-cc v0.20.1
 
 [English](README_en.md)
 
@@ -547,6 +547,11 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.20.1
+
+- **TeammateIdle hook 再有効化**: テストで hooks なしでもフロー成立を確認した上で、TeammateTool 利用時の idle ループ防止として安全弁的に再有効化
+- **TaskCompleted hook 削除**: ネイティブ動作で十分と判断し削除。focus-guard, auto-verify も tasks.md 依存のため削除済み
 
 ### 0.20.0
 
