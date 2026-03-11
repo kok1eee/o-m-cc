@@ -1,13 +1,12 @@
 #!/bin/bash
 # Teammate Idle Handler
 # TeammateIdle イベントで実行
-# teammate が idle になったとき、残タスクがあれば再割り当てを示唆
-# 全 teammate idle + 全タスク完了なら完了判定
+# teammate が idle になったとき、残タスクへの着手を促す
 #
 # エスカレーションプロトコル:
-#   Stage 1（1回目）: 再割り当てを提案
-#   Stage 2（2回目）: Lead が引き取るか再割り当て
-#   Stage 3（3回目〜）: 部分完了 or ユーザー相談を促す
+#   Stage 1（1回目）: TaskList 確認を促す
+#   Stage 2（2回目）: teammate を停止して再割り当て
+#   Stage 3（3回目〜）: teammate を停止（エスカレーション）
 
 set -euo pipefail
 
@@ -19,16 +18,8 @@ if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
 else
   check_command() { command -v "$1" >/dev/null 2>&1; }
   log_debug() { :; }
-  log_error() { echo "❌ $1" >&2; }
 fi
 
-# CTA ライブラリ読み込み
-if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
-  # shellcheck source=lib/cta.sh
-  source "${SCRIPT_DIR}/lib/cta.sh"
-fi
-
-TASKS_FILE="plan/tasks.md"
 IDLE_COUNT_DIR=".claude/idle-counts"
 
 # Read hook input from stdin
@@ -43,68 +34,32 @@ fi
 
 log_debug "TeammateIdle: $TEAMMATE_NAME が idle になりました"
 
-# tasks.md が存在しない場合はスキップ
-if [[ ! -f "$TASKS_FILE" ]]; then
-  exit 0
-fi
+# --- エスカレーションカウント管理 ---
+mkdir -p "$IDLE_COUNT_DIR"
+SAFE_NAME=$(echo "$TEAMMATE_NAME" | tr -c '[:alnum:]-_' '_')
+COUNT_FILE="${IDLE_COUNT_DIR}/${SAFE_NAME}"
 
-# 未完了タスク数をカウント
-TOTAL_TASKS=0
-COMPLETED_TASKS=0
-
-while IFS= read -r line; do
-  if echo "$line" | grep -qE '^\s*-\s*\[[ x]\]'; then
-    TOTAL_TASKS=$((TOTAL_TASKS + 1))
-    if echo "$line" | grep -qE '^\s*-\s*\[x\]'; then
-      COMPLETED_TASKS=$((COMPLETED_TASKS + 1))
-    fi
-  fi
-done < "$TASKS_FILE"
-
-REMAINING=$((TOTAL_TASKS - COMPLETED_TASKS))
-
-if [[ $TOTAL_TASKS -eq 0 ]]; then
-  exit 0
-fi
-
-if [[ $REMAINING -gt 0 ]]; then
-  # --- エスカレーションカウント管理 ---
-  mkdir -p "$IDLE_COUNT_DIR"
-  SAFE_NAME=$(echo "$TEAMMATE_NAME" | tr -c '[:alnum:]-_' '_')
-  COUNT_FILE="${IDLE_COUNT_DIR}/${SAFE_NAME}"
-
-  if [[ -f "$COUNT_FILE" ]]; then
-    IDLE_COUNT=$(cat "$COUNT_FILE")
-    IDLE_COUNT=$((IDLE_COUNT + 1))
-  else
-    IDLE_COUNT=1
-  fi
-  echo "$IDLE_COUNT" > "$COUNT_FILE"
-
-  # --- Stage 別メッセージ ---
-  echo ""
-  
-  if [[ $IDLE_COUNT -le 1 ]]; then
-    # Stage 1: exit 2 → stderr が teammate にフィードバックされる
-    echo "残タスク ${REMAINING}/${TOTAL_TASKS} 件あります。TaskList を確認し、未着手・ブロック解除済みのタスクを自分でクレームして作業を続行してください。" >&2
-    exit 2
-
-  elif [[ $IDLE_COUNT -eq 2 ]]; then
-    # Stage 2: exit 0 + JSON で teammate を停止
-    echo '{"continue": false, "stopReason": "2回目の idle — Lead が引き取るか再割り当て（残タスク '"${REMAINING}/${TOTAL_TASKS}"' 件）"}'
-    exit 0
-
-  else
-    # Stage 3: exit 0 + JSON で teammate を停止（エスカレーション）
-    echo '{"continue": false, "stopReason": "エスカレーション（'"${IDLE_COUNT}"'回目の idle）— 部分完了 or ユーザー相談（残タスク '"${REMAINING}/${TOTAL_TASKS}"' 件）"}'
-    exit 0
-  fi
+if [[ -f "$COUNT_FILE" ]]; then
+  IDLE_COUNT=$(cat "$COUNT_FILE")
+  IDLE_COUNT=$((IDLE_COUNT + 1))
 else
-  # 全タスク完了 → 完了判定（カウントをリセット）
-  rm -rf "$IDLE_COUNT_DIR" 2>/dev/null || true
-
-  # 全タスク完了: exit 0 で素通り（stdout はユーザーに表示）
-  echo "✅ 全タスク完了 (${COMPLETED_TASKS}/${TOTAL_TASKS})"
+  IDLE_COUNT=1
 fi
+echo "$IDLE_COUNT" > "$COUNT_FILE"
 
-exit 0
+# --- Stage 別メッセージ ---
+if [[ $IDLE_COUNT -le 1 ]]; then
+  # Stage 1: exit 2 → stderr が teammate にフィードバックされる
+  echo "TaskList を確認し、未着手・ブロック解除済みのタスクをクレームして作業を続行してください。" >&2
+  exit 2
+
+elif [[ $IDLE_COUNT -eq 2 ]]; then
+  # Stage 2: exit 0 + JSON で teammate を停止
+  echo '{"continue": false, "stopReason": "2回目の idle — 再割り当てを検討"}'
+  exit 0
+
+else
+  # Stage 3: exit 0 + JSON で teammate を停止（エスカレーション）
+  echo '{"continue": false, "stopReason": "エスカレーション（'"${IDLE_COUNT}"'回目の idle）— 部分完了 or ユーザー相談"}'
+  exit 0
+fi

@@ -332,10 +332,8 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
 | SessionStart | `memory-digest.sh` | サブエージェント Memory ダイジェスト表示 |
 | Stop | `stop-guard.sh` | Sisyphus ガード（diff ベース quality-gate 強制） |
-| UserPromptSubmit | `focus-guard.sh` | タスク進行中の脱線防止 |
 | PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
 | PreCompact | `pre-compact-handover.sh` | compaction 時の文脈自動保存（3層分離） |
-| PostToolUse | `auto-verify.sh` | フェーズ完了時の自動検証 |
 | TeammateIdle | `teammate-idle.sh` | idle teammate への残タスク再割り当て示唆 |
 | TaskCompleted | `task-completed.sh` | タスク完了時の進捗表示・依存タスクアンブロック |
 
@@ -416,8 +414,6 @@ o-m-cc/
 │   ├── memory-digest.sh       # エージェント Memory ダイジェスト
 │   ├── pre-compact-handover.sh # compaction 時の文脈自動保存
 │   ├── stop-guard.sh          # Sisyphus ガード
-│   ├── auto-verify.sh         # フェーズ完了時の自動検証
-│   ├── focus-guard.sh         # タスク進行中の脱線防止
 │   ├── teammate-idle.sh       # Teammate idle 時の再割り当て（Agent Teams）
 │   ├── task-completed.sh      # タスク完了時の進捗・アンブロック（Agent Teams）
 │   ├── security_reminder_hook.py  # セキュリティチェック

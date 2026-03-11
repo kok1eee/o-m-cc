@@ -27,27 +27,11 @@ o-m-cc は Claude Code の hooks 機能を使って、以下の自動化を提�
 |------|------|------------|
 | `stop-guard.sh` | Sisyphus ガード（DONE 検知時のレビュー確認） | 10秒 |
 
-### UserPromptSubmit (ユーザー入力時)
-
-| Hook | 説明 | タイムアウト |
-|------|------|------------|
-| `focus-guard.sh` | タスク進行中の脱線防止（systemMessage 注入） | 3秒 |
-
-タスク進行中（`plan/tasks.md` に未完了タスクがある）の場合、systemMessage を注入します。
-
-> **Note**: `plan/tasks.md` は廃止済み。タスク管理は Claude Code ネイティブの TaskCreate/TaskList を使用。この hook は tasks.md が存在しない場合は自動的にスキップします。
-
 ### PreToolUse (ツール実行前)
 
 | Hook | 対象ツール | 説明 | タイムアウト |
 |------|-----------|------|------------|
 | `security_reminder_hook.py` | Write, Edit | セキュリティパターンの検出と警告 | 5秒 |
-
-### PostToolUse (ツール実行後)
-
-| Hook | 対象ツール | 説明 | タイムアウト |
-|------|-----------|------|------------|
-| `auto-verify.sh` | Write, Edit | フェーズ完了時の自動検証 | 120秒 |
 
 ## 設定
 

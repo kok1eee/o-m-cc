@@ -77,22 +77,6 @@ mv ~/.claude/plans/*.md ~/.claude/plans/archive/$(date +%Y-%m-%d)/
 rm .claude/sisyphus-state.json
 ```
 
-## PostToolUse 関連
-
-### HOOK-105: auto-verify タイムアウト
-
-**症状**: フェーズ完了時の検証が途中で止まる
-
-**原因**: テストやビルドに時間がかかりすぎ
-
-**対処法**: `hooks/hooks.json` でタイムアウトを延長:
-```json
-{
-  "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/auto-verify.sh",
-  "timeout": 180000  // 3分に延長
-}
-```
-
 ## PreToolUse 関連
 
 ### HOOK-107: セキュリティチェックの失敗
