@@ -74,10 +74,11 @@ TeammateTool: spawnTeam
      ## 入力
      [変更差分を含める]
 
-     ## チーム連携
-     - 発見した問題を security-reviewer・critic にもメッセージで共有
-     - セキュリティに関連する発見があれば security-reviewer に相談
-     - 完了したら Lead に結果サマリーをメッセージ送信
+     ## Council プロトコル
+     1. 独立にレビューを実施
+     2. findings を security-reviewer・critic にメッセージで共有
+     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     4. 相互検証を経た最終 findings のみを報告
 
      ## 出力
      - Confidence 80+ の問題のみ Critical/Warning で報告
@@ -100,10 +101,11 @@ TeammateTool: spawnTeam
      ## 入力
      [変更差分を含める]
 
-     ## チーム連携
-     - 発見した問題を code-reviewer・critic にもメッセージで共有
-     - コード品質に関連する発見があれば code-reviewer に相談
-     - 完了したら Lead に結果サマリーをメッセージ送信
+     ## Council プロトコル
+     1. 独立にセキュリティレビューを実施
+     2. findings を code-reviewer・critic にメッセージで共有
+     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     4. 相互検証を経た最終 findings のみを報告
 
      ## 出力
      - Confidence 80+ の問題のみ Critical/Warning で報告
@@ -126,9 +128,11 @@ TeammateTool: spawnTeam
      - plan/design.md（存在する場合）
      - plan/tasks.md（存在する場合）
 
-     ## チーム連携
-     - 設計との乖離を発見したら code-reviewer・security-reviewer にメッセージで共有
-     - 完了したら Lead に結果サマリーをメッセージ送信
+     ## Council プロトコル
+     1. 独立に計画整合性レビューを実施
+     2. findings を code-reviewer・security-reviewer にメッセージで共有
+     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     4. 相互検証を経た最終 findings のみを報告
 
      ## 条件
      - plan/ ディレクトリが存在しない場合は「計画なし - スキップ」と報告して終了

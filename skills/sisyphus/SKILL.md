@@ -29,9 +29,9 @@ $ARGUMENTS
 ┌─────────────────────────────────────────────────────┐
 │              Phase 1: Discovery Council               │
 │                                                       │
-│  researcher ◄──────► analyst (Lead) ◄──────► scout   │
-│  peer-to-peer で findings を共有                      │
-│  analyst が統合して requirements.md を確定             │
+│  researcher ◄──────► analyst ◄──────► scout            │
+│  peer-to-peer で findings を相互検証                   │
+│  analyst が統合して requirements.md を確定              │
 └─────────────────────────────────────────────────────┘
           │
           ▼ requirements.md
@@ -92,7 +92,7 @@ TeammateTool: spawnTeam
 **3つの teammate を同時 spawn：**
 
 Phase 1 集約ルール:
-- `all("報告完了")` → analyst が requirements.md を最終確定
+- `all("報告完了")` → analyst が全メンバーの findings を統合して requirements.md を最終確定
 
 ```
 1. TeammateTool: spawnTeammate
@@ -111,11 +111,12 @@ Phase 1 集約ルール:
      - コードベース内の既存実装（Glob/Grep）
      - 必要に応じて外部ドキュメント（WebSearch）
 
-     ## チーム連携
+     ## Council プロトコル
      あなたは Discovery Council のメンバーです。
-     - 知見が見つかったら analyst と scout の両方にメッセージで共有してください
-     - analyst・scout から追加調査を依頼されたら対応してください
-     - 調査完了時、全知見のサマリーを analyst に送信してください
+     1. 独立に技術調査を実施
+     2. 知見が見つかったら analyst と scout の両方にメッセージで共有
+     3. analyst・scout から共有された findings を検証し、技術的に妥当かコメント
+     4. 追加調査を依頼されたら対応
 
      ## 出力
      関連する知見が見つかったら analyst と scout にメッセージで報告。
@@ -137,12 +138,12 @@ Phase 1 集約ルール:
      - scout からのギャップ報告
      - researcher からの調査知見
 
-     ## チーム連携
-     あなたは Discovery Council の Lead です。
-     - 要件ドラフトの主要部分ができたら scout・researcher にメッセージで共有し、フィードバックを促してください
-     - scout からのギャップ報告を受け取り、要件に反映してください
-     - researcher からの調査知見を受け取り、要件に反映してください
-     - 全員の findings を統合してから requirements.md を最終確定してください
+     ## Council プロトコル
+     あなたは Discovery Council のメンバーです（requirements.md の作成担当）。
+     1. 独立に要件分析を実施
+     2. 要件ドラフトの主要部分ができたら scout・researcher にメッセージで共有し、フィードバックを促す
+     3. scout からのギャップ報告、researcher からの調査知見を受け取り、要件に反映
+     4. 全員の findings を統合してから requirements.md を最終確定
 
      ## 確定前チェック
      requirements.md を Write する前に、scout と researcher からの報告を受信済みか確認してください。
@@ -150,7 +151,6 @@ Phase 1 集約ルール:
 
      ## 出力
      - plan/requirements.md に要件定義を出力
-     - 完了したら Lead にメッセージで報告
 
 3. TeammateTool: spawnTeammate
    teamName: "planning"
@@ -167,12 +167,12 @@ Phase 1 集約ルール:
      - ユーザーの元の要求（上記）
      - コードベースを直接調査（Glob, Grep, Read）
 
-     ## チーム連携
+     ## Council プロトコル
      あなたは Discovery Council のメンバーです。
-     - ギャップを発見したら analyst にメッセージで即共有してください
-     - researcher から技術知見を受け取ったら分析に反映してください
-     - analyst から追加調査を依頼されたら対応してください
-     - 分析完了時、ギャップ一覧を analyst に送信してください
+     1. 独立にギャップ分析を実施
+     2. ギャップを発見したら analyst・researcher にメッセージで共有
+     3. researcher から技術知見を受け取ったら分析に反映
+     4. analyst の要件ドラフトを検証し、漏れがあればフィードバック
 
      ## 原則
      - requirements.md の完成を待たず、ユーザーの要求とコードベースから直接分析を開始
@@ -185,10 +185,11 @@ Phase 1 集約ルール:
 ```
 
 **Discovery Council の動作:**
-- 3エージェントが同時に作業を開始
+- 3エージェントが対等に同時作業を開始
 - researcher は技術知見を検索し、見つけ次第 analyst・scout に共有
-- scout は requirements.md を待たず、ユーザーの要求とコードベースから直接ギャップ分析
+- scout はユーザーの要求とコードベースから直接ギャップ分析し、analyst・researcher に共有
 - analyst は自身の分析 + scout のギャップ報告 + researcher の知見を統合して requirements.md を確定
+- 各メンバーは他のメンバーの findings を検証しフィードバック
 
 > **Note**: teammate の出力ファイルはメインリポジトリに直接書き込まれる。worktree からのコピーは不要。次の Phase に進む前にファイルの存在を確認するだけでよい。
 
@@ -214,8 +215,8 @@ TeammateTool: spawnTeammate
     ## 入力
     - plan/requirements.md
 
-    ## チーム連携
-    - 完了したら Lead にメッセージで報告
+    ## 完了
+    - 設計書の出力が完了したらその旨を報告
 
     ## 出力
     - plan/design.md に設計書を出力
@@ -244,8 +245,8 @@ TeammateTool: spawnTeammate
     - plan/design.md
     - plan/requirements.md
 
-    ## チーム連携
-    - 完了したら Lead にメッセージで報告
+    ## 完了
+    - タスクリストの出力が完了したらその旨を報告
 
     ## 出力
     - plan/tasks.md にタスクリストを出力
