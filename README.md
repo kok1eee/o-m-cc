@@ -552,6 +552,16 @@ export SISYPHUS_MAX_ITERATIONS=30
 
 ## Changelog
 
+### 0.20.0
+
+- **tasks.md 廃止 → TaskCreate 統一**: `plan/tasks.md` を廃止し、Claude Code ネイティブの `TaskCreate`/`TaskList` に完全移行。planner は TaskCreate のみで出力。hooks は tasks.md 不在時に自動スキップ（graceful degradation）
+- **Lead パターン廃止**: 全 Council（Discovery Council, Review Council）から Lead ロールを除去。全 teammate が対等に peer-to-peer で相互検証する設計に統一
+- **ワークフロー判断ガイド**: CLAUDE.md に「通常 → `/plan` → `/sisyphus`」の段階的エスカレーションパスを追加。迷ったら `/plan` に入る原則
+- **設計原則追加**: 「ネイティブであるほど美しい」— Claude Code ネイティブ機能の積極活用を明文化
+- **stop-guard 段階的ブロック**: 初回は decision:block で CTA、2回目以降は exit 2 でハードブロック
+- **quality-gate 実行中マーカー**: `.claude/quality-gate-running` で stop-guard の誤ブロック防止
+- **Review Council 強化**: HIGH SIGNAL ポリシー（偽陽性排除）、CLAUDE.md コンプライアンスチェック追加
+
 ### 0.19.4
 
 - **stop-guard diff ベース判定**: `<promise>DONE</promise>` マーカー依存を廃止。`jj diff` / `git diff` の変更行数（デフォルト500行以上）で `/quality-gate` を自動強制する設計に切り替え。Claude の出力に依存しない、hooks だけで完結する品質ゲート
