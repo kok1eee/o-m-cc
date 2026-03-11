@@ -558,6 +558,25 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **quality-gate 実行中マーカー**: `.claude/quality-gate-running` で stop-guard の誤ブロック防止
 - **Review Council 強化**: HIGH SIGNAL ポリシー（偽陽性排除）、CLAUDE.md コンプライアンスチェック追加
 
+### 0.19.5
+
+- **`/plan → /sisyphus` リネーム**: ビルトイン `/plan`（2.1.72 で引数対応）との競合回避。`skills/plan/` → `skills/sisyphus/` に変更し、sisyphus エージェントのデフォルトを plan モードに反転
+- **sisyphus フェーズタスク管理**: SKILL.md に5フェーズの `TaskCreate` 登録（Step 0）、フェーズ遷移テーブル、実装中のタスク管理ルール（Step 6）を追加
+- **セッションベースライン差分**: `session-baseline.sh` を SessionStart hook に追加。セッション開始時の diff 行数を記録し、既存の未コミット差分で stop-guard が誤発火するのを防止
+- **hooks 出力の公式仕様準拠**: stop-guard を exit 2 → exit 0 + JSON `decision:block` に変更。全 hooks の stdout/stderr を Claude Code の hooks 公式仕様に合わせて整理
+- **`SISYPHUS_MIN_DIFF` 閾値変更**: デフォルトを 50 → 200 に変更。CTA をプレーンテキストに簡素化
+- **SessionEnd で context.md 自動保存**: `pre-compact-handover.sh` を SessionEnd でも実行し、セッション終了時に文脈を自動保存
+- **focus-guard JSON 出力簡素化**: JSON パース失敗による UserPromptSubmit hook error を解消
+
+### 0.19.6
+
+- **quality-gate proof ファイルベース化**: 文字列ベースの `<proof>` マーカーを廃止し、`.claude/quality-gate-proof.json` ファイル書き込み + タイムスタンプ検証に変更。ゲーミング対策
+- **stop-guard quality-gate 通過ベースライン**: `passed_at_diff` を state に記録し、quality-gate 通過後の小変更で stop-guard が再発火しない設計。`SISYPHUS_MIN_DIFF` デフォルトを 200 → 500 に変更
+- **stop-guard コミット検出リセット**: diff 行数が `passed_at_diff` を下回ったらコミットと判断し state リセット。新セッション開始時に state ファイル削除
+- **quality-gate 静的解析ゲート**: proof bash コマンドに Python/Shell/TypeScript/Rust の静的解析を組み込み。`/simplify` とは別ステップであることを明示し Review Council のスキップを防止
+- **stop-guard 段階的ブロック**: 初回は exit 0 + JSON `decision:block` で CTA 提示、2回目以降は exit 2 でハードブロック
+- **quality-gate 実行中マーカー**: `.claude/quality-gate-running` ファイルで実行状態を伝達し、stop-guard の誤ブロックを防止
+
 ### 0.19.4
 
 - **stop-guard diff ベース判定**: `<promise>DONE</promise>` マーカー依存を廃止。`jj diff` / `git diff` の変更行数（デフォルト500行以上）で `/quality-gate` を自動強制する設計に切り替え。Claude の出力に依存しない、hooks だけで完結する品質ゲート

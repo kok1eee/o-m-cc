@@ -3,7 +3,7 @@
 > compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
 > Learnings に長期的価値があれば MEMORY.md に反映すること。
 
-### Snapshot (03/11 16:47, auto)
+### Snapshot (03/11 18:02, auto)
 
 **Intent:** Implement the following plan:
 
@@ -13,26 +13,20 @@
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/plugin.json`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/settings.json`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/capabilities.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/critic.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/planner.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/CLAUDE.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/docs/hooks-errors.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/docs/hooks-guide.md`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/examples/CLAUDE.md.example`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/facets/references/task-quality.md`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/focus-guard.sh`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/pre-compact-handover.sh`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/session-baseline.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/stop-guard.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/task-completed.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/teammate-idle.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/README_en.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/README.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/audit/SKILL.md`
 
 **Context:**
 
-��ります:
+�けど、o-m-cc の汎用設計とは方向性が違いますね。
+テスト結果: TaskCompleted/TeammateIdle hooks なしで `/sisyphus` は正常に動作。Agent tool のサブエージェントは結果を返して終了するので、hooks なしでもフローが成立しています。
 
-**hooks は shell スクリプトなので TaskList API を呼べない。** tasks.md をパースしているのはそのため。
-
-アプローチ:
-1. **planner → TaskCreate のみ**（tasks.md 出力を廃止）
-2. **hooks は tasks.md がなければスキップ**（既に graceful degradation あり）
-3. **参照の更新**（sisyphus, review, quality-gate, docs 等）
-
-hooks が tasks.md なしで自然に no-op になるので、結果的にシンプルになります。
+ただし `teammate-idle` は防御的な意味がある。TeammateTool が使えるようになったとき、teammate が idle ループに入るのを防ぐ安全弁として。戻しましょう。
