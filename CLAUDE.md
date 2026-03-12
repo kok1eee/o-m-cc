@@ -1,7 +1,7 @@
 # o-m-cc - Project Configuration
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeammateTool) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。13の専門エージェント + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。13の専門エージェント + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
@@ -9,8 +9,8 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (Teammat
 - Markdown - エージェント定義, スキル定義, ドキュメント
 - JSON - プラグイン設定, hooks設定
 ## アーキテクチャ
-- **Agent Teams**: TeammateTool (spawnTeam + teammates) による並列エージェント協調
-- **peer-to-peer 通信**: teammates 間でメッセージ交換
+- **Agent Teams**: TeamCreate + Agent spawn + SendMessage によるネイティブ並列エージェント協調
+- **peer-to-peer 通信**: SendMessage で teammates 間のリアルタイムメッセージ交換
 - **共有タスクリスト**: TaskCreate/TaskUpdate で teammates が自律的にタスク管理
 - **ナレッジ蓄積**: Claude Code の auto-memory に委ねる（プラグイン独自のナレッジ管理は行わない）
 

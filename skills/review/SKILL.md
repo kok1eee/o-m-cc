@@ -2,7 +2,7 @@
 name: review
 description: "Agent Teams で code-reviewer, security-reviewer, critic を並列実行してコード品質・セキュリティ・計画整合性をチェック。Council パターンで相互検証し偽陽性を排除。コード変更後、PR 作成前、実装の妥当性を確認したいときに使う。「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」で発動。"
 argument-hint: "[specific files or 'all']"
-allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool]
+allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage]
 model: sonnet
 context: fork
 ---
@@ -64,18 +64,19 @@ cat CLAUDE.md 2>/dev/null
 ### Step 3: Review Council 作成
 
 ```
-TeammateTool: spawnTeam
-  teamName: "review-council"
+TeamCreate:
+  team_name: "review-council"
+  description: "Code quality + Security + Plan compliance review"
 ```
 
 ### Step 4: Council メンバー spawn
 
-**3つの reviewer を同時に spawn。** 各 reviewer は独立にレビューした後、findings を他の reviewer と共有し相互検証する。
+**3つの reviewer を Agent ツールで同時 spawn。** 各 reviewer は独立にレビューした後、SendMessage で findings を他の reviewer と共有し相互検証する。
 
 ```
-1. TeammateTool: spawnTeammate
-   teamName: "review-council"
-   name: "code-reviewer"
+1. Agent:
+   subagent_type: "o-m-cc:code-reviewer"
+   description: "Review Council: コード品質"
    prompt: |
      ## エージェント定義
      agents/code-reviewer.md の指示に従ってください。
@@ -105,8 +106,8 @@ TeammateTool: spawnTeam
 
      ## Council プロトコル
      1. 独立にレビューを実施
-     2. findings を security-reviewer・critic にメッセージで共有
-     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     2. SendMessage で findings を security-reviewer・critic に共有
+     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
         - 「変数が未定義」→ 実際にコード内で確認して同意/異議
         - 「CLAUDE.md 違反」→ ルールのスコープを確認して同意/異議
      4. 相互検証を経た最終 findings のみを報告
@@ -119,9 +120,9 @@ TeammateTool: spawnTeam
      - 他の reviewer の検証結果（同意/異議）
      - Confidence 80+ の問題のみ Critical/Warning で報告
 
-2. TeammateTool: spawnTeammate
-   teamName: "review-council"
-   name: "security-reviewer"
+2. Agent:
+   subagent_type: "o-m-cc:security-reviewer"
+   description: "Review Council: セキュリティ"
    prompt: |
      ## エージェント定義
      agents/security-reviewer.md の指示に従ってください。
@@ -146,8 +147,8 @@ TeammateTool: spawnTeam
 
      ## Council プロトコル
      1. 独立にセキュリティレビューを実施
-     2. findings を code-reviewer・critic にメッセージで共有
-     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     2. SendMessage で findings を code-reviewer・critic に共有
+     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
         - セキュリティ観点から他の findings にコメント
         - コード品質の findings にセキュリティ影響があれば補足
      4. 相互検証を経た最終 findings のみを報告
@@ -160,9 +161,9 @@ TeammateTool: spawnTeam
      - 他の reviewer の検証結果（同意/異議）
      - Confidence 80+ の問題のみ Critical/Warning で報告
 
-3. TeammateTool: spawnTeammate
-   teamName: "review-council"
-   name: "critic"
+3. Agent:
+   subagent_type: "o-m-cc:critic"
+   description: "Review Council: 計画整合性"
    prompt: |
      ## エージェント定義
      agents/critic.md の指示に従ってください。
@@ -177,8 +178,8 @@ TeammateTool: spawnTeam
 
      ## Council プロトコル
      1. 独立に計画整合性レビューを実施
-     2. findings を code-reviewer・security-reviewer にメッセージで共有
-     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     2. SendMessage で findings を code-reviewer・security-reviewer に共有
+     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
         - 計画・設計の観点から他の findings にコメント
         - スコープ逸脱の可能性があれば指摘
      4. 相互検証を経た最終 findings のみを報告

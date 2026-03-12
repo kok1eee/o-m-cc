@@ -50,10 +50,11 @@ Glob/Grep/Read で直接回答
 
 **【M】Agent Teams** — 議論で質を上げる
 ```
-TeammateTool: spawnTeam
-  → 2-3 teammates spawn
-  → 互いの発見を共有・議論
+TeamCreate → team_name で作成
+  → Agent ツールで 2-3 teammates spawn
+  → SendMessage で互いの発見を共有・議論
   → 結果を統合
+  → TeamDelete で解散
 ```
 
 例: デバッグなら competing hypotheses パターン
@@ -65,11 +66,13 @@ debugger-2: 「いや、CORS 設定の問題。トークンは正常」
 
 **【L】Agent Teams + タスクリスト** — 大規模並列
 ```
-TeammateTool: spawnTeam
-  → 5+ teammates spawn
+TeamCreate → team_name で作成
+  → Agent ツールで 5+ teammates spawn
   → TaskCreate で全タスク登録
   → teammates が自律的にクレーム・実行
-  → TeammateIdle/TaskCompleted hooks で調整
+  → SendMessage で peer-to-peer 調整
+  → TeammateIdle/TaskCompleted hooks で自律制御
+  → TeamDelete で解散
 ```
 
 ### 複数エージェントの相乗効果パターン

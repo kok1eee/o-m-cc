@@ -3,6 +3,10 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [03/12 14:07, end]   Enable auto mode?
+- [03/12 14:07, end]   Enable auto mode?
+- [03/12 13:37, end]   テスト案:
+- [03/12 13:18, end] settings
 - [03/12 13:17, end] settings
 - [03/12 11:47, auto]   テスト案:
 - [03/12 11:41, end]   テスト案:

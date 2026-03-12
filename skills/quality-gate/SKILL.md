@@ -2,7 +2,7 @@
 name: quality-gate
 description: "/simplify → Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「simplify して」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
-allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, TeammateTool, Skill]
+allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
 model: sonnet
 context: fork
 ---
@@ -43,23 +43,24 @@ jj diff  # または git diff
 
 ### Step 3: レビューチーム作成
 
-> **必須**: Step 3〜5 は `/simplify` とは完全に別のステップです。「/simplify で既に実行済み」ということはありえません。必ず以下の TeammateTool を実行してください。
+> **必須**: Step 3〜5 は `/simplify` とは完全に別のステップです。「/simplify で既に実行済み」ということはありえません。必ず以下の TeamCreate + Agent spawn を実行してください。
 
-**TeammateTool の spawnTeam でレビューチームを作成：**
+**TeamCreate でレビューチームを作成：**
 
 ```
-TeammateTool: spawnTeam
-  teamName: "quality-gate"
+TeamCreate:
+  team_name: "quality-gate"
+  description: "Quality gate review council"
 ```
 
 ### Step 4: Review Council
 
-**3つの teammate を同時に spawn：**
+**3つの reviewer を Agent ツールで同時 spawn：**
 
 ```
-1. TeammateTool: spawnTeammate
-   teamName: "quality-gate"
-   name: "code-reviewer"
+1. Agent:
+   subagent_type: "o-m-cc:code-reviewer"
+   description: "Quality Gate: コード品質"
    prompt: |
      ## エージェント定義
      agents/code-reviewer.md の指示に従ってください。
@@ -76,17 +77,17 @@ TeammateTool: spawnTeam
 
      ## Council プロトコル
      1. 独立にレビューを実施
-     2. findings を security-reviewer・critic にメッセージで共有
-     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     2. SendMessage で findings を security-reviewer・critic に共有
+     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
      4. 相互検証を経た最終 findings のみを報告
 
      ## 出力
      - Confidence 80+ の問題のみ Critical/Warning で報告
      - agents/code-reviewer.md の出力フォーマットに従う
 
-2. TeammateTool: spawnTeammate
-   teamName: "quality-gate"
-   name: "security-reviewer"
+2. Agent:
+   subagent_type: "o-m-cc:security-reviewer"
+   description: "Quality Gate: セキュリティ"
    prompt: |
      ## エージェント定義
      agents/security-reviewer.md の指示に従ってください。
@@ -103,17 +104,17 @@ TeammateTool: spawnTeam
 
      ## Council プロトコル
      1. 独立にセキュリティレビューを実施
-     2. findings を code-reviewer・critic にメッセージで共有
-     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     2. SendMessage で findings を code-reviewer・critic に共有
+     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
      4. 相互検証を経た最終 findings のみを報告
 
      ## 出力
      - Confidence 80+ の問題のみ Critical/Warning で報告
      - agents/security-reviewer.md の出力フォーマットに従う
 
-3. TeammateTool: spawnTeammate
-   teamName: "quality-gate"
-   name: "critic"
+3. Agent:
+   subagent_type: "o-m-cc:critic"
+   description: "Quality Gate: 計画整合性"
    prompt: |
      ## エージェント定義
      agents/critic.md の指示に従ってください。
@@ -128,8 +129,8 @@ TeammateTool: spawnTeam
 
      ## Council プロトコル
      1. 独立に計画整合性レビューを実施
-     2. findings を code-reviewer・security-reviewer にメッセージで共有
-     3. 他の reviewer から共有された findings を検証し、同意/異議をメッセージで返す
+     2. SendMessage で findings を code-reviewer・security-reviewer に共有
+     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
      4. 相互検証を経た最終 findings のみを報告
 
      ## 出力
@@ -138,7 +139,7 @@ TeammateTool: spawnTeam
 ```
 
 **重要**: 3つの teammate を同時に spawn してレビュー時間を短縮。
-Teammates は互いの発見をメッセージで共有・議論できます。
+SendMessage で互いの発見を共有・議論し、相互検証する。
 
 ### Step 5: 結果の集約
 
@@ -304,5 +305,5 @@ mkdir -p .claude && echo "{\"started_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" 
 ```
 
 1. **`/simplify`** を実行（Step 1）
-2. **Review Council** を TeammateTool で実行（Step 3〜5） — /simplify とは別ステップ、省略不可
+2. **Review Council** を TeamCreate + Agent spawn で実行（Step 3〜5） — /simplify とは別ステップ、省略不可
 3. **静的解析 + proof 書き込み**（Step 7 + proof）

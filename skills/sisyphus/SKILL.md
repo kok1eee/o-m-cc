@@ -2,7 +2,7 @@
 name: sisyphus
 description: "計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー。Agent Teams で要件→設計→タスク分解→実装→quality-gate を一括実行。「計画して」「設計から始めて」「この機能を実装したい」「要件を整理して」「タスクに分解して」で発動。"
 argument-hint: "<feature description>"
-allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion, TeammateTool]
+allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage]
 model: opus
 context: fork
 ---
@@ -76,11 +76,12 @@ TaskCreate: "Phase 5: Quality Gate"
 
 ## Step 1: プランニングチーム作成
 
-**TeammateTool の spawnTeam でチームを作成：**
+**TeamCreate でチームを作成：**
 
 ```
-TeammateTool: spawnTeam
-  teamName: "planning"
+TeamCreate:
+  team_name: "planning"
+  description: "Sisyphus Discovery → Design → Tasks"
 ```
 
 → `TaskUpdate: Phase 1 → in_progress`
@@ -89,15 +90,16 @@ TeammateTool: spawnTeam
 
 ## Step 2: Phase 1 - Discovery Council
 
-**3つの teammate を同時 spawn：**
+**3つの teammate を Agent ツールで同時 spawn：**
 
 Phase 1 集約ルール:
 - `all("報告完了")` → analyst が全メンバーの findings を統合して requirements.md を最終確定
+- **teammate 間通信**: SendMessage ツールで peer-to-peer メッセージ交換
 
 ```
-1. TeammateTool: spawnTeammate
-   teamName: "planning"
-   name: "researcher"
+1. Agent:
+   subagent_type: "o-m-cc:researcher"
+   description: "Discovery Council: 技術調査"
    prompt: |
      ## エージェント定義
      agents/researcher.md の指示に従ってください。
@@ -114,17 +116,17 @@ Phase 1 集約ルール:
      ## Council プロトコル
      あなたは Discovery Council のメンバーです。
      1. 独立に技術調査を実施
-     2. 知見が見つかったら analyst と scout の両方にメッセージで共有
+     2. 知見が見つかったら SendMessage で analyst と scout の両方に共有
      3. analyst・scout から共有された findings を検証し、技術的に妥当かコメント
      4. 追加調査を依頼されたら対応
 
      ## 出力
-     関連する知見が見つかったら analyst と scout にメッセージで報告。
+     関連する知見が見つかったら SendMessage で analyst と scout に報告。
      見つからなければ「関連する既存知見なし」と報告。
 
-2. TeammateTool: spawnTeammate
-   teamName: "planning"
-   name: "analyst"
+2. Agent:
+   subagent_type: "o-m-cc:analyst"
+   description: "Discovery Council: 要件分析"
    prompt: |
      ## エージェント定義
      agents/analyst.md の指示に従ってください。
@@ -141,20 +143,20 @@ Phase 1 集約ルール:
      ## Council プロトコル
      あなたは Discovery Council のメンバーです（requirements.md の作成担当）。
      1. 独立に要件分析を実施
-     2. 要件ドラフトの主要部分ができたら scout・researcher にメッセージで共有し、フィードバックを促す
-     3. scout からのギャップ報告、researcher からの調査知見を受け取り、要件に反映
+     2. 要件ドラフトの主要部分ができたら SendMessage で scout・researcher に共有し、フィードバックを促す
+     3. scout からのギャップ報告、researcher からの調査知見を SendMessage で受け取り、要件に反映
      4. 全員の findings を統合してから requirements.md を最終確定
 
      ## 確定前チェック
      requirements.md を Write する前に、scout と researcher からの報告を受信済みか確認してください。
-     未受信の場合はメッセージで状況を確認してください。
+     未受信の場合は SendMessage で状況を確認してください。
 
      ## 出力
      - plan/requirements.md に要件定義を出力
 
-3. TeammateTool: spawnTeammate
-   teamName: "planning"
-   name: "scout"
+3. Agent:
+   subagent_type: "o-m-cc:scout"
+   description: "Discovery Council: ギャップ分析"
    prompt: |
      ## エージェント定義
      agents/scout.md の指示に従ってください。
@@ -170,8 +172,8 @@ Phase 1 集約ルール:
      ## Council プロトコル
      あなたは Discovery Council のメンバーです。
      1. 独立にギャップ分析を実施
-     2. ギャップを発見したら analyst・researcher にメッセージで共有
-     3. researcher から技術知見を受け取ったら分析に反映
+     2. ギャップを発見したら SendMessage で analyst・researcher に共有
+     3. researcher から技術知見を SendMessage で受け取ったら分析に反映
      4. analyst の要件ドラフトを検証し、漏れがあればフィードバック
 
      ## 原則
@@ -181,7 +183,7 @@ Phase 1 集約ルール:
      - フローをブロックしない
 
      ## 出力
-     - 発見した漏れ・補完事項を analyst にメッセージで報告
+     - 発見した漏れ・補完事項を SendMessage で analyst に報告
 ```
 
 **Discovery Council の動作:**
@@ -192,6 +194,7 @@ Phase 1 集約ルール:
 - 各メンバーは他のメンバーの findings を検証しフィードバック
 
 > **Note**: teammate の出力ファイルはメインリポジトリに直接書き込まれる。worktree からのコピーは不要。次の Phase に進む前にファイルの存在を確認するだけでよい。
+> **通信**: teammate 間の peer-to-peer メッセージ交換は SendMessage ツールで行われる。TeamCreate でチームコンテキストが確立されていれば、各 teammate は自動的にチームメンバーとして認識される。
 
 ---
 
@@ -202,9 +205,9 @@ Phase 1 集約ルール:
 **Discovery Council 完了後、designer teammate を spawn：**
 
 ```
-TeammateTool: spawnTeammate
-  teamName: "planning"
-  name: "designer"
+Agent:
+  subagent_type: "o-m-cc:designer"
+  description: "Phase 2: アーキテクチャ設計"
   prompt: |
     ## エージェント定義
     agents/designer.md の指示に従ってください。
@@ -231,9 +234,9 @@ TeammateTool: spawnTeammate
 **design.md 完了後、planner teammate を spawn：**
 
 ```
-TeammateTool: spawnTeammate
-  teamName: "planning"
-  name: "planner"
+Agent:
+  subagent_type: "o-m-cc:planner"
+  description: "Phase 3: タスク分解"
   prompt: |
     ## エージェント定義
     agents/planner.md の指示に従ってください。

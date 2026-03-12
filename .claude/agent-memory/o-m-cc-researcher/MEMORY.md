@@ -11,6 +11,17 @@
 - **o-m-cc の stop-guard との関係**: 同じ Stop hook パターン。o-m-cc では `<promise>DONE</promise>` + quality-gate マーカーで条件付き制御
 - **詳細**: [ralph-loop-investigation.md](ralph-loop-investigation.md)
 
+### Claude Code Agent Teams / TeammateTool (2026-03-12 調査)
+- **有効化**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
+- **ディレクトリ**: `~/.claude/teams/{name}/config.json`, `inboxes/{agent}.json`, `~/.claude/tasks/{name}/`
+- **spawn フラグ**: `--agent-id`, `--agent-name`, `--team-name`, `--agent-color`, `--parent-session-id`, `--agent-type`, `--model`
+- **TeammateTool の実体**: Task ツールの `team_name` パラメータ
+- **IK 関数**: inbox ファイル append + XML タグで session inject (`<teammate_message teammate_id="...">`)
+- **ツールセット差異**: teammate (20) < subagent (25) < main (26+)。teammate は Agent/TeamCreate/Cron 系が使用不可
+- **既知バグ**: #25135 (recipient silent loss), #24989 (CLAUDE_CONFIG_DIR 非継承), #24771 (tmux inbox 切断)
+- **o-m-cc との関係**: hub-and-spoke 構造（peer-to-peer 原則と異なる）。TeammateIdle/TaskCompleted hook は stop-guard と相補的
+- **詳細**: [agent-teams-internals.md](agent-teams-internals.md)
+
 ### wevm/incur (2026-02-28 調査)
 - **概要**: AIエージェント向けCLIフレームワーク（TypeScript）
 - **リポジトリ**: https://github.com/wevm/incur

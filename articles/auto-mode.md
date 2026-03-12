@@ -202,21 +202,23 @@ claude auto-mode defaults
 
 ### main への直接 push がブロックされる
 
-Deny ルールに「**Git Push to Default Branch**: Pushing directly to main, master, or the repository's default branch」がある。
+Deny ルールに「**Git Push to Default Branch**: Pushing directly to main, master, or the repository's default branch — this bypasses pull request review」がある。
 
-個人開発で main に直接 push するワークフロー（`jj bookmark set main && jj git push` 等）は、Auto Mode ではブロック対象になる。feature ブランチ経由に変更するか、カスタマイズが公開されたらこのルールを外す必要がある。
+これはチーム開発で PR レビューを必須にする想定のルールだが、**個人開発では main に直接 push するのが普通**だ。`jj bookmark set main && jj git push` のようなワークフローは問題ないのに、Auto Mode ではブロック対象になってしまう。カスタマイズが公開されたら真っ先に外したいルール。
 
 ### 外部システムへの書き込みが制限される
 
 「**External System Writes**: Deleting, resolving, closing, or mass-modifying items in external collaboration tools (Jira, Asana, Linear, PagerDuty, Datadog, GitHub issues/PRs, etc.) that the agent did not create in this session」
 
-つまり、**セッション中に自分が作った issue やPR 以外への書き込みはブロックされる**。既存の PR にコメントする、既存の issue をクローズするといった操作は引っかかる可能性がある。
+**そのセッション中に Claude が作ったもの以外** への書き込みはブロックされる。例えば「この issue にコメントして」「この PR をクローズして」といった、既存リソースへの操作が引っかかる。Claude に GitHub issue を作らせてからコメントを追加する、という流れなら OK だが、既存の issue を操作するのはダメ。
+
+エージェントワークフローでは「調査 → issue 報告 → 修正 → PR 作成」を一気通貫で回すことが多いので、この制限は地味に痛い。
 
 ### `.claude/` 設定の自己改変がブロックされる
 
 「**Self-Modification**: Modifying the agent's own configuration, settings, or permission files (e.g. settings.json, CLAUDE.md permission overrides, .claude/ config)」
 
-これは o-m-cc の `/o-m-cc:init` スキル（`.claude/settings.json` にパーミッションを書き込む）に影響する。init は Auto Mode を有効にする前に実行するか、一時的に default モードに戻して実行する必要がある。
+Claude が自分の権限を昇格させるのを防ぐルールだが、副作用として **プラグインの初期設定スキル** にも影響する。o-m-cc の `/o-m-cc:init`（`.claude/settings.json` にパーミッションを書き込む）は Auto Mode 中だとブロックされる可能性がある。init は Auto Mode を有効にする前に実行しておくのが安全。
 
 ## 注意点
 
