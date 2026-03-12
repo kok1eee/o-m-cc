@@ -3,7 +3,7 @@
 > compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
 > Learnings に長期的価値があれば MEMORY.md に反映すること。
 
-### Snapshot (03/12 11:41, end)
+### Snapshot (03/12 11:47, auto)
 
 **Intent:**   テスト案:
 
@@ -23,10 +23,11 @@
 
 **Context:**
 
--cc なので、直接パスで指定します。
-プロジェクトの `.claude/settings.local.json` に SessionEnd hook を直書きしました。セッションを落として context.md が更新されるか確認してください。
+��クですね。
 
-確認ポイント:
-- `.claude/context.md` のタイムスタンプが更新されるか
-- `### Snapshot (03/12 XX:XX, end)` になっているか
-- `.claude/debug-hook-input-*.json` が生成されるか（デバッグログがまだ入っているので）
+デバッグログは消しておきます。
+デバッグログ除去完了。プッシュ＆アップデートしますか？
+hooks.json の diff が乱れている。現在のファイルを確認します。
+hooks.json は正しい。コミット＆プッシュ、init 組み込み、issue 報告を並列で進めます。
+プッシュ完了。次に init スキルへの組み込みと issue 報告を並列で。
+init 組み込みと issue 報告を並列で進めます。

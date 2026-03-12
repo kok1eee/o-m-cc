@@ -169,6 +169,48 @@ echo "✅ 推奨パーミッションを .claude/settings.json に追加"
 
 ---
 
+## Step 7: SessionEnd hook の設定（plugin bug workaround）
+
+プラグイン定義の SessionEnd hook が発火しない既知のバグへの対処。
+プロジェクトレベルの `.claude/settings.json` に SessionEnd hook を追加して、セッション終了時に context.md が保存されるようにする。
+
+**既に `.claude/settings.json` が存在する場合は、既存設定にマージする。**
+
+### 追加する hooks 設定
+
+```json
+{
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### 実装方法
+
+1. Step 6 で読み込んだ `.claude/settings.json` に `hooks.SessionEnd` を追加
+2. 既存の `hooks` があればマージ（SessionEnd のみ追加/上書き）
+3. Write で書き戻す
+
+> **Note:** `${CLAUDE_PLUGIN_ROOT}` は Claude Code が実行時に展開する。プラグインの SessionEnd バグが修正されればこのステップは不要になる。
+
+```
+echo "✅ SessionEnd hook を .claude/settings.json に追加（context.md 自動保存）"
+```
+
+---
+
 ## 完了時の出力 + 次のステップ提案
 
 プロジェクトの状態に応じた完了メッセージを表示：
@@ -182,6 +224,7 @@ echo "✅ 推奨パーミッションを .claude/settings.json に追加"
 📁 plan/: 計画ファイル用ディレクトリ準備済み
 🤖 Default Agent: .claude/agents/sisyphus.md に配置
 🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
+🔄 SessionEnd: context.md 自動保存を .claude/settings.json に追加
 
 💡 デフォルトエージェント有効化:
    .claude/settings.json → "agent": "sisyphus"
