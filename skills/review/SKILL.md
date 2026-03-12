@@ -76,6 +76,8 @@ TeamCreate:
 ```
 1. Agent:
    subagent_type: "o-m-cc:code-reviewer"
+   name: "code-reviewer"
+   team_name: "review-council"
    description: "Review Council: コード品質"
    prompt: |
      ## エージェント定義
@@ -122,6 +124,8 @@ TeamCreate:
 
 2. Agent:
    subagent_type: "o-m-cc:security-reviewer"
+   name: "security-reviewer"
+   team_name: "review-council"
    description: "Review Council: セキュリティ"
    prompt: |
      ## エージェント定義
@@ -163,6 +167,8 @@ TeamCreate:
 
 3. Agent:
    subagent_type: "o-m-cc:critic"
+   name: "critic"
+   team_name: "review-council"
    description: "Review Council: 計画整合性"
    prompt: |
      ## エージェント定義

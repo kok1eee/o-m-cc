@@ -8,7 +8,7 @@
 
 o-m-cc is a Claude Code plugin that injects an "unstoppable developer" mindset.
 
-- **Agent Teams**: Peer-to-peer multi-agent coordination via TeammateTool
+- **Agent Teams**: Peer-to-peer multi-agent coordination via TeamCreate + SendMessage
 - **Sisyphus Philosophy**: Never stop until the task is complete
 - **TODO-Driven**: Work based on clear task lists
 - **Spec-Driven Development**: Structured flow from requirements → design → tasks → implementation

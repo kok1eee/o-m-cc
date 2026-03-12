@@ -3,6 +3,12 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [03/12 17:10, end] tests/agent-teams-name-test.md を読んでテストを実行して
+- [03/12 17:07, end]   1. teammate は Agent ツールを使えない（L73）
+- [03/12 14:35, end] teammate toolが使えるようになったか確認して
+- [03/12 14:35, end] teammate toolが使えるようになったか確認して
+- [03/12 14:34, end] teammate toolが使えるようになったか確認して
+- [03/12 14:14, end] TeamCreate, TeamDelete, SendMessage ツールが使えるか確認して。使えるなら各ツールの inputSchema を ToolSe
 - [03/12 14:07, end]   Enable auto mode?
 - [03/12 14:07, end]   Enable auto mode?
 - [03/12 13:37, end]   テスト案:

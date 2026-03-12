@@ -99,6 +99,8 @@ Phase 1 集約ルール:
 ```
 1. Agent:
    subagent_type: "o-m-cc:researcher"
+   name: "researcher"
+   team_name: "planning"
    description: "Discovery Council: 技術調査"
    prompt: |
      ## エージェント定義
@@ -126,6 +128,8 @@ Phase 1 集約ルール:
 
 2. Agent:
    subagent_type: "o-m-cc:analyst"
+   name: "analyst"
+   team_name: "planning"
    description: "Discovery Council: 要件分析"
    prompt: |
      ## エージェント定義
@@ -156,6 +160,8 @@ Phase 1 集約ルール:
 
 3. Agent:
    subagent_type: "o-m-cc:scout"
+   name: "scout"
+   team_name: "planning"
    description: "Discovery Council: ギャップ分析"
    prompt: |
      ## エージェント定義
@@ -194,7 +200,7 @@ Phase 1 集約ルール:
 - 各メンバーは他のメンバーの findings を検証しフィードバック
 
 > **Note**: teammate の出力ファイルはメインリポジトリに直接書き込まれる。worktree からのコピーは不要。次の Phase に進む前にファイルの存在を確認するだけでよい。
-> **通信**: teammate 間の peer-to-peer メッセージ交換は SendMessage ツールで行われる。TeamCreate でチームコンテキストが確立されていれば、各 teammate は自動的にチームメンバーとして認識される。
+> **通信**: teammate 間の peer-to-peer メッセージ交換は SendMessage ツールで行われる。Agent spawn 時に `name` と `team_name` を明示指定することで teammate としてチームに登録される（未指定だと通常 subagent になり SendMessage が配信されない）。
 
 ---
 
@@ -207,6 +213,8 @@ Phase 1 集約ルール:
 ```
 Agent:
   subagent_type: "o-m-cc:designer"
+  name: "designer"
+  team_name: "planning"
   description: "Phase 2: アーキテクチャ設計"
   prompt: |
     ## エージェント定義
@@ -236,6 +244,8 @@ Agent:
 ```
 Agent:
   subagent_type: "o-m-cc:planner"
+  name: "planner"
+  team_name: "planning"
   description: "Phase 3: タスク分解"
   prompt: |
     ## エージェント定義

@@ -51,8 +51,8 @@ Glob/Grep/Read で直接回答
 **【M】Agent Teams** — 議論で質を上げる
 ```
 TeamCreate → team_name で作成
-  → Agent ツールで 2-3 teammates spawn
-  → SendMessage で互いの発見を共有・議論
+  → Agent ツールで 2-3 teammates spawn（name + team_name 必須）
+  → SendMessage で互いの発見を共有・議論（recipient = name）
   → 結果を統合
   → TeamDelete で解散
 ```
@@ -67,10 +67,10 @@ debugger-2: 「いや、CORS 設定の問題。トークンは正常」
 **【L】Agent Teams + タスクリスト** — 大規模並列
 ```
 TeamCreate → team_name で作成
-  → Agent ツールで 5+ teammates spawn
+  → Agent ツールで 5+ teammates spawn（name + team_name 必須）
   → TaskCreate で全タスク登録
   → teammates が自律的にクレーム・実行
-  → SendMessage で peer-to-peer 調整
+  → SendMessage で peer-to-peer 調整（recipient = name）
   → TeammateIdle/TaskCompleted hooks で自律制御
   → TeamDelete で解散
 ```

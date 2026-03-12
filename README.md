@@ -8,7 +8,7 @@
 
 o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注入するプラグインです。
 
-- **Agent Teams**: TeammateTool による peer-to-peer マルチエージェント協調
+- **Agent Teams**: TeamCreate + SendMessage による peer-to-peer マルチエージェント協調
 - **Sisyphus哲学**: タスク完了まで決して止まらない
 - **TODOドリブン**: 明確なタスクリストに基づいて作業
 - **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー

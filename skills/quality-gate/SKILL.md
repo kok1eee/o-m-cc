@@ -60,6 +60,8 @@ TeamCreate:
 ```
 1. Agent:
    subagent_type: "o-m-cc:code-reviewer"
+   name: "code-reviewer"
+   team_name: "quality-gate"
    description: "Quality Gate: コード品質"
    prompt: |
      ## エージェント定義
@@ -87,6 +89,8 @@ TeamCreate:
 
 2. Agent:
    subagent_type: "o-m-cc:security-reviewer"
+   name: "security-reviewer"
+   team_name: "quality-gate"
    description: "Quality Gate: セキュリティ"
    prompt: |
      ## エージェント定義
@@ -114,6 +118,8 @@ TeamCreate:
 
 3. Agent:
    subagent_type: "o-m-cc:critic"
+   name: "critic"
+   team_name: "quality-gate"
    description: "Quality Gate: 計画整合性"
    prompt: |
      ## エージェント定義
