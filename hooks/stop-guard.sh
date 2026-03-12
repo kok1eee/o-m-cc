@@ -37,12 +37,13 @@ if [[ -n "$AGENT_TYPE" && "$AGENT_TYPE" != "main" ]]; then
 fi
 
 # 変更行数を取得（jj → git fallback）
+# plan/ 配下は計画成果物のため diff カウントから除外
 get_diff_lines() {
   local stat_line=""
   if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat . 2>/dev/null | tail -1) || true
+    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
   elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    stat_line=$(git diff --stat HEAD -- . 2>/dev/null | tail -1) || true
+    stat_line=$(git diff --stat HEAD -- . ':!plan/' 2>/dev/null | tail -1) || true
   fi
   # "3 files changed, 42 insertions(+), 10 deletions(-)" → 42 + 10 = 52
   local ins del

@@ -113,6 +113,37 @@ researcher analyst scout
 
 **「リーダーが必要」と「peer-to-peer」は、矛盾ではなくレイヤーの違い**だ。spawn のレイヤーは hub-and-spoke、通信のレイヤーは peer-to-peer。
 
+### 実際の動作
+
+sisyphus の Discovery Council を起動した実際のログ：
+
+```
+⏺ 3 agents launched (ctrl+o to expand)
+   ├─ @researcher (o-m-cc:researcher)
+   │  ⎿  Discovery Council: 技術調査
+   ├─ @analyst (o-m-cc:analyst)
+   │  ⎿  Discovery Council: 要件分析
+   └─ @scout (o-m-cc:scout)
+      ⎿  Discovery Council: ギャップ分析
+```
+
+spawn は sisyphus（リーダー）が一括で行う。これが hub-and-spoke。
+
+```
+⏺ researcher が scout に技術調査結果を共有しました。
+  analyst と scout の作業完了を待ちます。
+```
+
+researcher が見つけた知見は scout に**直接** SendMessage で送られる。sisyphus を経由しない。これが peer-to-peer。
+
+ステータスラインにも全 teammate が表示される：
+
+```
+@main @analyst @researcher @scout · ↓ to expand
+```
+
+`@main` がリーダー（sisyphus fork）、残りが teammate。name を正しく指定しているからこそ、ここに表示される。
+
 ## context: fork でリーダーを隔離する
 
 o-m-cc のスキルは `context: fork` で定義されている。
@@ -230,6 +261,18 @@ name を書き忘れると：
 **エラーが一切出ないので、動いているように見えて全く通信できていない。** peer-to-peer の通信が壊れていることに気づけない。
 
 ### 対策
+
+**1. ステータスラインで確認する**
+
+v2.1.74 以降、Agent Teams の teammate はステータスラインにリアルタイム表示される。
+
+```
+@main @analyst @researcher @scout · ↓ to expand
+```
+
+name を正しく指定していれば `@name` で表示される。表示されていなければ teammate として登録されていない。**最も手軽な確認方法。**
+
+**2. config.json で確認する**
 
 ```bash
 # チームのメンバーを確認

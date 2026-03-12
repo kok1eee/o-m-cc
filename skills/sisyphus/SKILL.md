@@ -46,7 +46,9 @@ $ARGUMENTS
 ```
 
 **Phase 1 は Discovery Council（3エージェント同時 spawn + peer-to-peer 共有）**
-**Phase 2-3 は Pipeline 型（順次実行）**
+**Phase 2-3 は Pipeline 型（順次実行・foreground spawn）**
+
+> **重要**: Phase 2-3 の designer/planner は **foreground（デフォルト）で spawn** すること。background で spawn すると待機中に「やることがない」と判断して終了しようとする。Discovery Council の 3 agent は同時 spawn（background）が正しいが、Pipeline 型は foreground で完了を待ってから次に進む。
 
 ---
 
