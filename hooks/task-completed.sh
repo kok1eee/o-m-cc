@@ -19,7 +19,7 @@ fi
 HOOK_INPUT=$(cat)
 
 # 完了したタスク情報を取得
-if $HAS_JQ; then
+if check_command jq; then
   TASK_ID=$(echo "$HOOK_INPUT" | jq -r '.task_id // .taskId // "unknown"' 2>/dev/null || echo "unknown")
   TASK_SUBJECT=$(echo "$HOOK_INPUT" | jq -r '.task_subject // .subject // ""' 2>/dev/null || echo "")
 else
