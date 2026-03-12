@@ -45,9 +45,12 @@ jj diff  # または git diff
 
 > **必須**: Step 3〜5 は `/simplify` とは完全に別のステップです。「/simplify で既に実行済み」ということはありえません。必ず以下の TeamCreate + Agent spawn を実行してください。
 
-**TeamCreate でレビューチームを作成：**
+**既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
 
 ```
+TeamDelete:
+  team_name: "<既存チーム名>"  # エラーが出なければスキップ
+
 TeamCreate:
   team_name: "quality-gate"
   description: "Quality gate review council"

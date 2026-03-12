@@ -63,7 +63,12 @@ cat CLAUDE.md 2>/dev/null
 
 ### Step 3: Review Council 作成
 
+**既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
+
 ```
+TeamDelete:
+  team_name: "<既存チーム名>"  # エラーが出なければスキップ
+
 TeamCreate:
   team_name: "review-council"
   description: "Code quality + Security + Plan compliance review"

@@ -78,9 +78,12 @@ TaskCreate: "Phase 5: Quality Gate"
 
 ## Step 1: プランニングチーム作成
 
-**TeamCreate でチームを作成：**
+**既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
 
 ```
+TeamDelete:
+  team_name: "<既存チーム名>"  # エラーが出なければスキップ
+
 TeamCreate:
   team_name: "planning"
   description: "Sisyphus Discovery → Design → Tasks"
