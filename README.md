@@ -82,8 +82,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:review [files]` | Agent Teams でコードレビュー（peer-to-peer 議論） | fork | 「レビューして」で発動 |
-| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + 静的解析で品質最終確認 | fork | 「品質チェックして」で発動 |
+| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。

@@ -86,8 +86,7 @@ After planning completes:
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:review [files]` | Code review with Agent Teams (peer-to-peer discussion) | fork | On "review this" |
-| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + Lint for final quality check | fork | On "quality check" |
+| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + Lint for final quality check | fork | On "review this", "quality check" |
 | `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
 
 ## Agents (12 specialists)
