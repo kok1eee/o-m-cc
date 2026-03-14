@@ -19,28 +19,13 @@ $ARGUMENTS
 
 ## 実行方式
 
-### Headless モード判定
+**計画フェーズも実装フェーズも止まらない。**
 
-**`-p`（headless）モードで実行されている場合、全承認ゲートをスキップする。**
-
-判定方法: `AskUserQuestion` ツールが `allowed-tools` に含まれていても、headless 環境では応答する人間がいない。以下のいずれかで判定：
-- 環境変数 `CLAUDE_NON_INTERACTIVE=1` がセットされている
-- 最初のユーザーメッセージが `-p` 経由の単一プロンプトである（会話履歴がない）
-
-**Headless の場合**: 全承認ゲート（Step 2.5, 3.5, 4.5）を自動承認。AskUserQuestion を使わない。旧 Sisyphus（完全自律）として動作。
-
-**対話モードの場合**: 以下の通り承認ゲート付きで動作。
+Council の peer-to-peer 検証が品質保証。各 Phase の出力を確認し、問題があれば SendMessage で差し戻す。人間への確認（AskUserQuestion）は scout が曖昧点を発見した場合のみ。
 
 ---
 
-**計画フェーズは承認ゲート付き（対話時のみ）、実装フェーズは止まらない。**
-
-対話モードでは計画の各ステップで人間に確認を求め、方向性を合わせてから次に進む。
-Headless モードでは全自動で計画→実装→完了まで止まらない。
-
----
-
-## 実行フロー（Council + Pipeline ハイブリッド + 承認ゲート）
+## 実行フロー（Council + Pipeline ハイブリッド）
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -51,36 +36,21 @@ Headless モードでは全自動で計画→実装→完了まで止まらな�
 │  analyst が統合して requirements.md を確定              │
 └─────────────────────────────────────────────────────┘
           │
-          ▼ requirements.md
-    ┌──────────────┐
-    │ 🚦 承認ゲート │ ← 曖昧点あり → 聞く / 明確 → 自動承認
-    └──────────────┘
-          │
-          ▼
+          ▼ requirements.md（乖離あれば差し戻し）
 ┌──────────────┐
 │  Phase 2     │
 │  設計        │
 │  (designer)  │
 └──────────────┘
           │
-          ▼ design.md
-    ┌──────────────┐
-    │ 🚦 承認ゲート │ ← 判断ポイントあり → 聞く / 明確 → 自動承認
-    └──────────────┘
-          │
-          ▼
+          ▼ design.md（乖離あれば差し戻し）
 ┌──────────────┐
 │  Phase 3     │
 │  タスク分解  │
 │  (planner)   │
 └──────────────┘
           │
-          ▼ TaskCreate
-    ┌──────────────┐
-    │ 🚦 承認ゲート │ ← 確認事項あり → 聞く / 明確 → 自動承認
-    └──────────────┘
-          │
-          ▼
+          ▼ TaskCreate（問題あれば差し戻し）
     Phase 4: 実装（Sisyphus Loop — 止まらない）
 ```
 
@@ -109,12 +79,14 @@ TeamCreate:
 > **重要**: TeamCreate の後にタスクを登録すること。TeamCreate でタスクのスコープがチームに切り替わるため、先に作ったタスクは見えなくなる。
 
 ```
-TaskCreate: "Phase 1: Discovery Council（要件分析）"
-TaskCreate: "Phase 2: 設計"
-TaskCreate: "Phase 3: タスク分解"
-TaskCreate: "Phase 4: 実装"
-TaskCreate: "Phase 5: Quality Gate"
+TaskCreate: "[TRACKING] Phase 1: Discovery Council（要件分析）"
+TaskCreate: "[TRACKING] Phase 2: 設計"
+TaskCreate: "[TRACKING] Phase 3: タスク分解"
+TaskCreate: "[TRACKING] Phase 4: 実装"
+TaskCreate: "[TRACKING] Phase 5: Quality Gate"
 ```
+
+> **`[TRACKING]` プレフィックス**: teammate がフェーズタスクを作業タスクと誤認して着手するのを防ぐ。フェーズタスクは進捗管理用であり、作業指示ではない。
 
 各フェーズの TaskUpdate タイミング：
 
@@ -235,6 +207,7 @@ Phase 1 集約ルール:
 ```
 
 **Discovery Council の動作:**
+- `[TRACKING]` プレフィックス付きのタスクは進捗管理用。teammate は無視すること
 - 3エージェントが対等に同時作業を開始
 - researcher は技術知見を検索し、見つけ次第 analyst・scout に共有
 - scout はユーザーの要求とコードベースから直接ギャップ分析し、analyst・researcher に共有
@@ -246,55 +219,13 @@ Phase 1 集約ルール:
 
 ---
 
-## Step 2.5: 🚦 要件承認ゲート（条件付き / Headless: スキップ）
-
-**requirements.md を確認し、人間の判断が必要か評価する。**
-
-### 判定基準
-
-以下のいずれかに該当 → **止まって聞く**：
-- scout が未解決の曖昧点・仮定を報告している
-- 要件に複数の解釈がありうる（例: スコープの境界が不明確）
-- ユーザーの元の要求と requirements.md の間にギャップがある
-
-すべて明確 → **自動承認して進む**
-
-### 止まる場合
-
-```
-AskUserQuestion:
-  question: |
-    ## 要件定義に確認事項があります
-
-    📄 plan/requirements.md の概要:
-    [主要ポイントを箇条書き]
-
-    ⚠️ 確認が必要な点:
-    [未解決の曖昧点・仮定・判断ポイントを列挙]
-
-    以下から選んでください:
-    A) このまま設計に進む
-    B) 修正してほしい点がある（具体的に教えてください）
-```
-
-- **A の場合**: Phase 2 に進む
-- **B の場合**: フィードバックを analyst に SendMessage で伝え、requirements.md を修正させる。修正後、再度評価する
-
-### 自動承認の場合
-
-```
-✅ 要件承認: 自動承認（未解決の曖昧点なし）
-   📄 plan/requirements.md
-   → Phase 2（設計）に進みます
-```
-
----
-
 ## Step 3: Phase 2 - 設計
 
 → `TaskUpdate: Phase 1 → completed`, `TaskUpdate: Phase 2 → in_progress`
 
-**承認後、designer teammate を spawn：**
+**requirements.md を確認し、ユーザーの元の要求と乖離があれば SendMessage で analyst に修正を依頼する（差し戻し）。問題なければそのまま Phase 2 へ。**
+
+**designer teammate を spawn：**
 
 ```
 Agent:
@@ -321,55 +252,13 @@ Agent:
 
 ---
 
-## Step 3.5: 🚦 設計承認ゲート（条件付き / Headless: スキップ）
-
-**design.md を確認し、人間の判断が必要か評価する。**
-
-### 判定基準
-
-以下のいずれかに該当 → **止まって聞く**：
-- 複数の設計アプローチがありトレードオフの判断が必要
-- 既存アーキテクチャとの整合性に懸念がある
-- 要件に対して設計がオーバー/アンダースペック
-
-すべて明確 → **自動承認して進む**
-
-### 止まる場合
-
-```
-AskUserQuestion:
-  question: |
-    ## 設計に判断ポイントがあります
-
-    📄 plan/design.md の概要:
-    [主要な設計判断・コンポーネント構成を要約]
-
-    ⚠️ 判断が必要な点:
-    [トレードオフ・懸念点を列挙]
-
-    以下から選んでください:
-    A) このままタスク分解に進む
-    B) 修正してほしい点がある（具体的に教えてください）
-```
-
-- **A の場合**: Phase 3 に進む
-- **B の場合**: フィードバックを designer に伝え、design.md を修正させる。修正後、再度評価する
-
-### 自動承認の場合
-
-```
-✅ 設計承認: 自動承認（設計判断に曖昧さなし）
-   📄 plan/design.md
-   → Phase 3（タスク分解）に進みます
-```
-
----
-
 ## Step 4: Phase 3 - タスク分解
 
 → `TaskUpdate: Phase 2 → completed`, `TaskUpdate: Phase 3 → in_progress`
 
-**承認後、planner teammate を spawn：**
+**design.md を確認し、要件との乖離があれば SendMessage で designer に修正を依頼する（差し戻し）。問題なければそのまま Phase 3 へ。**
+
+**planner teammate を spawn：**
 
 ```
 Agent:
@@ -397,58 +286,16 @@ Agent:
 
 ---
 
-## Step 4.5: 🚦 タスク承認ゲート（条件付き / Headless: スキップ）
-
-**登録されたタスクを確認し、人間の判断が必要か評価する。**
-
-### 判定基準
-
-以下のいずれかに該当 → **止まって聞く**：
-- タスク数が多い（10件以上）で優先順位の判断が必要
-- タスク間の依存関係が複雑
-- 設計書にない追加タスクが生まれた
-
-すべて明確 → **自動承認して進む**
-
-### 止まる場合
-
-```
-AskUserQuestion:
-  question: |
-    ## タスク分解に確認事項があります
-
-    📋 登録タスク:
-    [TaskList の内容を一覧表示]
-
-    ⚠️ 確認が必要な点:
-    [判断ポイントを列挙]
-
-    以下から選んでください:
-    A) このまま実装に進む
-    B) タスクを修正してほしい（具体的に教えてください）
-```
-
-- **A の場合**: 実装フェーズに進む（ここから先は Sisyphus Loop — 止まらない）
-- **B の場合**: フィードバックに基づいてタスクを修正。修正後、再度評価する
-
-### 自動承認の場合
-
-```
-✅ タスク承認: 自動承認（タスク構成に問題なし）
-   📋 TaskCreate: X件登録済み
-   → 実装フェーズに進みます（Sisyphus Loop — 止まらない）
-```
-
----
+**TaskList を確認し、設計書にないタスクが含まれていたり依存関係に問題があれば SendMessage で planner に修正を依頼する（差し戻し）。問題なければそのまま実装へ。**
 
 ## 出力
 
 ```
 plan/
-├── requirements.md  # 要件定義（承認済み）
-└── design.md        # 設計書（承認済み）
+├── requirements.md  # 要件定義
+└── design.md        # 設計書
 
-TaskCreate           # 実装タスク（承認済み）
+TaskCreate           # 実装タスク
 ```
 
 ---
@@ -519,4 +366,4 @@ TaskCreate           # 実装タスク（承認済み）
 
 ---
 
-**Step 0 でチーム作成、Step 1 でタスク登録（TeamCreate の後！）、Step 2 で Discovery Council（3エージェント同時 spawn）へ進んでください。各計画フェーズ完了後は承認ゲート（AskUserQuestion）で人間の確認を取ってから次に進むこと（Headless モードではスキップ）。実装フェーズ（Step 5 以降）に入ったら止まらない。**
+**Step 0 でチーム作成、Step 1 でタスク登録（TeamCreate の後！）、Step 2 で Discovery Council（3エージェント同時 spawn）へ進んでください。各 Phase の出力を確認し、ユーザーの要求と乖離があれば SendMessage で差し戻す。全フェーズ止まらない。**
