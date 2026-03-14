@@ -23,6 +23,10 @@ $ARGUMENTS
 
 Council の peer-to-peer 検証が品質保証。各 Phase の出力を確認し、問題があれば SendMessage で差し戻す。人間への確認（AskUserQuestion）は scout が曖昧点を発見した場合のみ。
 
+### Headless モード
+
+`CLAUDE_NON_INTERACTIVE=1` または `-p` モードで実行されている場合、AskUserQuestion を使わない。scout の曖昧点は仮定を記録して進む。
+
 ---
 
 ## 実行フロー（Council + Pipeline ハイブリッド）
