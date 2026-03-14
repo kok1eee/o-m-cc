@@ -1,13 +1,27 @@
 # o-m-cc - Project Configuration
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。13の専門エージェント + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。12の専門エージェント + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
 - Python - セキュリティフック
 - Markdown - エージェント定義, スキル定義, ドキュメント
 - JSON - プラグイン設定, hooks設定
+
+## ディレクトリ構造
+```
+agents/         # 12 エージェント定義（.md）
+hooks/          # hooks スクリプト（.sh/.py）+ hooks.json
+skills/         # スキル定義（sisyphus, review, quality-gate, audit, handover, init）
+facets/         # 共通ポリシー・リファレンス
+articles/       # 技術記事
+docs/           # ドキュメント
+spec/           # 仕様書
+templates/      # テンプレート
+.claude-plugin/ # プラグイン設定（plugin.json, marketplace.json, settings.json）
+```
+
 ## アーキテクチャ
 - **Agent Teams**: TeamCreate + Agent spawn + SendMessage によるネイティブ並列エージェント協調
 - **peer-to-peer 通信**: SendMessage で teammates 間のリアルタイムメッセージ交換
@@ -51,10 +65,38 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 - そのまま実行 → 影響範囲が広がった → `/plan` に切り替え
 - `/plan` → 設計判断が多い・複数フェーズ必要 → `/sisyphus` に切り替え
 
+## Hooks
+
+| Event | Script | Timeout | 役割 |
+|-------|--------|---------|------|
+| SessionStart | check-dependencies.sh | 3s | 依存チェック |
+| SessionStart | archive-plans.sh | 5s | plan/ アーカイブ |
+| SessionStart | session-resume.sh | 3s | 文脈復元表示 |
+| SessionStart | memory-digest.sh | 3s | Memory ダイジェスト |
+| SessionStart | session-baseline.sh | 5s | diff ベースライン |
+| Stop | stop-guard.sh | 10s | quality-gate 強制 |
+| PreToolUse(Write\|Edit) | security_reminder_hook.py | 5s | セキュリティチェック |
+| PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |
+| TeammateIdle | teammate-idle.sh | 5s | idle エスカレーション |
+| TaskCompleted | task-completed.sh | 5s | タスク完了通知 |
+| SessionEnd | pre-compact-handover.sh | 30s | 文脈自動保存 |
+
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用
 - エージェント数・スキル数を変更したら `plugin.json`, `marketplace.json`, `README.md`, `capabilities.md` を同期
 - バージョンは `plugin.json` を正とし、他ファイルも合わせる
+
+## テスト・検証
+```bash
+# hooks の単体テスト
+echo '{}' | bash hooks/stop-guard.sh
+
+# hooks.json の構文チェック
+jq . hooks/hooks.json
+
+# エージェント定義の frontmatter 確認
+head -10 agents/*.md
+```
 
 ## デプロイ
 ```bash

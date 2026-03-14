@@ -2,7 +2,7 @@
 name: handover
 description: "セッションの文脈を .claude/context.md に保存。Learnings の MEMORY.md 反映と Skill 提案も行う。作業を中断するとき、セッションを終えるとき、長い作業の区切りに使う。「引き継ぎ」「保存して」「今日はここまで」「文脈を残して」で発動。"
 argument-hint: ""
-allowed-tools: [Read, Write, Edit, Glob, Grep, Bash]
+allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Skill]
 model: sonnet
 ---
 
@@ -21,7 +21,8 @@ Learnings に長期的価値があれば MEMORY.md に反映し、繰り返し�
 4. 今回のセッションで行ったことを振り返る
 5. 以下の構成で `.claude/context.md` を **上書き** する
 6. **Learnings チェック**: 長期的価値のある知見があれば MEMORY.md に追記
-7. **Skill 提案**: 繰り返しパターンを発見したら提案を出力
+7. **CLAUDE.md 改善**: `/revise-claude-md` でセッションの学びを CLAUDE.md に反映（プラグイン未インストールならスキップ）
+8. **Skill 提案**: 繰り返しパターンを発見したら提案を出力
 
 ## .claude/context.md の構成
 
@@ -74,8 +75,19 @@ Learnings セクションに記載した内容を確認し、以下に該当す�
 
 > ユーザーが承認したら skills/ に作成する。自動作成はしない。
 
+## CLAUDE.md の自動改善
+
+`claude-md-management` プラグインがインストールされている場合、セッションの学びを CLAUDE.md に反映する。
+
+```
+Skill: claude-md-management:revise-claude-md
+```
+
+> プラグイン未インストールの場合はスキップする（エラーにしない）。
+
 ## ルール
 
 - **簡潔に**: 各セクション 3-5 行以内
 - **知識は memory に**: 長期的に価値のある知見は MEMORY.md に反映。context.md には session state のみ
+- **CLAUDE.md は最新に**: セッションの学びで CLAUDE.md を改善（claude-md-management 連携）
 - **VCS 管理する**: .claude/context.md, chronicle.md は VCS 管理される

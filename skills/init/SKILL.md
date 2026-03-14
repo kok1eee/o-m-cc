@@ -211,6 +211,18 @@ echo "✅ SessionEnd hook を .claude/settings.json に追加（context.md 自�
 
 ---
 
+## Step 8: CLAUDE.md の品質監査
+
+`claude-md-management` プラグインがインストールされている場合、CLAUDE.md を監査して改善提案を適用する。
+
+```
+Skill: claude-md-management:claude-md-improver
+```
+
+> プラグイン未インストールの場合はスキップする（エラーにしない）。
+
+---
+
 ## 完了時の出力 + 次のステップ提案
 
 プロジェクトの状態に応じた完了メッセージを表示：
@@ -225,6 +237,7 @@ echo "✅ SessionEnd hook を .claude/settings.json に追加（context.md 自�
 🤖 Default Agent: .claude/agents/sisyphus.md に配置
 🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
 🔄 SessionEnd: context.md 自動保存を .claude/settings.json に追加
+📊 CLAUDE.md: 品質監査 + 改善提案を適用
 
 💡 デフォルトエージェント有効化:
    .claude/settings.json → "agent": "sisyphus"
