@@ -69,18 +69,6 @@
         ]
       }
     ],
-    "TeammateIdle": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/teammate-idle.sh",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
     "TaskCompleted": [
       {
         "matcher": "",
