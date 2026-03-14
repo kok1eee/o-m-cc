@@ -11,8 +11,8 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 ## ディレクトリ構造
 ```
 agents/         # 12 エージェント定義（.md）
-hooks/          # hooks スクリプト（.sh/.py）+ hooks.json
-skills/         # スキル定義（sisyphus, review, quality-gate, audit, handover, init）
+hooks/          # hooks スクリプト（.sh）+ hooks.json
+skills/         # スキル定義（sisyphus, quality-gate, audit, handover, init）
 facets/         # 共通ポリシー・リファレンス
 articles/       # 技術記事
 docs/           # ドキュメント
