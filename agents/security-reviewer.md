@@ -24,6 +24,17 @@ memory: project
 > Rationalizations（手抜き禁止リスト）、Insecure Defaults（fail-open 検出）、
 > Sharp Edges（API 設計の危険性）、OWASP Top 10 チェック項目を含みます。
 
+## security-guidance プラグイン連携
+
+`security-guidance` プラグイン（公式）が PreToolUse hook で検出するパターンも参考にする：
+- GitHub Actions workflow injection（untrusted input による command injection）
+- shell injection（危険なシステムコマンド呼び出し）
+- code injection（動的コード評価による任意コード実行）
+- XSS（innerHTML 直接代入等による DOM 操作）
+- deserialization attack（信頼できないデータの逆シリアライズ）
+
+これらのパターンが変更差分に含まれる場合、**Confidence を +10 して優先的に報告する。**
+
 ## 役割
 
 - OWASP Top 10 に基づく脆弱性検出
