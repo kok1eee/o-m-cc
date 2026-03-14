@@ -64,7 +64,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
-            "timeout": 10000
+            "timeout": 30000
           }
         ]
       }
@@ -100,7 +100,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
-            "timeout": 10000
+            "timeout": 30000
           }
         ]
       }
