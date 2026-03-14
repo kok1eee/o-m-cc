@@ -57,6 +57,18 @@
         ]
       }
     ],
+    "PostCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/post-compact-resume.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
     "TeammateIdle": [
       {
         "matcher": "",

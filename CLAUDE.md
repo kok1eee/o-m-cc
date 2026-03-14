@@ -75,6 +75,7 @@ templates/      # テンプレート
 | SessionStart | session-baseline.sh | 5s | diff ベースライン |
 | Stop | stop-guard.sh | 10s | quality-gate 強制 |
 | PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |
+| PostCompact | post-compact-resume.sh | 5s | compaction 後の状態リマインド |
 | TeammateIdle | teammate-idle.sh | 5s | idle エスカレーション |
 | TaskCompleted | task-completed.sh | 5s | タスク完了通知 |
 | SessionEnd | pre-compact-handover.sh | 30s | 文脈自動保存 |
