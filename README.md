@@ -1,4 +1,4 @@
-# o-m-cc v0.21.2
+# o-m-cc v0.22.0
 
 [English](README_en.md)
 
@@ -547,6 +547,25 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.22.0
+
+- **公式プラグイン連携**: security-guidance, claude-md-management, hookify, plugin-dev, playground と連携。init で自動インストール
+- **security hook を公式に委譲**: 独自の `security_reminder_hook.py`（229行）を削除し、公式 `security-guidance` プラグインに一本化。Lightweight 原則の徹底
+- **LSP 自動検出**: init でプロジェクト言語（Python/TS/Rust/Go 等 12言語）を検出し、対応 LSP プラグインを自動インストール
+- **CLAUDE.md 自動改善**: handover で `/revise-claude-md`（セッション学び反映）、init で `claude-md-improver`（品質監査）を実行
+- **security-reviewer 強化**: 公式 security-guidance の検出パターンを参照し、該当パターンの Confidence +10 で優先報告
+- **frontend + playground**: frontend エージェントが playground プラグインと連携し HTML プレビュー可能に
+
+### 0.21.2
+
+- **条件付き承認ゲート**: sisyphus 計画フェーズ（要件・設計・タスク分解）に承認ゲート導入。曖昧点がある場合のみ AskUserQuestion で確認、明確な場合は自動承認して進む
+- **stop-guard plan/ 除外**: 計画成果物（plan/ 配下）を diff カウントから除外。requirements.md/design.md の生成で quality-gate が誤発火する問題を修正
+- **foreground spawn 明記**: Phase 2-3 の designer/planner を foreground で spawn する指示を追加。background spawn による premature stop を防止
+- **TeamCreate cleanup**: 全スキル（sisyphus/review/quality-gate）で TeamCreate 前に TeamDelete を実行。前回の残骸による "Already leading team" エラーを防止
+- **hook タイムアウト延長**: SessionEnd/PreCompact の pre-compact-handover.sh タイムアウトを 10s → 30s に延長。長いセッションでの Hook cancelled を修正
+- **Agent Teams teammate name 必須化**: 全スキルの Agent spawn に name/team_name を明示指定。未指定時の SendMessage silent loss を防止
+- **CLAUDE.md 改善**: ディレクトリ構造、Hooks テーブル、テスト・検証コマンドを追加。エージェント数修正（13→12）
 
 ### 0.20.1
 
