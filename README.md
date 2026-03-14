@@ -1,4 +1,4 @@
-# o-m-cc v0.22.0
+# o-m-cc v0.23.0
 
 [English](README_en.md)
 
@@ -546,6 +546,12 @@ export SISYPHUS_MAX_ITERATIONS=30
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.23.0
+
+- **review スキルを quality-gate に統合**: review（Review Council のみ）を削除し、quality-gate に吸収。「レビューして」で quality-gate がフルパイプライン実行。スキル数 6→5、トリガー競合解消
+- **PostCompact hook 新設**: compaction 後にプロジェクト状態（Intent, 変更行数, Quality Gate, sisyphus フェーズ）を動的取得して system message として出力。compaction summary と重複しない補完情報
+- **sisyphus Headless モード**: `-p`（headless）モードで全承認ゲートを自動スキップ。ambient-task-agent 等の headless 環境で完全自律動作
 
 ### 0.22.0
 
