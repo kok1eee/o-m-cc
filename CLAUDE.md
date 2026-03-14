@@ -5,7 +5,6 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
-- Python - セキュリティフック
 - Markdown - エージェント定義, スキル定義, ドキュメント
 - JSON - プラグイン設定, hooks設定
 
@@ -75,7 +74,6 @@ templates/      # テンプレート
 | SessionStart | memory-digest.sh | 3s | Memory ダイジェスト |
 | SessionStart | session-baseline.sh | 5s | diff ベースライン |
 | Stop | stop-guard.sh | 10s | quality-gate 強制 |
-| PreToolUse(Write\|Edit) | security_reminder_hook.py | 5s | セキュリティチェック |
 | PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |
 | TeammateIdle | teammate-idle.sh | 5s | idle エスカレーション |
 | TaskCompleted | task-completed.sh | 5s | タスク完了通知 |

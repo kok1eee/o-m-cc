@@ -101,7 +101,23 @@ echo "   または claude --agent sisyphus で起動"
 
 ---
 
-## Step 4.5: LSP プラグインの自動検出・インストール
+## Step 4.5: 推奨プラグインのインストール
+
+o-m-cc が連携する公式プラグインをインストールする。既にインストール済みならスキップ。
+
+```bash
+# セキュリティ（PreToolUse hook でセキュリティパターン検出）
+claude plugin install security-guidance
+
+# CLAUDE.md 品質管理（handover/init で連携）
+claude plugin install claude-md-management
+```
+
+> **security-guidance は必須。** o-m-cc はセキュリティチェックをこのプラグインに委譲している。
+
+---
+
+## Step 4.6: LSP プラグインの自動検出・インストール
 
 プロジェクトの言語を検出し、対応する LSP プラグインをインストールする。
 
