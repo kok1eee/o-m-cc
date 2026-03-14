@@ -91,9 +91,22 @@ Headless モードでは全自動で計画→実装→完了まで止まらな�
 
 ---
 
-## Step 0: フェーズタスクを登録（進捗の可視化）
+## Step 0: プランニングチーム作成
 
-**メイン会話でタスクを登録し、各フェーズの進捗を可視化する。**
+**既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
+
+```
+TeamDelete:
+  team_name: "<既存チーム名>"  # エラーが出なければスキップ
+
+TeamCreate:
+  team_name: "planning"
+  description: "Sisyphus Discovery → Design → Tasks"
+```
+
+## Step 1: フェーズタスクを登録（進捗の可視化）
+
+> **重要**: TeamCreate の後にタスクを登録すること。TeamCreate でタスクのスコープがチームに切り替わるため、先に作ったタスクは見えなくなる。
 
 ```
 TaskCreate: "Phase 1: Discovery Council（要件分析）"
@@ -112,21 +125,6 @@ TaskCreate: "Phase 5: Quality Gate"
 | Phase 3 | Step 4 開始前 | Step 5 開始前 |
 | Phase 4 | Step 5 開始前 | 全実装タスク完了後 |
 | Phase 5 | /quality-gate 開始前 | quality-gate 通過後 |
-
----
-
-## Step 1: プランニングチーム作成
-
-**既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
-
-```
-TeamDelete:
-  team_name: "<既存チーム名>"  # エラーが出なければスキップ
-
-TeamCreate:
-  team_name: "planning"
-  description: "Sisyphus Discovery → Design → Tasks"
-```
 
 → `TaskUpdate: Phase 1 → in_progress`
 
@@ -521,4 +519,4 @@ TaskCreate           # 実装タスク（承認済み）
 
 ---
 
-**Step 0 のタスク登録から開始し、Step 1 でチーム作成、Discovery Council（3エージェント同時 spawn）へ進んでください。各計画フェーズ完了後は承認ゲート（AskUserQuestion）で人間の確認を取ってから次に進むこと。実装フェーズ（Step 5 以降）に入ったら止まらない。**
+**Step 0 でチーム作成、Step 1 でタスク登録（TeamCreate の後！）、Step 2 で Discovery Council（3エージェント同時 spawn）へ進んでください。各計画フェーズ完了後は承認ゲート（AskUserQuestion）で人間の確認を取ってから次に進むこと（Headless モードではスキップ）。実装フェーズ（Step 5 以降）に入ったら止まらない。**
