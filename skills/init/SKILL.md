@@ -101,6 +101,66 @@ echo "   または claude --agent sisyphus で起動"
 
 ---
 
+## Step 4.5: LSP プラグインの自動検出・インストール
+
+プロジェクトの言語を検出し、対応する LSP プラグインをインストールする。
+
+### 言語検出ロジック
+
+```bash
+# ファイル拡張子でプロジェクト言語を検出
+LSP_PLUGINS=()
+
+# Python
+if ls *.py **/*.py pyproject.toml setup.py requirements.txt 2>/dev/null | head -1 > /dev/null; then
+  LSP_PLUGINS+=("pyright-lsp")
+fi
+
+# TypeScript / JavaScript
+if ls *.ts *.tsx *.js *.jsx tsconfig.json package.json 2>/dev/null | head -1 > /dev/null; then
+  LSP_PLUGINS+=("typescript-lsp")
+fi
+
+# Rust
+if ls *.rs Cargo.toml 2>/dev/null | head -1 > /dev/null; then
+  LSP_PLUGINS+=("rust-analyzer-lsp")
+fi
+
+# Go
+if ls *.go go.mod 2>/dev/null | head -1 > /dev/null; then
+  LSP_PLUGINS+=("gopls-lsp")
+fi
+```
+
+### 対応 LSP 一覧
+
+| 言語 | プラグイン | 検出ファイル |
+|------|-----------|-------------|
+| Python | pyright-lsp | `*.py`, `pyproject.toml`, `requirements.txt` |
+| TypeScript/JS | typescript-lsp | `*.ts`, `*.tsx`, `package.json` |
+| Rust | rust-analyzer-lsp | `*.rs`, `Cargo.toml` |
+| Go | gopls-lsp | `*.go`, `go.mod` |
+| Java | jdtls-lsp | `*.java`, `pom.xml`, `build.gradle` |
+| C/C++ | clangd-lsp | `*.c`, `*.cpp`, `CMakeLists.txt` |
+| Ruby | ruby-lsp | `*.rb`, `Gemfile` |
+| PHP | php-lsp | `*.php`, `composer.json` |
+| Kotlin | kotlin-lsp | `*.kt`, `build.gradle.kts` |
+| Swift | swift-lsp | `*.swift`, `Package.swift` |
+| C# | csharp-lsp | `*.cs`, `*.csproj` |
+| Lua | lua-lsp | `*.lua` |
+
+### インストール
+
+検出された言語ごとに `claude plugin install <lsp-plugin>` を実行。既にインストール済みならスキップ。
+
+```
+echo "✅ LSP プラグイン: ${LSP_PLUGINS[*]} をインストール"
+```
+
+> 何も検出されなければスキップ。
+
+---
+
 ## Step 5: .gitignore の設定
 
 o-m-cc のランタイムファイルを .gitignore に追加：
@@ -237,6 +297,7 @@ Skill: claude-md-management:claude-md-improver
 🤖 Default Agent: .claude/agents/sisyphus.md に配置
 🔓 Permissions: 推奨パーミッションを .claude/settings.json に追加
 🔄 SessionEnd: context.md 自動保存を .claude/settings.json に追加
+🔧 LSP: [検出された言語の LSP プラグインをインストール]
 📊 CLAUDE.md: 品質監査 + 改善提案を適用
 
 💡 デフォルトエージェント有効化:
