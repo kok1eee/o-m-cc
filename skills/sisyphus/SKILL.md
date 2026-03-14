@@ -227,7 +227,22 @@ Phase 1 集約ルール:
 
 → `TaskUpdate: Phase 1 → completed`, `TaskUpdate: Phase 2 → in_progress`
 
-**requirements.md を確認し、ユーザーの元の要求と乖離があれば SendMessage で analyst に修正を依頼する（差し戻し）。問題なければそのまま Phase 2 へ。**
+**まず Discovery Council のチームを終了する：**
+
+```
+TeamDelete:
+  team_name: "planning"
+```
+
+> **重要**: Discovery Council の teammate（researcher, analyst, scout）を Phase 1 完了時に必ず終了させる。生き残った teammate が Phase 2-3 の作業を先走って実行し、タスクリストとコードベースを混乱させるため。
+
+**requirements.md を確認し、ユーザーの元の要求と乖離があれば差し戻し。問題なければ新チームを作成して Phase 2 へ。**
+
+```
+TeamCreate:
+  team_name: "pipeline"
+  description: "Sisyphus Design → Tasks pipeline"
+```
 
 **designer teammate を spawn：**
 
@@ -235,7 +250,7 @@ Phase 1 集約ルール:
 Agent:
   subagent_type: "o-m-cc:designer"
   name: "designer"
-  team_name: "planning"
+  team_name: "pipeline"
   description: "Phase 2: アーキテクチャ設計"
   prompt: |
     ## エージェント定義
@@ -268,7 +283,7 @@ Agent:
 Agent:
   subagent_type: "o-m-cc:planner"
   name: "planner"
-  team_name: "planning"
+  team_name: "pipeline"
   description: "Phase 3: タスク分解"
   prompt: |
     ## エージェント定義
