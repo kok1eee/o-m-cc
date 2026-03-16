@@ -3,7 +3,7 @@ name: task-decomposition
 description: "planner エージェントによるタスク分解。design.md を基に TaskCreate でネイティブタスクに登録。「タスクに分解して」「タスク分解して」「実装計画を立てて」で発動。"
 argument-hint: ""
 allowed-tools: [Agent, Read, Glob, Grep, TaskCreate, TaskUpdate, AskUserQuestion]
-model: opus
+model: sonnet
 ---
 
 # Task Decomposition - タスク分解
