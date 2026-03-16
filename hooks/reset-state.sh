@@ -18,9 +18,7 @@ STATE_FILES=(
 )
 
 # リセット対象ディレクトリ
-STATE_DIRS=(
-  ".claude/idle-counts"
-)
+STATE_DIRS=()
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

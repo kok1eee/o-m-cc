@@ -4,10 +4,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
-  # shellcheck source=lib/common.sh
-  source "${SCRIPT_DIR}/lib/common.sh"
-fi
+# shellcheck source=lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
 cat > /dev/null
 

@@ -3,16 +3,13 @@
 
 set -euo pipefail
 
+# stdin 消費（SessionStart hook プロトコル）
+cat > /dev/null
+
 # 共通ライブラリ読み込み
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
-  # shellcheck source=lib/common.sh
-  source "${SCRIPT_DIR}/lib/common.sh"
-else
-  get_file_mtime() { stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null || echo "0"; }
-  log_debug() { :; }
-  log_error() { echo "❌ $1" >&2; }
-fi
+# shellcheck source=lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
 PLANS_DIR="${HOME}/.claude/plans"
 ARCHIVE_DIR="${PLANS_DIR}/archive"
@@ -26,16 +23,12 @@ if [[ ! -d "$PLANS_DIR" ]]; then
 fi
 
 # Find plan files (exclude archive directory and agent files)
-plan_files=$(find "$PLANS_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null || true)
-if [[ -z "$plan_files" ]]; then
-  log_debug "アーカイブ対象のファイルがありません"
-  exit 0
-fi
-
 mkdir -p "$TODAY_ARCHIVE"
 
 archived_count=0
-for file in $plan_files; do
+plan_files_found=false
+while IFS= read -r file; do
+  plan_files_found=true
   filename=$(basename "$file")
 
   # Skip agent files
@@ -60,12 +53,17 @@ for file in $plan_files; do
   fi
 
   if cp "$file" "$target" 2>/dev/null; then
-    ((archived_count++))
+    archived_count=$((archived_count + 1))
     log_debug "$filename をアーカイブ: $target"
   else
     log_error "$filename のアーカイブに失敗"
   fi
-done
+done < <(find "$PLANS_DIR" -maxdepth 1 -name "*.md" -type f 2>/dev/null)
+
+if [[ "$plan_files_found" == false ]]; then
+  log_debug "アーカイブ対象のファイルがありません"
+  exit 0
+fi
 
 if [[ $archived_count -gt 0 ]]; then
   echo "Archived $archived_count plan file(s) to ${TODAY_ARCHIVE}"

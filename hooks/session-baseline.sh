@@ -5,12 +5,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
-  # shellcheck source=lib/common.sh
-  source "${SCRIPT_DIR}/lib/common.sh"
-else
-  check_command() { command -v "$1" >/dev/null 2>&1; }
-fi
+# shellcheck source=lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
 # stdin を消費（SessionStart hook は入力を受け取る）
 cat > /dev/null

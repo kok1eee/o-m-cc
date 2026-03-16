@@ -1,4 +1,4 @@
-# o-m-cc v0.24.0
+# o-m-cc v0.24.3
 
 [日本語](README.md)
 
@@ -19,7 +19,6 @@ o-m-cc is a Claude Code plugin that injects an "unstoppable developer" mindset.
 - **macOS / Linux** (Windows: use via WSL)
 - [Claude Code](https://claude.com/claude-code) CLI installed
 - `jq` (required for hooks): `brew install jq` / `apt install jq`
-- `python3` (for security hook)
 
 ## Quick Start
 
@@ -89,7 +88,7 @@ After planning completes:
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + Lint for final quality check | fork | On "review this", "quality check" |
+| `/o-m-cc:quality-gate [files]` | Review Council + Lint for final quality check | fork | On "review this", "quality check" |
 | `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
 
 ## Agents (12 specialists)
@@ -148,17 +147,18 @@ Agent Teams (Council + Pipeline Hybrid):
 
 ## Hooks
 
-| Hook | Event | Description |
-|------|-------|-------------|
-| check-dependencies | SessionStart | Check required commands (jq, python3) |
-| archive-plans | SessionStart | Archive old plan files |
-| session-resume | SessionStart | Display `.claude/context.md` + `chronicle.md` context |
-| memory-digest | SessionStart | Display subagent Memory digest |
-| stop-guard | Stop | Sisyphus loop control (diff-based quality-gate enforcement) |
-| security-reminder | PreToolUse | Security review reminder |
-| pre-compact-handover | PreCompact | Auto-save context on compaction (3-layer rotation) |
-| teammate-idle | TeammateIdle | Escalation protocol (3 stages) for idle teammates |
-| task-completed | TaskCompleted | Progress tracking & next task assignment |
+| Hook | Event | Timeout | Description |
+|------|-------|---------|-------------|
+| check-dependencies | SessionStart | 3s | Check required commands (jq) |
+| archive-plans | SessionStart | 5s | Archive old plan files |
+| session-resume | SessionStart | 3s | Display `.claude/context.md` + `chronicle.md` context |
+| memory-digest | SessionStart | 3s | Display subagent Memory digest |
+| session-baseline | SessionStart | 5s | Record session start diff baseline |
+| stop-guard | Stop | 10s | Sisyphus loop control (diff-based quality-gate enforcement) |
+| pre-compact-handover | PreCompact | 30s | Auto-save context on compaction (3-layer rotation) |
+| post-compact-resume | PostCompact | 5s | Project state reminder after compaction |
+| task-completed | TaskCompleted | 5s | Progress tracking & next task assignment |
+| pre-compact-handover | SessionEnd | 30s | Auto-save context on session end |
 
 > **Note**: Claude Code 2.1.50+ adds `WorktreeCreate` / `WorktreeRemove` hook events for custom VCS setup/teardown with worktree isolation (useful for non-git VCS like jj).
 

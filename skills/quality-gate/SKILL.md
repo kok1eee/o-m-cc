@@ -1,15 +1,15 @@
 ---
 name: quality-gate
-description: "/simplify → Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。code-reviewer, security-reviewer, critic を並列実行して品質・セキュリティ・計画整合性をチェック。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「simplify して」「コード見て」で発動。"
+description: "Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。code-reviewer, security-reviewer, critic を並列実行して品質・セキュリティ・計画整合性をチェック。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
 model: opus
 context: fork
 ---
 
-# Quality Gate - /simplify + Review Council + Lint 連続実行
+# Quality Gate - Review Council + Lint 連続実行
 
-コード変更に対して `/simplify`（自動修正）→ Review Council（並列レビュー）→ 静的解析（最終チェック）を連続実行し、品質を最終確認します。
+コード変更に対して Review Council（並列レビュー）→ 静的解析（最終チェック）を連続実行し、品質を最終確認します。
 
 > **Note**: このスキルは **opus 専用**（`model: opus`）。Review Council 実行時にプラグインコンテキスト + 変更差分で 200k トークンを超えるため、Sonnet（200k）ではコンテキスト溢れが発生する。
 
@@ -21,31 +21,16 @@ $ARGUMENTS
 
 ## 実行フロー
 
-### Step 1: /simplify で品質改善
+### Step 1: 変更差分の取得
 
-`/simplify` を実行して、変更コードを自動改善する。
-
-`/simplify` は以下の3観点でチェックし、問題があれば自動修正する：
-- **再利用**: 既存ユーティリティとの重複がないか
-- **品質**: 冗長な状態管理、コピペコード、マジックナンバーがないか
-- **効率**: 不要な計算、並列化可能な直列処理がないか
-
-```
-Skill: simplify
-```
-
-### Step 2: 変更差分の取得
-
-`/simplify` 完了後、レビュー対象の変更内容を確認します：
+レビュー対象の変更内容を確認します：
 
 ```bash
 # 変更差分を取得
 jj diff  # または git diff
 ```
 
-### Step 3: レビューチーム作成
-
-> **必須**: Step 3〜5 は `/simplify` とは完全に別のステップです。「/simplify で既に実行済み」ということはありえません。必ず以下の TeamCreate + Agent spawn を実行してください。
+### Step 2: レビューチーム作成
 
 **既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
 
@@ -58,7 +43,7 @@ TeamCreate:
   description: "Quality gate review council"
 ```
 
-### Step 4: Review Council
+### Step 3: Review Council
 
 **3つの reviewer を Agent ツールで同時 spawn：**
 
@@ -152,14 +137,14 @@ TeamCreate:
 **重要**: 3つの teammate を同時に spawn してレビュー時間を短縮。
 SendMessage で互いの発見を共有・議論し、相互検証する。
 
-### Step 5: 結果の集約
+### Step 4: 結果の集約
 
 3つの teammate からの報告を集約：
 
 #### 集約ルール
 
 - `all("Critical なし")` → 品質ゲート通過
-- `any("Critical あり")` → 修正必須。Step 6 へ（自動修正）
+- `any("Critical あり")` → 修正必須。Step 5 へ（自動修正）
 
 ```markdown
 # 統合レビュー結果
@@ -181,15 +166,15 @@ SendMessage で互いの発見を共有・議論し、相互検証する。
 → any("Critical あり"): 修正必須
 ```
 
-### Step 6: Critical 発見時の自動修正
+### Step 5: Critical 発見時の自動修正
 
 Critical が見つかった場合、**自動で修正を試みる**（ノンストップ原則）：
 
 1. 問題箇所を特定し、修正を適用
-2. Step 2 に戻り Review Council を再実行して修正を確認
+2. Step 1 に戻り Review Council を再実行して修正を確認
 3. 修正不可能な場合は DONE 出力時に stop-guard がブロックする（既存の仕組み）
 
-### Step 7: 静的解析（言語別 Lint — 最終チェック）
+### Step 6: 静的解析（言語別 Lint — 最終チェック）
 
 全修正が完了した最終成果物に対して、言語別のリンターを実行する。該当ファイルがなければスキップ。
 
@@ -233,10 +218,7 @@ fi
 ## 完了時の出力
 
 ```
-✅ 品質ゲート通過（/simplify + Review Council + Lint）
-
-🔧 /simplify
-   修正: X件
+✅ 品質ゲート通過（Review Council + Lint）
 
 📊 コード品質
    🟢 Critical: なし
@@ -262,7 +244,7 @@ fi
 → 品質ゲート通過
 ```
 
-### Step 5: Proof ファイル書き込み（静的解析ゲート付き）
+### Step 7: Proof ファイル書き込み（静的解析ゲート付き）
 
 **全ステップ完了後**、以下のコマンドを **1つの Bash ツール呼び出し** で実行する。
 静的解析が通った場合のみ proof ファイルが書き込まれる。stop-guard はこのファイルを検証して品質ゲート通過を判定する。
@@ -304,7 +286,7 @@ else
 fi
 ```
 
-> **重要**: このコマンドは Step 1〜4（/simplify + Review Council + 静的解析修正）が完了した後に実行すること。静的解析が失敗すると proof は書き込まれない。
+> **重要**: このコマンドは Step 1〜6（Review Council + 静的解析修正）が完了した後に実行すること。静的解析が失敗すると proof は書き込まれない。
 
 ---
 
@@ -315,6 +297,7 @@ fi
 mkdir -p .claude && echo "{\"started_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-running
 ```
 
-1. **`/simplify`** を実行（Step 1）
-2. **Review Council** を TeamCreate + Agent spawn で実行（Step 3〜5） — /simplify とは別ステップ、省略不可
-3. **静的解析 + proof 書き込み**（Step 7 + proof）
+1. **変更差分を取得**（Step 1）
+2. **Review Council** を TeamCreate + Agent spawn で実行（Step 2〜4）
+3. **Critical 修正**があれば対応（Step 5）
+4. **静的解析 + proof 書き込み**（Step 6〜7）

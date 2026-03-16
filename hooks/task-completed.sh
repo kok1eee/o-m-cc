@@ -7,13 +7,8 @@ set -euo pipefail
 
 # 共通ライブラリ読み込み
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
-  # shellcheck source=lib/common.sh
-  source "${SCRIPT_DIR}/lib/common.sh"
-else
-  check_command() { command -v "$1" >/dev/null 2>&1; }
-  log_debug() { :; }
-fi
+# shellcheck source=lib/common.sh
+source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
 # Read hook input from stdin
 HOOK_INPUT=$(cat)

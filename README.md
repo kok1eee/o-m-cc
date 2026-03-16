@@ -1,4 +1,4 @@
-# o-m-cc v0.24.0
+# o-m-cc v0.24.3
 
 [English](README_en.md)
 
@@ -85,7 +85,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:quality-gate [files]` | /simplify + Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
+| `/o-m-cc:quality-gate [files]` | Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
 
 > **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
@@ -104,7 +104,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ### 簡単なタスク
 
 ```
-「○○を修正して」→ TODO → 実装 → /simplify → レビュー → 完了
+「○○を修正して」→ TODO → 実装 → レビュー → 完了
 ※ stop-guard が diff 変更量を検知し、閾値以上なら /quality-gate を強制
 ```
 
@@ -134,7 +134,7 @@ Agent Teams (Council + Pipeline ハイブリッド):
 
 ```
 「実装開始して」
-  → Agent Teams → teammate 並列 spawn → /simplify → レビュー → 完了
+  → Agent Teams → teammate 並列 spawn → レビュー → 完了
 ```
 
 ## Dependencies
@@ -327,17 +327,18 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 
 ### 概要
 
-| イベント | Hook | 説明 |
-|---------|------|------|
-| SessionStart | `check-dependencies.sh` | 依存コマンド（jq, python3）の確認 |
-| SessionStart | `archive-plans.sh` | 古いプランファイルをアーカイブ |
-| SessionStart | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
-| SessionStart | `memory-digest.sh` | サブエージェント Memory ダイジェスト表示 |
-| Stop | `stop-guard.sh` | Sisyphus ガード（diff ベース quality-gate 強制） |
-| PreToolUse | `security_reminder_hook.py` | セキュリティパターン検出 |
-| PreCompact | `pre-compact-handover.sh` | compaction 時の文脈自動保存（3層分離） |
-| TeammateIdle | `teammate-idle.sh` | idle teammate への残タスク再割り当て示唆 |
-| TaskCompleted | `task-completed.sh` | タスク完了時の進捗表示・依存タスクアンブロック |
+| イベント | Hook | Timeout | 説明 |
+|---------|------|---------|------|
+| SessionStart | `check-dependencies.sh` | 3s | 依存コマンド（jq）の確認 |
+| SessionStart | `archive-plans.sh` | 5s | 古いプランファイルをアーカイブ |
+| SessionStart | `session-resume.sh` | 3s | `.claude/context.md` + `chronicle.md` の文脈表示 |
+| SessionStart | `memory-digest.sh` | 3s | サブエージェント Memory ダイジェスト表示 |
+| SessionStart | `session-baseline.sh` | 5s | セッション開始時の diff ベースライン記録 |
+| Stop | `stop-guard.sh` | 10s | Sisyphus ガード（diff ベース quality-gate 強制） |
+| PreCompact | `pre-compact-handover.sh` | 30s | compaction 時の文脈自動保存（3層分離） |
+| PostCompact | `post-compact-resume.sh` | 5s | compaction 後のプロジェクト状態リマインド |
+| TaskCompleted | `task-completed.sh` | 5s | タスク完了時の進捗表示・依存タスクアンブロック |
+| SessionEnd | `pre-compact-handover.sh` | 30s | セッション終了時の文脈自動保存 |
 
 > **Note**: Claude Code 2.1.50+ では `WorktreeCreate` / `WorktreeRemove` フックイベントが利用可能です。非 git VCS（jj 等）で worktree 分離を使う場合のカスタムセットアップに活用できます。
 
@@ -404,8 +405,11 @@ o-m-cc/
 │   ├── init/SKILL.md          # プロジェクト初期化
 │   ├── audit/SKILL.md         # 品質監査
 │   ├── sisyphus/SKILL.md      # Sisyphus ワークフロー（計画→実装→品質ゲート）
-│   ├── quality-gate/SKILL.md  # 品質ゲート（/simplify + Review Council）
-│   └── review/SKILL.md        # コードレビュー（Agent Teams 並列）
+│   ├── discovery-council/SKILL.md  # 3エージェント並列要件分析 Council
+│   ├── design/SKILL.md        # アーキテクチャ設計
+│   ├── task-decomposition/SKILL.md  # タスク分解
+│   ├── quality-gate/SKILL.md  # 品質ゲート（Review Council + Lint）
+│   └── handover/SKILL.md      # セッション文脈保存・引き継ぎ
 ├── hooks/                     # フック
 │   ├── hooks.json             # フック設定
 │   ├── lib/
@@ -416,9 +420,9 @@ o-m-cc/
 │   ├── memory-digest.sh       # エージェント Memory ダイジェスト
 │   ├── pre-compact-handover.sh # compaction 時の文脈自動保存
 │   ├── stop-guard.sh          # Sisyphus ガード
-│   ├── teammate-idle.sh       # Teammate idle 時の再割り当て（Agent Teams）
+│   ├── session-baseline.sh    # セッション開始時の diff ベースライン
+│   ├── post-compact-resume.sh # compaction 後の状態リマインド
 │   ├── task-completed.sh      # タスク完了時の進捗・アンブロック（Agent Teams）
-│   ├── security_reminder_hook.py  # セキュリティチェック
 │   └── reset-state.sh         # 状態リセットツール
 ├── docs/                      # ドキュメント
 │   ├── hooks-guide.md         # Hooks 使い方ガイド

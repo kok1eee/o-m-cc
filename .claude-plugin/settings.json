@@ -75,18 +75,6 @@
         ]
       }
     ],
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/security_reminder_hook.py",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
     "PreCompact": [
       {
         "matcher": "",
@@ -94,18 +82,18 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
-            "timeout": 10000
+            "timeout": 30000
           }
         ]
       }
     ],
-    "TeammateIdle": [
+    "PostCompact": [
       {
         "matcher": "",
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/teammate-idle.sh",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/post-compact-resume.sh",
             "timeout": 5000
           }
         ]
@@ -130,7 +118,7 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
-            "timeout": 10000
+            "timeout": 30000
           }
         ]
       }
