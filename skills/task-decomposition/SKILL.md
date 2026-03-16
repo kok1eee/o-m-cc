@@ -31,6 +31,7 @@ Agent:
     ## 入力
     - plan/design.md
     - plan/requirements.md
+    - design.md または requirements.md に `## 既知の不足` セクションがある場合、不足に対応するタスクを明示的に作成するか、対応不要と判断した理由をタスク description に記録する
 
     ## 完了
     - 全タスクの TaskCreate 登録が完了したらその旨を報告
