@@ -3,7 +3,7 @@ name: design
 description: "designer エージェントによるアーキテクチャ設計。requirements.md を基に design.md を作成。「設計して」「アーキテクチャ設計して」「アーキテクチャを考えて」で発動。"
 argument-hint: ""
 allowed-tools: [Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion]
-model: sonnet
+model: opus
 ---
 
 # Design - アーキテクチャ設計
