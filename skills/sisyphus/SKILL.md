@@ -21,7 +21,15 @@ $ARGUMENTS
 
 ---
 
-## Step 0: [TRACKING] タスク登録
+## Step 0: 初期化
+
+**plan/ の掃除**: 前回の sisyphus 実行で残った plan/ 内のファイル（requirements.md, design.md）を削除する。古いドキュメントが残っていると Council が混乱する。
+
+```bash
+rm -f plan/requirements.md plan/design.md
+```
+
+**[TRACKING] タスク登録**:
 
 ```
 TaskCreate: "[TRACKING] Phase 1: Discovery Council（要件分析）"
