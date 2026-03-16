@@ -49,16 +49,14 @@ TaskCreate: "[TRACKING] Phase 5: Quality Gate"
 Skill: discovery-council
 ```
 
-**CTA**（再実行は最大1回。常に次フェーズに進む — 止まらない）:
+**CTA**（再実行は最大1回。品質が崩れたら止まる）:
 1. 自動形式チェック:
    ```bash
    bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-plan.sh requirements
    ```
 2. **形式チェック失敗** → 1回だけ discovery-council を再実行 → 再度形式チェック
 3. **形式チェック通過** → requirements.md を Read し、$ARGUMENTS と内容に重大な乖離がないか確認
-4. 2回目も形式チェック失敗、または内容に乖離あり → **不足点を requirements.md 末尾に `## 既知の不足` として追記し、次フェーズに進む**
-
-> 形式チェックは衛生管理。内容の空洞性（セクションはあるが中身が薄い）は検出できない。
+4. 2回目も失敗 or 乖離あり → **Headless モードでなければ AskUserQuestion で人間に判断を委ねる**。Headless なら不足点を `## 既知の不足` として追記し先に進む
 
 ## Step 2: Phase 2 - 設計
 
@@ -68,16 +66,14 @@ Skill: discovery-council
 Skill: design
 ```
 
-**CTA**（再実行は最大1回。常に次フェーズに進む — 止まらない）:
+**CTA**（再実行は最大1回。品質が崩れたら止まる）:
 1. 自動形式チェック:
    ```bash
    bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-plan.sh design
    ```
 2. **形式チェック失敗** → 1回だけ design を再実行 → 再度形式チェック
 3. **形式チェック通過** → design.md を Read し、requirements.md との重大な乖離がないか確認
-4. 2回目も失敗 or 乖離あり → **不足点を design.md 末尾に `## 既知の不足` として追記し、次フェーズに進む**
-
-> FR-X 言及率チェックの閾値は50%。意図的なスコープ縮小で偽陽性が出うるが、衛生管理として割り切り。
+4. 2回目も失敗 or 乖離あり → **Headless モードでなければ AskUserQuestion で人間に判断を委ねる**。Headless なら不足点を `## 既知の不足` として追記し先に進む
 
 ## Step 3: Phase 3 - タスク分解
 
@@ -87,11 +83,11 @@ Skill: design
 Skill: task-decomposition
 ```
 
-**CTA**（再実行は最大1回。常に次フェーズに進む — 止まらない）:
+**CTA**（再実行は最大1回。品質が崩れたら止まる）:
 1. TaskList で登録されたタスクを確認
 2. design.md の主要コンポーネントに対応するタスクが存在するか確認
 3. 重大な欠落があれば1回だけ再実行
-4. 2回目でも不完全なら、**不足点を TaskCreate で「[NOTE] 設計で言及あるが未タスク化: ...」として記録し、次フェーズに進む**
+4. 2回目でも不完全なら、**Headless モードでなければ AskUserQuestion で人間に判断を委ねる**。Headless なら `[NOTE] 設計で言及あるが未タスク化: ...` を TaskCreate で記録し先に進む
 
 ## Step 4: 実行方式の自動選択
 
