@@ -1,6 +1,6 @@
 {
   "name": "o-m-cc",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。12の専門エージェント + hooks による品質チェック。仕様駆動開発（SDD）フロー対応。",
   "author": {
     "name": "kok1eee"

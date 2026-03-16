@@ -3,6 +3,7 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [03/14 19:00, manual] o-m-cc v0.21→v0.23 — sisyphus ワークフロー改善、公式プラグイン連携、hooks 整理
 - [03/12 19:15, auto]   1. teammate は Agent ツールを使えない（L73）
 - [03/12 17:10, end] tests/agent-teams-name-test.md を読んでテストを実行して
 - [03/12 17:07, end]   1. teammate は Agent ツールを使えない（L73）
