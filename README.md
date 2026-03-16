@@ -470,6 +470,12 @@ export SISYPHUS_MIN_DIFF=500
 export SISYPHUS_MAX_ITERATIONS=30
 ```
 
+### Headless モード（`claude -p` / `CLAUDE_NON_INTERACTIVE=1`）
+
+Headless モードでは AskUserQuestion が使えないため、中間成果物の品質チェックで問題が検出されても人間に確認せず先に進む。不足点は `## 既知の不足` として成果物に追記され、下流エージェントに伝播するが、最終的な品質保証は quality-gate（Layer 3）に依存する。
+
+通常モードでは品質が崩れた時点で人間に判断を委ねるため、この制限はない。
+
 ## Best Use Cases
 
 ### ✅ 向いているタスク
