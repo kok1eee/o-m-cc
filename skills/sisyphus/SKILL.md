@@ -49,7 +49,14 @@ TaskCreate: "[TRACKING] Phase 5: Quality Gate"
 Skill: discovery-council
 ```
 
-**CTA**: plan/requirements.md を Read し、$ARGUMENTS（ユーザーの元の要求）と乖離があれば discovery-council を再実行。
+**CTA**（再実行は最大1回）:
+1. plan/requirements.md を Read
+2. **形式チェック**: 以下の必須セクションが存在するか確認
+   - 背景/概要
+   - 機能要件（FR-X）または要件一覧
+   - 非スコープ（今回やらないこと）
+3. $ARGUMENTS（ユーザーの元の要求）と内容に重大な乖離があれば1回だけ再実行
+4. 2回目でも不完全なら、不足を補足コメントとして記録し先に進む
 
 ## Step 2: Phase 2 - 設計
 
@@ -59,7 +66,11 @@ Skill: discovery-council
 Skill: design
 ```
 
-**CTA**: plan/design.md を Read し、requirements.md との乖離があれば design を再実行。
+**CTA**（再実行は最大1回）:
+1. plan/design.md を Read
+2. **形式チェック**: requirements.md の全 FR-X（または主要要件）が design.md 内で言及されているか Grep で確認
+3. 重大な乖離（要件の半数以上が未言及）があれば1回だけ再実行
+4. 2回目でも不完全なら、不足を補足コメントとして記録し先に進む
 
 ## Step 3: Phase 3 - タスク分解
 
@@ -69,7 +80,11 @@ Skill: design
 Skill: task-decomposition
 ```
 
-**CTA**: TaskList を確認し、design.md にないタスクや依存関係の問題があれば task-decomposition を再実行。
+**CTA**（再実行は最大1回）:
+1. TaskList で登録されたタスクを確認
+2. **形式チェック**: design.md の主要コンポーネントに対応するタスクが存在するか確認
+3. 重大な欠落があれば1回だけ再実行
+4. 2回目でも不完全なら、不足を補足コメントとして記録し先に進む
 
 ## Step 4: 実行方式の自動選択
 
@@ -101,4 +116,4 @@ Skill: quality-gate
 
 ---
 
-**Step 0 のタスク登録から開始し、Step 1 で discovery-council を Skill chain で呼び出してください。各 CTA で乖離があれば差し戻す。全フェーズ止まらない。**
+**Step 0 のタスク登録から開始し、Step 1 で discovery-council を Skill chain で呼び出してください。各 CTA で形式チェック + 乖離確認（再実行は最大1回）。全フェーズ止まらない。**

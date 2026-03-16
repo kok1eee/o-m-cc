@@ -424,15 +424,13 @@ Sisyphus Loop の背後にある哲学：
 
 ### なぜマルチエージェントか
 
-「single Claude Code セッションで繰り返すだけで十分では？」— 正当な疑問だ。
+「単一セッション内でロールプレイさせれば同じでは？」— 正当な疑問だ。技術的に3つの差異がある：
 
-マルチエージェントの利点は **専門性の分離** にある。同じモデルでも system prompt が異なれば出力の傾向が変わる。例えば：
+1. **コンテキスト分離**: 各エージェントは独立コンテキストで動く。単一セッションのロールプレイでは全情報が同一コンテキストに混ざり、analyst の視点で見るべき情報に security-reviewer のバイアスが入る。エージェント分離はこれを防ぐ
+2. **並列実行**: Agent Teams で3体同時に分析できる。Discovery Council（researcher + analyst + scout）は並列 spawn で時間コストを削減する。ロールプレイは直列実行しかできない
+3. **永続メモリ**: `memory: project` を持つエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を蓄積する。次のセッションでも引き継がれる。ロールプレイのコンテキストはセッション終了で消える
 
-- **analyst vs scout**: analyst は要件を構造化する（FR-X, NFR-X 形式）。scout は「漏れ」を探す。同じ入力に対して異なる視点を出力する
-- **code-reviewer vs security-reviewer**: code-reviewer はロジック・可読性に集中し、security-reviewer は OWASP Top 10 ベースで脆弱性を探す。単一エージェントに「両方やれ」と言うより精度が高い
-- **Council パターン**: 複数エージェントが同時に分析し peer-to-peer でメッセージ交換することで、見落としが減る
-
-ただし正直に言うと、12体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, code-reviewer, researcher の5〜6体。残りは特定の状況（セキュリティ監査、UI 実装、デバッグ等）で呼ばれる専門家だ。
+ただし正直に言うと、12体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, code-reviewer, researcher の5〜6体。残りは特定の状況（セキュリティ監査、UI 実装、デバッグ等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。
 
 ## Token & Cost
 
