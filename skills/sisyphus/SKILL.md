@@ -50,12 +50,12 @@ Skill: discovery-council
 ```
 
 **CTA**（再実行は最大1回）:
-1. plan/requirements.md を Read
-2. **形式チェック**: 以下の必須セクションが存在するか確認
-   - 背景/概要
-   - 機能要件（FR-X）または要件一覧
-   - 非スコープ（今回やらないこと）
-3. $ARGUMENTS（ユーザーの元の要求）と内容に重大な乖離があれば1回だけ再実行
+1. 自動形式チェックを実行:
+   ```bash
+   bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-plan.sh requirements
+   ```
+2. 失敗した場合: 1回だけ discovery-council を再実行
+3. plan/requirements.md を Read し、$ARGUMENTS（ユーザーの元の要求）と内容に重大な乖離がないか確認
 4. 2回目でも不完全なら、不足を補足コメントとして記録し先に進む
 
 ## Step 2: Phase 2 - 設計
@@ -67,9 +67,12 @@ Skill: design
 ```
 
 **CTA**（再実行は最大1回）:
-1. plan/design.md を Read
-2. **形式チェック**: requirements.md の全 FR-X（または主要要件）が design.md 内で言及されているか Grep で確認
-3. 重大な乖離（要件の半数以上が未言及）があれば1回だけ再実行
+1. 自動形式チェックを実行:
+   ```bash
+   bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-plan.sh design
+   ```
+2. 失敗した場合: 1回だけ design を再実行
+3. plan/design.md を Read し、requirements.md との重大な乖離がないか確認
 4. 2回目でも不完全なら、不足を補足コメントとして記録し先に進む
 
 ## Step 3: Phase 3 - タスク分解

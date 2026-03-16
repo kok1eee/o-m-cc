@@ -1,0 +1,115 @@
+#!/bin/bash
+# validate-plan.sh — 中間成果物の形式チェック
+# Usage: bash validate-plan.sh [requirements|design|tasks]
+# Exit 0: OK, Exit 1: 形式不備あり（stdout にエラー詳細）
+
+set -euo pipefail
+
+PLAN_DIR="plan"
+TARGET="${1:-all}"
+
+errors=()
+
+validate_requirements() {
+  local file="${PLAN_DIR}/requirements.md"
+  if [[ ! -f "$file" ]]; then
+    errors+=("requirements.md が存在しない")
+    return
+  fi
+
+  local content
+  content=$(cat "$file")
+
+  # 必須セクション: 背景/概要
+  if ! echo "$content" | grep -qiE '^#+.*?(背景|概要|overview|background)'; then
+    errors+=("requirements.md: 「背景」または「概要」セクションがない")
+  fi
+
+  # 必須セクション: 機能要件（FR-X パターンまたは要件一覧）
+  if ! echo "$content" | grep -qE '(FR-[0-9]|機能要件|カテゴリ|要件一覧|修正項目)'; then
+    errors+=("requirements.md: 機能要件（FR-X）または要件一覧がない")
+  fi
+
+  # 必須セクション: 非スコープ
+  if ! echo "$content" | grep -qiE '(非スコープ|スコープ外|non.?scope|今回.*?(しない|変更しない|対象外))'; then
+    errors+=("requirements.md: 「非スコープ」セクションがない")
+  fi
+
+  # 最低限の内容量チェック（空に近いファイルを検出）
+  local line_count
+  line_count=$(wc -l < "$file" | tr -d ' ')
+  if [[ "$line_count" -lt 20 ]]; then
+    errors+=("requirements.md: 内容が少なすぎる（${line_count}行）")
+  fi
+}
+
+validate_design() {
+  local req_file="${PLAN_DIR}/requirements.md"
+  local design_file="${PLAN_DIR}/design.md"
+
+  if [[ ! -f "$design_file" ]]; then
+    errors+=("design.md が存在しない")
+    return
+  fi
+
+  # requirements.md が存在しない場合はスキップ
+  if [[ ! -f "$req_file" ]]; then
+    return
+  fi
+
+  # requirements.md から FR-X を抽出
+  local fr_ids
+  fr_ids=$(grep -oE 'FR-[0-9]+' "$req_file" 2>/dev/null | sort -u || true)
+
+  if [[ -n "$fr_ids" ]]; then
+    local total=0
+    local found=0
+    while IFS= read -r fr_id; do
+      total=$((total + 1))
+      if grep -q "$fr_id" "$design_file" 2>/dev/null; then
+        found=$((found + 1))
+      fi
+    done <<< "$fr_ids"
+
+    if [[ "$total" -gt 0 && "$found" -lt $((total / 2)) ]]; then
+      errors+=("design.md: requirements の FR-X のうち ${found}/${total} しか言及されていない（半数未満）")
+    fi
+  fi
+
+  # 最低限の内容量チェック
+  local line_count
+  line_count=$(wc -l < "$design_file" | tr -d ' ')
+  if [[ "$line_count" -lt 20 ]]; then
+    errors+=("design.md: 内容が少なすぎる（${line_count}行）")
+  fi
+}
+
+# --- メイン ---
+
+case "$TARGET" in
+  requirements)
+    validate_requirements
+    ;;
+  design)
+    validate_design
+    ;;
+  all)
+    validate_requirements
+    validate_design
+    ;;
+  *)
+    echo "Usage: bash validate-plan.sh [requirements|design|all]" >&2
+    exit 1
+    ;;
+esac
+
+if [[ ${#errors[@]} -eq 0 ]]; then
+  echo "✅ 形式チェック通過"
+  exit 0
+else
+  echo "❌ 形式チェック不備:"
+  for err in "${errors[@]}"; do
+    echo "  - $err"
+  done
+  exit 1
+fi
