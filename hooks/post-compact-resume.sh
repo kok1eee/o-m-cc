@@ -9,7 +9,7 @@ if [[ -f "${SCRIPT_DIR}/lib/common.sh" ]]; then
   source "${SCRIPT_DIR}/lib/common.sh"
 fi
 
-HOOK_INPUT=$(cat)
+cat > /dev/null
 
 # --- プロジェクト状態を動的に取得 ---
 

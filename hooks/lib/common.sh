@@ -69,7 +69,6 @@ _rotate_log() {
   line_count=$((line_count + 0))  # 数値化
 
   if [[ "$line_count" -gt "$O_M_CC_LOG_MAX_LINES" ]]; then
-    local excess=$((line_count - O_M_CC_LOG_MAX_LINES))
     tail -n "$O_M_CC_LOG_MAX_LINES" "$O_M_CC_LOG_FILE" > "${O_M_CC_LOG_FILE}.tmp"
     mv "${O_M_CC_LOG_FILE}.tmp" "$O_M_CC_LOG_FILE"
   fi

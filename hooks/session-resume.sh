@@ -9,7 +9,7 @@ if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
   source "${SCRIPT_DIR}/lib/cta.sh"
 fi
 
-HOOK_INPUT=$(cat)
+cat > /dev/null
 
 CONTEXT_FILE=".claude/context.md"
 CHRONICLE_FILE=".claude/chronicle.md"

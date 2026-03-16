@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
-# Read hook input
-HOOK_INPUT=$(cat)
+# Drain hook stdin (protocol requirement)
+cat > /dev/null
 
 # OS 検出
 OS=$(detect_os 2>/dev/null || echo "unknown")

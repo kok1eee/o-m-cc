@@ -25,7 +25,7 @@ CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // empty' 2>/dev/null || echo "")
 if [[ -z "$CWD" ]]; then
   CWD="$(pwd)"
 fi
-PROJECT_MEMORY_KEY=$(echo "$CWD" | sed 's|/|-|g')
+PROJECT_MEMORY_KEY="${CWD//\//-}"
 PROJECT_MEMORY_FILE="${HOME}/.claude/projects/${PROJECT_MEMORY_KEY}/memory/MEMORY.md"
 BLOATED_FILES=()
 

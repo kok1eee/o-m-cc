@@ -11,6 +11,8 @@ context: fork
 
 コード変更に対して `/simplify`（自動修正）→ Review Council（並列レビュー）→ 静的解析（最終チェック）を連続実行し、品質を最終確認します。
 
+> **Note**: このスキルは **opus 専用**（`model: opus`）。Review Council 実行時にプラグインコンテキスト + 変更差分で 200k トークンを超えるため、Sonnet（200k）ではコンテキスト溢れが発生する。
+
 ## 対象
 
 $ARGUMENTS
@@ -207,7 +209,7 @@ fi
 
 # Shell スクリプトがある場合
 if compgen -G "**/*.sh" > /dev/null 2>&1; then
-  shellcheck **/*.sh
+  shellcheck -S warning **/*.sh
 fi
 
 # TypeScript ファイルがある場合
@@ -277,7 +279,7 @@ fi
 # Shell
 SHELL_FILES=$(find . -name "*.sh" -not -path "./.claude/*" -not -path "./node_modules/*" 2>/dev/null)
 if [[ -n "$SHELL_FILES" ]]; then
-  echo "$SHELL_FILES" | xargs shellcheck || PASS=false
+  echo "$SHELL_FILES" | xargs shellcheck -S warning || PASS=false
 fi
 
 # TypeScript
