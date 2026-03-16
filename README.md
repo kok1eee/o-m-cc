@@ -6,13 +6,12 @@
 
 ## Overview
 
-o-m-cc は、Claude Codeに「不屈の開発者」マインドセットを注入するプラグインです。
+o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追加するプラグインです。
 
-- **Agent Teams**: TeamCreate + SendMessage による peer-to-peer マルチエージェント協調
-- **Sisyphus哲学**: タスク完了まで決して止まらない
-- **TODOドリブン**: 明確なタスクリストに基づいて作業
-- **仕様駆動開発**: 要件 → 設計 → タスク → 実装の構造化フロー
-- **Prometheus式インタビュー**: 計画前にギャップ分析で漏れを発見
+- **Skill Chain**: 要件分析 → 設計 → タスク分解 → 実装 → 品質ゲートを独立スキルとして chain 実行。各フェーズのコンテキストが分離される
+- **Agent Teams**: peer-to-peer マルチエージェント協調。12の専門エージェントが SendMessage で相互検証
+- **diff ベース品質強制**: Stop hook が変更行数を検知し、閾値超過時に quality-gate を自動強制。Claude の出力に依存しない
+- **Progressive Disclosure**: エージェント定義を3層に分離し、常時ロードは全体の約10%に抑制
 
 ## 動作環境
 
@@ -81,14 +80,15 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | `/o-m-cc:design` | designer によるアーキテクチャ設計 | - | 「設計して」で発動 |
 | `/o-m-cc:task-decomposition` | planner によるタスク分解 | - | 「タスクに分解して」で発動 |
 
-### 品質
+### 品質・運用
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
 | `/o-m-cc:quality-gate [files]` | Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
+| `/o-m-cc:handover` | セッション文脈を `.claude/context.md` に保存 | - | 「引き継ぎ」「保存して」「今日はここまで」で発動 |
 
-> **Context: fork** - teammate 実行時のコンテキスト汚染を防止。探索結果やレビュー詳細がメイン会話を汚さない。
+> **Context: fork** — Council 系スキルが fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
 ## Workflow
 
@@ -122,13 +122,15 @@ Agent Teams (Council + Pipeline ハイブリッド):
   Phase 2 (designer) → Phase 3 (planner)
   design.md             TaskCreate
                            │
-          ┌────────────────────────────────┐
-          │    Phase 4: Review Council      │
-          │    critic (Lead) ◄─► advisor    │
-          └────────────────────────────────┘
+          ┌──────────────────────────────────────────┐
+          │         Phase 4: 実装                      │
+          │         Phase 5: Quality Gate              │
+          │  code-reviewer ◄──► security-reviewer      │
+          │         ◄──► critic                        │
+          └──────────────────────────────────────────┘
 ```
 
-**Phase 1 は Discovery Council、Phase 2-3 は Pipeline、Phase 4 は Review Council**
+**Phase 1 は Discovery Council（peer-to-peer）、Phase 2-3 は Pipeline（順次）**
 
 ### 実装フェーズ
 
@@ -136,6 +138,45 @@ Agent Teams (Council + Pipeline ハイブリッド):
 「実装開始して」
   → Agent Teams → teammate 並列 spawn → レビュー → 完了
 ```
+
+## Architecture
+
+### Skill Chain（コンテキスト分離）
+
+`/o-m-cc:sisyphus` は各フェーズを独立スキルとして chain 実行する:
+
+```
+sisyphus（オーケストレーター）
+  → Skill: discovery-council  ← context: fork で分離
+  → Skill: design             ← 前フェーズのコンテキストを引き継がない
+  → Skill: task-decomposition
+  → 実装（メインコンテキスト）
+  → Skill: quality-gate       ← context: fork で分離
+```
+
+各スキルが `context: fork` で実行されるため、Council の大量のメッセージ交換がメインコンテキストを消費しない。フェーズ間の受け渡しは `plan/requirements.md`、`plan/design.md`、`TaskCreate` というファイル/タスクベース。
+
+### diff ベース品質強制
+
+品質ゲートの強制は Claude の出力に一切依存しない:
+
+```
+stop-guard.sh（Stop hook）
+  → jj diff --stat で変更行数を取得
+  → セッションベースライン（開始時の既存差分）を差し引く
+  → SISYPHUS_MIN_DIFF（デフォルト500行）以上なら quality-gate を強制
+  → quality-gate 通過は proof ファイル（.claude/quality-gate-proof.json）で検証
+```
+
+LLM のトークン消費ゼロで品質チェックの実行を保証する。
+
+### peer-to-peer Council
+
+Council パターン（Discovery Council、Review Council）では全 teammate が対等:
+
+- Lead ロールなし（v0.20.0 で廃止）
+- 全員が独立に分析し、SendMessage で findings を相互共有
+- 相互検証を経た findings のみを最終報告
 
 ## Dependencies
 
@@ -212,114 +253,47 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ```
 plan/
-├── brainstorm.md       # ブレインストーミング結果（オプション）
-├── requirements.md     # 要件定義（FR-X, NFR-X）
-└── design.md           # 設計書（コンポーネント、API）
+├── requirements.md     # 要件定義（Discovery Council が生成）
+└── design.md           # 設計書（designer が生成）
 
-TaskCreate               # 実装タスク（ネイティブタスクシステムで管理）
+TaskCreate               # 実装タスク（planner がネイティブタスクシステムに登録）
 ```
 
 ## Token Efficiency
 
 > o-m-cc のトークン管理は、"Everything is Context" ([arXiv:2512.05470](https://arxiv.org/abs/2512.05470)) の **Context Constructor**（トークン予算内で選択的にコンテキストをロード）と **Bounded Reasoning**（有限なコンテキスト窓での戦略的取捨選択）を実践的に実装したものです。
 
-### 初期読み込みコスト
+### コンテキスト消費（実測値）
 
-o-m-cc プラグインの初期トークン消費:
+| 層 | サイズ | トークン概算 | ロードタイミング |
+|---|---|---|---|
+| **Layer 1**: frontmatter | ~10KB | ~3,300-5,000 | 常時（セッション開始時） |
+| **Layer 2**: エージェント本文 | ~48KB | ~16,000-24,000 | エージェント spawn 時のみ |
+| **Layer 3**: facets/references | ~40KB | ~13,500-20,000 | 必要時に Read |
 
-| カテゴリ | トークン数 | 内訳 |
-|---------|-----------|------|
-| エージェント | ~780 | 12 エージェント定義 |
-| スキル | ~90 | 4 スキル定義 |
-| **合計** | **~910** | Opus 1M の約 **0.1%** |
+常時ロード（Layer 1）は全層の約 **10%**。残り 90% はエージェント起動時に必要な分だけロードされる。
 
-> **Note**: Memory files (CLAUDE.md等) や他プラグインは別途消費。`/clear` 後の表示で確認可能。
+> **Note**: 上記は o-m-cc プラグイン自体の消費。実行時には CLAUDE.md、Memory files、他プラグインのコンテキストが加算される。`/clear` 後の表示で確認可能。
 
 ### Progressive Disclosure（段階的開示）
 
 エージェント定義を3層に分離し、必要な時だけ深い情報をロードする:
 
 ```
-Layer 1: frontmatter（常時ロード）  → ~60 tokens/agent
-Layer 2: 本文（エージェント起動時）   → ~100-200 tokens/agent
-Layer 3: facets/references/（必要時に Read） → ~200-500 tokens/file
+Layer 1: frontmatter（常時ロード）  → description, tools, model 等
+Layer 2: 本文（エージェント起動時）   → 詳細な振る舞い定義
+Layer 3: facets/references/（必要時に Read） → ポリシー、チェックリスト、テンプレート
 ```
-
-これにより全情報を常時ロードする場合と比べ、**通常時のトークン消費を約 1/3 に削減**。
 
 ### 実行時の効率化
 
-エージェントの出力は **要約 + ログ分離** でトークン消費を抑制。
-
-### 仕組み
-
-```
-Teammate → 要約をメッセージで Lead に返却
-```
-
-### エージェント出力フォーマット
-
-```markdown
-## ✅ [agent-name] 完了
-
-**結果**: 成功 / 失敗 / 要確認
-**変更ファイル**:
-- path/to/file.ts:45-67
-**サマリー**: [1-2文で何をしたか]
-```
-
-## 推奨設定（Optional）
-
-| 設定 | 説明 | 設定方法 |
-|------|------|---------|
-| `includeGitInstructions: false` | git 組み込み指示を無効化（jj 等の代替 VCS ユーザー向け）。システムプロンプトのトークン節約 | `claude config set includeGitInstructions false` |
+- **Skill Chain**: 各フェーズが `context: fork` で分離され、Council の大量メッセージがメインコンテキストを消費しない
+- **要約返却**: teammate は処理した情報の要約のみを返却（生出力を返さない）
+- **diff ベース判定**: stop-guard は hooks だけで完結し、LLM のトークン消費ゼロで品質ゲートを強制
 
 ## Agent Capabilities
 
-エージェント選択の効率化。`agents/capabilities.md` で能力サマリーとキーワードを管理。
-
-### 使い分け
-
-| シナリオ | 選択方法 |
-|---------|---------|
-| **小タスク**（plan なし） | キーワードでマッチ → teammate spawn |
-| **plan あり** | 得意分野・使用場面で選択 → teammate spawn |
-
-### サマリーテーブル（抜粋）
-
-| エージェント | 得意分野 | キーワード |
-|-------------|---------|-----------|
-| researcher | コードベース探索・外部調査 | 探索, 検索, どこ, 使い方, ベストプラクティス |
-| designer | アーキテクチャ設計 | 設計, design |
-| frontend | UI実装 | UI, 画面, component |
-| code-reviewer | コード品質 | レビュー, 品質, review |
-| security-reviewer | セキュリティ | セキュリティ, 脆弱性, security |
-
-> **Note**: `code-reviewer` と `security-reviewer` は **Agent Teams で並列 spawn 推奨**
-
-**詳細**: `agents/capabilities.md` を参照
-
-## Research Depth Levels
-
-`@researcher` エージェントは、リクエストのキーワードから調査深度を自動判断。
-
-### 深度レベル
-
-| 深度 | 検索回数 | ソース数 | トリガーキーワード |
-|------|---------|---------|------------------|
-| **quick** | 1-2回 | 3-5 | ざっくり、簡単に、概要 |
-| **standard** | 3-5回 | 10-15 | （デフォルト） |
-| **deep** | 5-10回 | 20-30 | 詳しく、比較して、深掘り |
-| **exhaustive** | 10+回 | 30+ | 徹底的に、網羅的に、全部 |
-
-### 使用例
-
-```
-「React Hooks の使い方をざっくり教えて」     → quick
-「JWT認証の実装方法を調べて」               → standard
-「Prisma vs TypeORM を詳しく比較して」      → deep
-「GraphQL の全機能を徹底的に調査して」      → exhaustive
-```
+エージェント選択とディスパッチ戦略の詳細は `agents/capabilities.md` を参照。
 
 ## Hooks
 
@@ -486,47 +460,9 @@ export SISYPHUS_MIN_DIFF=500
 
 - **小規模タスク**: `MAX_ITERATIONS=10` で十分
 - **大規模タスク**: デフォルト（50）のまま。ただし途中で compaction が走る前提で設計されている
-- **コストを意識する場合**: エージェントの `model` を `sonnet` に統一する（デフォルト）。`opus` は advisor と designer のみ
+- **コストを意識する場合**: エージェントの `model` を `sonnet` に統一する（デフォルト）。`opus` は advisor、designer、quality-gate スキル（200k 超のコンテキスト）
 
-## Prompt Design Guide
-
-効果的なプロンプト設計のパターン：
-
-### 1. 明確な完了条件
-
-```
-❌ 悪い例: 「Todo APIを作って、いい感じにして」
-
-✅ 良い例:
-Build a REST API for todos.
-When complete:
-- All CRUD endpoints working
-- Input validation in place
-- Tests passing (coverage > 80%)
-- README with API docs
-```
-
-### 2. 段階的なゴール設定
-
-```
-Phase 1: User authentication (JWT, tests)
-Phase 2: Product catalog (list/search, tests)
-Phase 3: Shopping cart (add/remove, tests)
-```
-
-### 3. 自己修正の指示（TDD）
-
-```
-Implement feature X following TDD:
-1. Write failing tests
-2. Implement feature
-3. Run tests
-4. If any fail, debug and fix
-5. Refactor if needed
-6. Repeat until all green
-```
-
-### 4. 安全弁
+## Configuration
 
 ```bash
 # quality-gate 強制の最小変更行数（デフォルト: 500行）
