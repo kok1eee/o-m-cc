@@ -103,24 +103,20 @@ INTENT=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
   grep -v '^\[Request interrupted' | grep -v '^$' | sed -n '1p' | \
   cut -c1-200 || echo "(抽出失敗)")
 
-# Outcomes: 変更ファイル一覧
+# Changed Files: Write/Edit で変更されたファイル一覧
 CHANGED_FILES=$(grep '"tool_use"' "$TRANSCRIPT_PATH" | \
   jq -r 'select(.message.content[]?.name == "Write" or .message.content[]?.name == "Edit") | .message.content[] | select(.type == "tool_use") | .input.file_path // empty' 2>/dev/null | \
   sort -u | head -15 || echo "")
 FILE_COUNT=$(echo "$CHANGED_FILES" | grep -c '[^[:space:]]' || true)
 FILE_COUNT=${FILE_COUNT:-0}
 
-# Context: 最後のテキストを含むアシスタントメッセージ
-LAST_CONTEXT=$(grep '"role":"assistant"' "$TRANSCRIPT_PATH" | \
-  jq -r 'select(.message.content | map(select(.type == "text")) | length > 0) | .message.content | map(select(.type == "text")) | map(.text) | join("\n")' 2>/dev/null | \
-  tail -c 500 || echo "(抽出失敗)")
-
 # --- 4. context.md を新しい Snapshot で上書き ---
+# 3セクションのみ: Intent + Outcomes + Changed Files
+# 学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md の責務
 cat > "$CONTEXT_FILE" << EOF
 # Context
 
-> compaction で失われる文脈を保存。compaction summary と合わせて復元に使用。
-> Learnings に長期的価値があれば MEMORY.md に反映すること。
+> セッション間の引き継ぎ情報。学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md。
 
 ### Snapshot ($TIMESTAMP, $TRIGGER)
 
@@ -131,6 +127,8 @@ EOF
 if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
   {
     echo "**Outcomes:** $FILE_COUNT files changed"
+    echo ""
+    echo "**Changed Files:**"
     echo "$CHANGED_FILES" | while IFS= read -r f; do
       [[ -n "$f" ]] && echo "- \`$f\`"
     done
@@ -138,14 +136,5 @@ if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
   } >> "$CONTEXT_FILE"
 fi
 
-{
-  echo "**Context:**"
-  echo ""
-  echo "$LAST_CONTEXT"
-} >> "$CONTEXT_FILE"
-
 echo "📝 .claude/context.md updated（chronicle: ${CHRONICLE_COUNT} entries）"
-if [[ "$EVENT" != "SessionEnd" ]]; then
-  emit_cta "Read .claude/context.md" "Learnings があれば MEMORY.md に反映"
-fi
 exit 0
