@@ -80,7 +80,10 @@ After planning completes:
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:sisyphus <task>` | Plan → Implement → Quality Gate (Agent Teams, never stops) | fork | On "plan this" |
+| `/o-m-cc:sisyphus <task>` | Plan → Implement → Quality Gate (skill chain, never stops) | fork | On "plan this" |
+| `/o-m-cc:discovery-council <task>` | 3-agent parallel requirements analysis Council | fork | On "analyze requirements" |
+| `/o-m-cc:design` | Architecture design by designer agent | - | On "design this" |
+| `/o-m-cc:task-decomposition` | Task decomposition by planner agent | - | On "break into tasks" |
 
 ### Quality
 

@@ -17,13 +17,13 @@ cat > /dev/null
 
 BASELINE_FILE=".claude/sisyphus-baseline.json"
 
-# 変更行数を取得（stop-guard と同じロジック）
+# 変更行数を取得（stop-guard と同じロジック、plan/ 除外）
 get_diff_lines() {
   local stat_line=""
   if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat . 2>/dev/null | tail -1) || true
+    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
   elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    stat_line=$(git diff --stat HEAD -- . 2>/dev/null | tail -1) || true
+    stat_line=$(git diff --stat HEAD -- . ':!plan/' 2>/dev/null | tail -1) || true
   fi
   local ins del
   ins=$(echo "$stat_line" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")

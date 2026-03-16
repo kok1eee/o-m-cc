@@ -72,11 +72,14 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 > 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
 
-### 計画フェーズ（複雑なタスク用）
+### 計画フェーズ
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:sisyphus <task>` | 計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー（Agent Teams） | fork | 「計画して」で発動 |
+| `/o-m-cc:sisyphus <task>` | 計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー | fork | 「計画して」「この機能を実装したい」で発動 |
+| `/o-m-cc:discovery-council <task>` | 3エージェント並列要件分析 Council | fork | 「要件を整理して」「要件定義して」で発動 |
+| `/o-m-cc:design` | designer によるアーキテクチャ設計 | - | 「設計して」で発動 |
+| `/o-m-cc:task-decomposition` | planner によるタスク分解 | - | 「タスクに分解して」で発動 |
 
 ### 品質
 
