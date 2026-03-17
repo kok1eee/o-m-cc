@@ -21,7 +21,7 @@ fi
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 MIN_DIFF="${SISYPHUS_MIN_DIFF:-500}"
-FORCE_DIFF="${SISYPHUS_FORCE_DIFF:-1500}"
+FORCE_DIFF="${SISYPHUS_FORCE_DIFF:-1000}"
 PROOF_FILE=".claude/quality-gate-proof.json"
 RUNNING_FILE=".claude/quality-gate-running"
 
