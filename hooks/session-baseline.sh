@@ -8,8 +8,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
-# stdin を消費（SessionStart hook は入力を受け取る）
-cat > /dev/null
+# hook input から cwd を取得してプロジェクトディレクトリに移動
+HOOK_INPUT=$(cat)
+PROJECT_CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // empty' 2>/dev/null || echo "")
+if [[ -n "$PROJECT_CWD" && -d "$PROJECT_CWD" ]]; then
+  cd "$PROJECT_CWD"
+fi
 
 BASELINE_FILE=".claude/sisyphus-baseline.json"
 
@@ -17,7 +21,7 @@ BASELINE_FILE=".claude/sisyphus-baseline.json"
 get_diff_lines() {
   local stat_line=""
   if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
+    stat_line=$(jj diff --stat -- 'cwd() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
   elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     stat_line=$(git diff --stat HEAD -- . ':!plan/' 2>/dev/null | tail -1) || true
   fi

@@ -33,12 +33,18 @@ if [[ -n "$AGENT_TYPE" && "$AGENT_TYPE" != "main" ]]; then
   exit 0
 fi
 
+# プロジェクトディレクトリに移動（hook はプラグインルートで実行される可能性がある）
+PROJECT_CWD=$(echo "$HOOK_INPUT" | jq -r '.cwd // empty' 2>/dev/null || echo "")
+if [[ -n "$PROJECT_CWD" && -d "$PROJECT_CWD" ]]; then
+  cd "$PROJECT_CWD"
+fi
+
 # 変更行数を取得（jj → git fallback）
 # plan/ 配下は計画成果物のため diff カウントから除外
 get_diff_lines() {
   local stat_line=""
   if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
+    stat_line=$(jj diff --stat -- 'cwd() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
   elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     stat_line=$(git diff --stat HEAD -- . ':!plan/' 2>/dev/null | tail -1) || true
   fi
