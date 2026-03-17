@@ -71,7 +71,7 @@ if [[ -d "$AGENT_MEMORY_DIR" ]]; then
 fi
 
 # memory がなければ何も表示しない
-if [[ ${#MEMORY_FILES[@]} -eq 0 && ${#BLOATED_FILES[@]} -eq 0 && ${#STALE_REFS[@]} -eq 0 ]]; then
+if [[ ${#MEMORY_FILES[@]} -eq 0 ]] && [[ ${#BLOATED_FILES[@]} -eq 0 ]] && [[ ${#STALE_REFS[@]} -eq 0 ]]; then
   exit 0
 fi
 
@@ -102,7 +102,7 @@ if [[ ${#STALE_REFS[@]} -gt 0 ]]; then
   echo ""
 fi
 
-for f in "${MEMORY_FILES[@]}"; do
+for f in ${MEMORY_FILES[@]+"${MEMORY_FILES[@]}"}; do
   # エージェント名を抽出 (o-m-cc-code-reviewer → code-reviewer)
   agent_dir=$(basename "$(dirname "$f")")
   agent_name="${agent_dir#o-m-cc-}"
