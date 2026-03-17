@@ -3,6 +3,9 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [03/17 15:19, end] 2.1.77
+- [03/17 15:12, end] 2.1.77
+- [03/16 12:59, end] いよいよ人に使ってもらうレベルになってきた気がする
 - [03/16 12:52, end] いよいよ人に使ってもらうレベルになってきた気がする
 - [03/16 12:52, end] いよいよ人に使ってもらうレベルになってきた気がする
 - [03/16 12:43, end] <command-message>o-m-cc:quality-gate</command-message>
@@ -30,6 +33,3 @@
 - [03/11 00:27, auto] Implement the following plan:
 - [03/10 14:49, auto] Implement the following plan:
 - [03/10 12:27, auto] Implement the following plan:
-- [03/08 10:46, auto] Implement the following plan:
-- [03/05 12:22, auto] Implement the following plan:
-- [03/04 13:30, auto] Implement the following plan:

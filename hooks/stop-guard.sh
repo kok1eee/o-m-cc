@@ -21,6 +21,7 @@ fi
 STATE_FILE=".claude/sisyphus-state.json"
 MAX_ITERATIONS="${SISYPHUS_MAX_ITERATIONS:-50}"
 MIN_DIFF="${SISYPHUS_MIN_DIFF:-500}"
+FORCE_DIFF="${SISYPHUS_FORCE_DIFF:-1500}"
 PROOF_FILE=".claude/quality-gate-proof.json"
 RUNNING_FILE=".claude/quality-gate-running"
 
@@ -117,21 +118,25 @@ if [[ -f "$PROOF_FILE" ]]; then
   fi
 fi
 
-# proof なし → ブロック
-# 再ブロック（ITERATION > 0）: exit 2 で強制ブロック（stderr のみが model に届く）
-if [[ $ITERATION -gt 0 ]]; then
+# proof なし → 推奨 or 強制（変更量で判定）
+if [[ $EFFECTIVE_DIFF -ge $FORCE_DIFF ]]; then
+  # 強制ブロック（1500行〜）
+  if [[ $ITERATION -gt 0 ]]; then
+    increment
+    echo "🛑 Sisyphus Guard: セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate を実行してください。他のことはしないでください。" >&2
+    exit 2
+  fi
   increment
-  echo "🛑 Sisyphus Guard: セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate を実行してください。他のことはしないでください。" >&2
-  exit 2
-fi
-
-# 初回ブロック: exit 0 + decision:block で CTA
-increment
-if check_command jq; then
-  jq -n \
-    --arg reason "セッション中に ${EFFECTIVE_DIFF} 行の変更があります。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
-    '{ "decision": "block", "reason": $reason }'
+  if check_command jq; then
+    jq -n \
+      --arg reason "セッション中に ${EFFECTIVE_DIFF} 行の変更があります。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
+      '{ "decision": "block", "reason": $reason }'
+  else
+    printf '{"decision":"block","reason":"セッション中に %d 行の変更があります。今すぐ /quality-gate を実行してください。"}\n' "$EFFECTIVE_DIFF"
+  fi
+  exit 0
 else
-  printf '{"decision":"block","reason":"セッション中に %d 行の変更があります。今すぐ /quality-gate を実行してください。"}\n' "$EFFECTIVE_DIFF"
+  # 推奨（500行〜1499行）: メッセージのみ、ブロックしない
+  echo "💡 Sisyphus Guard: セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate の実行を推奨します。"
+  exit 0
 fi
-exit 0
