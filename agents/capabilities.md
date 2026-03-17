@@ -106,13 +106,10 @@ TeamCreate → team_name で作成
 | **planner** | タスク分解 | 設計書完成後、実装に入る前 | `/task-decomposition` | 計画, タスク, 分解, plan, tasks |
 | **scout** | ギャップ・スコープ分析 | 要件定義後、漏れや曖昧点の確認 | `/discovery-council` | 漏れ, 曖昧, スコープ, gaps |
 | **critic** | 計画整合性チェック | 実装後、計画・設計との乖離確認 | `/quality-gate` / ユーザー直接 | 検証, 妥当性, リスク, validate, 整合性 |
-| **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作 | ユーザー直接 | バグ, エラー, デバッグ, bug, error |
-| **advisor** | 戦略判断・思考フレームワーク | 行き詰まり、3回修正しても未解決 | ユーザー直接 | 相談, 困った, 行き詰まり, stuck |
+| **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作、sisyphus の3エージェント方式 | ユーザー直接 / sisyphus | バグ, エラー, デバッグ, bug, error |
 | **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/discovery-council` / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
-| **frontend** | UI実装 | React/Vue コンポーネント作成 | ユーザー直接 | UI, 画面, コンポーネント, screen |
 | **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | `/quality-gate` | レビュー, 品質, review, quality |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | `/quality-gate` | セキュリティ, 脆弱性, security |
-| **vision** | 画像・PDF分析 | デザインモック、エラー画面解析 | ユーザー直接 | 画像, スクショ, PDF, screenshot |
 
 ---
 
@@ -125,23 +122,20 @@ TeamCreate → team_name で作成
 | analyst | コードベース、ユーザー要求 | 構造分析、要件抽出 | requirements.md | 制約・前提条件、要件パターン |
 | researcher | ファイルパターン、技術キーワード | Glob/Grep + Web検索 | 探索結果、調査レポート | 構造マップ、技術選定の根拠、API の注意点 |
 | scout | requirements.md | スコープ確認、ギャップ分析 | IN/OUT SCOPE + 質問リスト | 曖昧性パターン、エッジケース、critic クロスリード |
-| vision | 画像/PDFファイル | 視覚分析 | 抽出情報レポート | ビジュアル慣習、UI パターン |
 
 ### 設計・計画系（READ のみ）
 
 | エージェント | Input | Processing | Output | Memory 蓄積 |
 |-------------|-------|------------|--------|------------|
-| designer | requirements.md | アーキテクチャ設計 | design.md | ADR の要約、設計パターン適用実績、code-reviewer/advisor クロスリード |
-| planner | design.md | タスク分解、依存関係整理 | TaskCreate（ネイティブタスク） | タスク粒度基準、依存関係パターン、debugger/code-reviewer クロスリード |
+| designer | requirements.md | アーキテクチャ設計 | design.md | ADR の要約、設計パターン適用実績 |
+| planner | design.md | タスク分解、依存関係整理 | TaskCreate（ネイティブタスク） | タスク粒度基準、依存関係パターン |
 | critic | requirements + design + tasks | 妥当性検証 | レビューレポート | レビューの落とし穴、リスク評価精度、Calibration Loop |
-| advisor | 問題の状況 | トレードオフ分析 | 推奨アプローチ + 根拠 | 意思決定の先例、解消パターン |
 
-### 実装系（WRITE 可）
+### 実装・デバッグ系（WRITE 可）
 
 | エージェント | Input | Processing | Output | Memory 蓄積 |
 |-------------|-------|------------|--------|------------|
-| frontend | デザイン仕様 | UI実装 | コンポーネントファイル | デザイン言語、コンポーネント規則 |
-| debugger | バグの症状 | 根本原因調査 → 修正 | デバッグレポート + 修正コード | バグパターン、修正の副作用 |
+| debugger | バグの症状 / Verifier の報告 | 先入観なしの根本原因調査 → 修正 | デバッグレポート + 修正コード | バグパターン、修正の副作用 |
 
 ### 品質系
 
@@ -178,9 +172,6 @@ Review Council（同時 spawn + peer-to-peer）
 ```
 researcher — コードベース探索 + 外部ドキュメント調査
 debugger   — バグの根本原因調査 → 修正
-frontend   — UI コンポーネント実装
-vision     — 画像/PDF 分析
-advisor    — 行き詰まり時の戦略相談
 ```
 
 ---

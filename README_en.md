@@ -91,7 +91,7 @@ After planning completes:
 | `/o-m-cc:quality-gate [files]` | Review Council + Lint for final quality check | fork | On "review this", "quality check" |
 | `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
 
-## Agents (12 specialists)
+## Agents (9 specialists)
 
 ### Planning
 

@@ -1,7 +1,7 @@
 # o-m-cc - Project Configuration
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。12の専門エージェント + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。9の専門エージェント + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts

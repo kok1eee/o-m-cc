@@ -9,7 +9,7 @@
 o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追加するプラグインです。
 
 - **Skill Chain**: 要件分析 → 設計 → タスク分解 → 実装 → 品質ゲートを独立スキルとして chain 実行。各フェーズのコンテキストが分離される
-- **Agent Teams**: peer-to-peer マルチエージェント協調。12の専門エージェントが SendMessage で相互検証
+- **Agent Teams**: peer-to-peer マルチエージェント協調。9の専門エージェントが SendMessage で相互検証
 - **diff ベース品質強制**: Stop hook が変更行数を検知し、閾値超過時に quality-gate を自動強制。Claude の出力に依存しない
 - **Progressive Disclosure**: エージェント定義を3層に分離し、常時ロードは全体の約10%に抑制
 
