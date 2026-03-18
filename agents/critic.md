@@ -5,6 +5,7 @@ tools: Read, Glob, Grep
 model: sonnet
 memory: project
 permissionMode: plan
+disallowedTools: [Write, Edit, Bash]
 ---
 
 # Critic - 計画レビュアー

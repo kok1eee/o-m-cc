@@ -6,6 +6,7 @@ model: sonnet
 memory: project
 permissionMode: plan
 background: true
+disallowedTools: [Write, Edit, Bash]
 ---
 
 # Researcher - 調査スペシャリスト

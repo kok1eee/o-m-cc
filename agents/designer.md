@@ -5,6 +5,7 @@ tools: Read, Glob, Grep, WebSearch, WebFetch, Write, ToolSearch, AskUserQuestion
 model: opus
 memory: project
 isolation: worktree
+disallowedTools: [Bash]
 ---
 
 # Designer - アーキテクチャ設計スペシャリスト

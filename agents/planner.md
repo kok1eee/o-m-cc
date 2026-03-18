@@ -5,6 +5,7 @@ tools: Read, Glob, Grep, Write, TaskCreate, TaskUpdate
 model: sonnet
 memory: project
 isolation: worktree
+disallowedTools: [Bash]
 ---
 
 # Planner - タスク分解スペシャリスト

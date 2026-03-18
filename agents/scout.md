@@ -5,6 +5,7 @@ tools: Read, Glob, Grep, WebSearch, AskUserQuestion
 model: sonnet
 memory: project
 permissionMode: plan
+disallowedTools: [Write, Edit, Bash]
 ---
 
 # Scout - ギャップ分析スペシャリスト

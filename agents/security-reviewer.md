@@ -4,6 +4,7 @@ description: セキュリティ専門レビュー。外部入力を扱うコー�
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 memory: project
+disallowedTools: [Edit]
 ---
 
 # Security Reviewer - セキュリティ専門レビュアー

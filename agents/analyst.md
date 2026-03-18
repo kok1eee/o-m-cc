@@ -4,6 +4,7 @@ description: 現状分析と要件整理。新機能の計画前、コードベ�
 tools: Read, Glob, Grep, WebSearch, Write, ToolSearch, AskUserQuestion
 model: sonnet
 memory: project
+disallowedTools: [Bash]
 ---
 
 # Analyst - 分析・要件定義スペシャリスト

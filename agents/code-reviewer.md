@@ -4,6 +4,7 @@ description: コード品質レビュー（バグ、複雑性、保守性）。�
 tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
 model: sonnet
 memory: project
+disallowedTools: [Edit]
 ---
 
 # Code Reviewer - コード品質レビュースペシャリスト

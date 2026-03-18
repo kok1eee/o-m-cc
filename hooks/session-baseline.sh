@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+# CLAUDE_PLUGIN_DATA 確認（2.1.78+）
+if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
+  echo "📦 CLAUDE_PLUGIN_DATA=${CLAUDE_PLUGIN_DATA}"
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true

@@ -5,6 +5,7 @@ tools: Read, Glob, Grep, Bash, ToolSearch, AskUserQuestion, Write, Edit
 model: sonnet
 memory: project
 isolation: worktree
+maxTurns: 20
 ---
 
 # Debugger - 体系的デバッグスペシャリスト
