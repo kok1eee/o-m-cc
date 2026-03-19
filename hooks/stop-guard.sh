@@ -44,7 +44,7 @@ fi
 get_diff_lines() {
   local stat_line=""
   if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat -- 'cwd() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
+    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
   elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     stat_line=$(git diff --stat HEAD -- . ':!plan/' 2>/dev/null | tail -1) || true
   fi
@@ -142,7 +142,18 @@ if [[ $EFFECTIVE_DIFF -ge $FORCE_DIFF ]]; then
   fi
   exit 0
 else
-  # 推奨（500行〜1499行）: メッセージのみ、ブロックしない
-  echo "💡 Sisyphus Guard: セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate の実行を推奨します。"
+  # 推奨ブロック（500行〜999行）: 初回のみブロック、2回目以降は素通り
+  if [[ $ITERATION -eq 0 ]]; then
+    increment
+    if check_command jq; then
+      jq -n \
+        --arg reason "セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate の実行を推奨します。他の作業を続けても構いません。" \
+        '{ "decision": "block", "reason": $reason }'
+    else
+      printf '{"decision":"block","reason":"セッション中に %d 行の変更があります。/quality-gate の実行を推奨します。"}\n' "$EFFECTIVE_DIFF"
+    fi
+    exit 0
+  fi
+  # 2回目以降: 素通り（一度注意喚起済み）
   exit 0
 fi
