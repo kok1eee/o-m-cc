@@ -2,6 +2,7 @@
 name: verification
 description: "完了宣言の前にエビデンスを収集・確認する。証拠なき成功宣言は不正。「完了前チェック」「本当に動く？」「確認して」「検証して」「コミット前に確認」で発動。実装完了時、バグ修正後、テスト通過を宣言する前に使う。"
 allowed-tools: [Read, Bash, Glob, Grep, Agent]
+effort: medium
 ---
 
 # Verification Before Completion

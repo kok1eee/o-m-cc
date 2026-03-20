@@ -4,6 +4,7 @@ description: "3エージェント（researcher, analyst, scout）による並列
 argument-hint: "<feature description>"
 allowed-tools: [Agent, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, Read, Write, Edit, AskUserQuestion, Glob, Grep, WebSearch, WebFetch]
 model: sonnet
+effort: high
 context: fork
 ---
 

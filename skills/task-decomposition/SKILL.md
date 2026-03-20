@@ -4,6 +4,7 @@ description: "planner エージェントによるタスク分解。design.md を
 argument-hint: ""
 allowed-tools: [Agent, Read, Glob, Grep, TaskCreate, TaskUpdate, AskUserQuestion]
 model: sonnet
+effort: medium
 ---
 
 # Task Decomposition - タスク分解

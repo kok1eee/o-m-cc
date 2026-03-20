@@ -4,6 +4,7 @@ description: "セッションの文脈を .claude/context.md に保存し、CLAU
 argument-hint: ""
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Skill]
 model: sonnet
+effort: low
 ---
 
 # セッション文脈の保存

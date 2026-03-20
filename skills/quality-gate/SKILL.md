@@ -4,6 +4,7 @@ description: "Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clip
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
 model: opus
+effort: high
 context: fork
 ---
 

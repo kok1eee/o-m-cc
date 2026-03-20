@@ -4,6 +4,7 @@ description: "計画→実装→品質ゲートまで止まらない Sisyphus �
 argument-hint: "<feature description>"
 allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
 model: opus
+effort: high
 context: fork
 ---
 

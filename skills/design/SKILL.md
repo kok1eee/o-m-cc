@@ -4,6 +4,7 @@ description: "designer エージェントによるアーキテクチャ設計。
 argument-hint: ""
 allowed-tools: [Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion]
 model: opus
+effort: high
 ---
 
 # Design - アーキテクチャ設計
