@@ -256,47 +256,22 @@ fi
 
 ### Step 7: Proof ファイル書き込み（静的解析ゲート付き）
 
-**全ステップ完了後**、以下のコマンドを **1つの Bash ツール呼び出し** で実行する。
+**全ステップ完了後**、lint.sh を `--proof` 付きで実行する。
 静的解析が通った場合のみ proof ファイルが書き込まれる。stop-guard はこのファイルを検証して品質ゲート通過を判定する。
 
 ```bash
-# 静的解析ゲート: 該当ファイルがあればチェック、失敗したら proof を書かない
-PASS=true
-
-# Python
-if compgen -G "**/*.py" > /dev/null 2>&1; then
-  ruff check . || PASS=false
-fi
-
-# Shell
-SHELL_FILES=$(find . -name "*.sh" -not -path "./.claude/*" -not -path "./node_modules/*" 2>/dev/null)
-if [[ -n "$SHELL_FILES" ]]; then
-  echo "$SHELL_FILES" | xargs shellcheck -S warning || PASS=false
-fi
-
-# TypeScript
-if compgen -G "**/*.ts" > /dev/null 2>&1 || compgen -G "**/*.tsx" > /dev/null 2>&1; then
-  npx tsc --noEmit || PASS=false
-fi
-
-# Rust
-if [[ -f "Cargo.toml" ]]; then
-  cargo clippy -- -D warnings || PASS=false
-fi
-
-# running マーカー削除（quality-gate 完了）
-rm -f .claude/quality-gate-running
-
-# 全チェック通過時のみ proof を書き込む
-if [[ "$PASS" == "true" ]]; then
-  mkdir -p .claude && echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-proof.json
-  echo "✅ 静的解析通過 — proof ファイル書き込み完了"
-else
-  echo "❌ 静的解析失敗 — proof ファイルは書き込まれません。エラーを修正して再実行してください。"
-fi
+bash ${CLAUDE_SKILL_DIR}/lint.sh --proof
 ```
 
-> **重要**: このコマンドは Step 1〜6（Review Council + 静的解析修正）が完了した後に実行すること。静的解析が失敗すると proof は書き込まれない。
+> **重要**: このコマンドは Step 1〜6（Review Council + 静的解析修正）が完了した後に実行すること。静的解析が失敗すると proof は書き込まれない。lint.sh の詳細は `skills/quality-gate/lint.sh` を参照。
+
+## Gotchas
+
+- **running マーカーを忘れて stop-guard にブロックされる**: 品質ゲート開始前に必ず `.claude/quality-gate-running` を作成。これがないと stop-guard が実行中と認識せずブロックする
+- **diff が大きすぎて reviewer がコンテキスト溢れ**: 変更が数千行ある場合、reviewer に渡す diff を要約するか、ファイル単位で分割してレビューする
+- **静的解析ツールが未インストールで失敗**: `ruff`, `shellcheck`, `tsc` 等が PATH にない場合がある。`compgen -G` のファイル検出だけでなく、コマンドの存在確認も行う
+- **前回の TeamCreate の残骸でエラー**: Step 2 で既存チームの TeamDelete を先に実行する。前セッションのチームが残っているとチーム名が衝突する
+- **proof ファイルが baseline より古くて無効扱い**: proof は baseline ファイルより新しい必要がある。セッション再開後に即 quality-gate を実行すると baseline が更新されて proof が無効になることがある
 
 ---
 

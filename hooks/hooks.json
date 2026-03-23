@@ -33,6 +33,18 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/skill-usage-log.sh",
+            "timeout": 2000
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",

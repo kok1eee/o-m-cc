@@ -149,6 +149,13 @@ TeamCreate:
 TeamDelete
 ```
 
+## Gotchas
+
+- **researcher が外部検索に時間を使いすぎて analyst が待ちぼうけ**: researcher は `background: true` で非同期。analyst と scout は researcher を待たずに独立して分析を開始すべき
+- **scout が曖昧点を発見しても analyst に伝わらない**: SendMessage の recipient 名を正確に。name が間違っていると silent loss する
+- **要件が広すぎてスコープ爆発**: scout が IN/OUT SCOPE を明確にしないまま analyst が全部盛りの requirements.md を書く。scout の分析を待ってから最終化する
+- **既存プロジェクトの文脈を無視**: 動的注入でプロジェクト構造は把握済みだが、CLAUDE.md の開発ガイドラインも必ず確認する
+
 ## 出力
 
 plan/requirements.md

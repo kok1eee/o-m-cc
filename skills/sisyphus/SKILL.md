@@ -177,6 +177,14 @@ Skill: quality-gate
 
 全フェーズ完了後、`TaskList` で残っている全タスク（[TRACKING] タスク + 実装タスク）を `TaskUpdate: status → deleted` で削除する。
 
+## Gotchas
+
+- **plan/ の古いファイルが Council を混乱させる**: Step 0 で必ず `rm -f plan/requirements.md plan/design.md` を実行。前回の成果物が残っていると analyst が既存要件と新規要件を混同する
+- **Agent Teams の name 未指定で SendMessage が silent loss**: spawn 時に `name` と `team_name` を必ず指定。未指定だと teammate にならず、SendMessage が `success: true` を返しつつメッセージが消える
+- **Verifier を spawn せずに自分でテストを実行してしまう**: M-L タスクでは必ず別エージェントを spawn。自分でテストすると確認バイアスで問題を見落とす
+- **quality-gate の proof ファイルが前セッションの残骸**: session-baseline.sh がセッション開始時にクリアするが、同一セッション内で2回 sisyphus を実行すると前回の proof が残る。Step 0 で手動クリアすべき
+- **Headless モードで AskUserQuestion を呼んでハング**: `CLAUDE_NON_INTERACTIVE=1` の確認を忘れずに
+
 ---
 
 **Step 0 のタスク登録から開始し、Step 1 で discovery-council を Skill chain で呼び出してください。各 CTA で形式チェック + 乖離確認（再実行は最大1回）。全フェーズ止まらない。完了後は Step 7 でタスクを削除。**

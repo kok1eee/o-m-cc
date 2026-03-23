@@ -88,3 +88,9 @@ effort: medium
 - **quality-gate**: コードベース全体の品質レビュー（マクロ）
 
 両方使うのが理想。verification で個々のタスクの完了を確認し、quality-gate で全体の品質を保証する。
+
+## Gotchas
+
+- **テストコマンドが不明で実行しない**: CLAUDE.md にテストコマンドが書かれていない場合、`package.json` の scripts や `Makefile` を確認する。それでも不明なら AskUserQuestion で聞く
+- **exit code 0 だけ見て出力を読まない**: `0 tests ran` でも exit 0 になる。テスト件数や出力内容まで確認する
+- **ビルドの警告を無視**: 警告はエラーではないが、新規の警告は報告すべき
