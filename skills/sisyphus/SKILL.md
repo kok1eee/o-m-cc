@@ -16,6 +16,14 @@ context: fork
 
 $ARGUMENTS
 
+## プロジェクト状態（動的注入）
+
+### 変更統計
+!`jj diff --stat 2>/dev/null || git diff --stat HEAD 2>/dev/null || echo "変更なし"`
+
+### 最近のコミット
+!`jj log -r 'ancestors(@, 5)' --no-graph 2>/dev/null || git log --oneline -5 2>/dev/null || echo "履歴なし"`
+
 ## Headless モード
 
 `CLAUDE_NON_INTERACTIVE=1` または `-p` モードで実行されている場合、AskUserQuestion を使わない。全自動で完了まで止まらない。

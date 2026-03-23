@@ -18,13 +18,21 @@ context: fork
 
 $ARGUMENTS
 
+## 現在の変更状態（動的注入）
+
+### 変更統計
+!`jj diff --stat 2>/dev/null || git diff --stat HEAD 2>/dev/null || echo "差分なし"`
+
+### 変更ファイル一覧
+!`jj diff --name-only 2>/dev/null || git diff --name-only HEAD 2>/dev/null || echo "なし"`
+
 ---
 
 ## 実行フロー
 
 ### Step 1: 変更差分の取得
 
-レビュー対象の変更内容を確認します：
+上記の動的注入で概要は把握済み。詳細な diff を取得します：
 
 ```bash
 # 変更差分を取得
