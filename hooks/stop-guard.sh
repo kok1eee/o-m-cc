@@ -1,6 +1,6 @@
 #!/bin/bash
 # Sisyphus Stop Guard (diff-based)
-# ファイル変更量ベースで quality-gate を強制。DONE マーカー不要。
+# ファイル変更量ベースで quality-gate を推奨/強制。セッション横断で累積。
 
 set -euo pipefail
 
@@ -24,6 +24,7 @@ MIN_DIFF="${SISYPHUS_MIN_DIFF:-500}"
 FORCE_DIFF="${SISYPHUS_FORCE_DIFF:-1000}"
 PROOF_FILE=".claude/quality-gate-proof.json"
 RUNNING_FILE=".claude/quality-gate-running"
+CARRYOVER_FILE="${CLAUDE_PLUGIN_DATA:-/dev/null}/unreviewed-lines.json"
 
 HOOK_INPUT=$(cat)
 
@@ -75,13 +76,29 @@ if [[ $PASSED_AT -gt 0 && $DIFF_LINES -lt $PASSED_AT ]]; then
 fi
 
 EFFECTIVE_BASELINE=$(( BASELINE > PASSED_AT ? BASELINE : PASSED_AT ))
-EFFECTIVE_DIFF=$(( DIFF_LINES - EFFECTIVE_BASELINE ))
-if [[ $EFFECTIVE_DIFF -lt 0 ]]; then
-  EFFECTIVE_DIFF=0
+SESSION_DIFF=$(( DIFF_LINES - EFFECTIVE_BASELINE ))
+if [[ $SESSION_DIFF -lt 0 ]]; then
+  SESSION_DIFF=0
 fi
 
-# 実効変更が閾値未満 → 素通り（雑談・軽微な変更・既存差分のみ）
+# セッション横断の累積: 前セッションからの未検証行数を加算
+CARRYOVER=0
+if [[ -f "$CARRYOVER_FILE" ]]; then
+  CARRYOVER=$(jq -r '.lines // 0' "$CARRYOVER_FILE" 2>/dev/null || echo "0")
+fi
+EFFECTIVE_DIFF=$(( SESSION_DIFF + CARRYOVER ))
+
+# 未検証行数を更新（次セッションへの引き継ぎ用）
+save_carryover() {
+  if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
+    mkdir -p "${CLAUDE_PLUGIN_DATA}"
+    jq -n --argjson lines "$1" '{lines: $lines}' > "$CARRYOVER_FILE"
+  fi
+}
+
+# 実効変更が閾値未満 → 素通り
 if [[ $EFFECTIVE_DIFF -lt $MIN_DIFF ]]; then
+  save_carryover "$EFFECTIVE_DIFF"
   exit 0
 fi
 
@@ -120,38 +137,40 @@ if [[ -f "$PROOF_FILE" ]]; then
   if [[ "$PROOF_FILE" -nt "$BASELINE_FILE" ]]; then
     echo "✅ Sisyphus Guard: Quality Gate 通過を確認（変更 ${EFFECTIVE_DIFF} 行）"
     jq -n --argjson pat "$DIFF_LINES" '{iteration: 0, passed_at_diff: $pat}' > "$STATE_FILE"
+    # carryover リセット（quality-gate 通過）
+    save_carryover 0
     exit 0
   fi
 fi
 
 # proof なし → 推奨 or 強制（変更量で判定）
+# 累積行数を保存（次セッションに引き継ぐ）
+save_carryover "$EFFECTIVE_DIFF"
+
+CARRYOVER_MSG=""
+if [[ $CARRYOVER -gt 0 ]]; then
+  CARRYOVER_MSG="（前セッションからの累積 ${CARRYOVER} 行を含む）"
+fi
+
 if [[ $EFFECTIVE_DIFF -ge $FORCE_DIFF ]]; then
-  # 強制ブロック（1500行〜）
+  # 強制ブロック（1000行〜）
   if [[ $ITERATION -gt 0 ]]; then
     increment
-    echo "🛑 Sisyphus Guard: セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate を実行してください。他のことはしないでください。" >&2
+    echo "🛑 Sisyphus Guard: ${EFFECTIVE_DIFF} 行の未検証コード${CARRYOVER_MSG}。Skill ツールで /quality-gate を実行してください。他のことはしないでください。" >&2
     exit 2
   fi
   increment
-  if check_command jq; then
-    jq -n \
-      --arg reason "セッション中に ${EFFECTIVE_DIFF} 行の変更があります。今すぐ /quality-gate を実行してください。他のことはしないでください。" \
-      '{ "decision": "block", "reason": $reason }'
-  else
-    printf '{"decision":"block","reason":"セッション中に %d 行の変更があります。今すぐ /quality-gate を実行してください。"}\n' "$EFFECTIVE_DIFF"
-  fi
+  jq -n \
+    --arg reason "${EFFECTIVE_DIFF} 行の未検証コード${CARRYOVER_MSG}があります。今すぐ Skill ツールで o-m-cc:quality-gate を実行してください。他のことはしないでください。" \
+    '{ "decision": "block", "reason": $reason }'
   exit 0
 else
   # 推奨ブロック（500行〜999行）: 初回のみブロック、2回目以降は素通り
   if [[ $ITERATION -eq 0 ]]; then
     increment
-    if check_command jq; then
-      jq -n \
-        --arg reason "セッション中に ${EFFECTIVE_DIFF} 行の変更があります。/quality-gate の実行を推奨します。他の作業を続けても構いません。" \
-        '{ "decision": "block", "reason": $reason }'
-    else
-      printf '{"decision":"block","reason":"セッション中に %d 行の変更があります。/quality-gate の実行を推奨します。"}\n' "$EFFECTIVE_DIFF"
-    fi
+    jq -n \
+      --arg reason "${EFFECTIVE_DIFF} 行の未検証コード${CARRYOVER_MSG}があります。Skill ツールで o-m-cc:quality-gate を実行してください。" \
+      '{ "decision": "block", "reason": $reason }'
     exit 0
   fi
   # 2回目以降: 素通り（一度注意喚起済み）

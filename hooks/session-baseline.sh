@@ -21,6 +21,7 @@ if [[ -n "$PROJECT_CWD" && -d "$PROJECT_CWD" ]]; then
 fi
 
 BASELINE_FILE=".claude/sisyphus-baseline.json"
+CARRYOVER_FILE="${CLAUDE_PLUGIN_DATA:-/dev/null}/unreviewed-lines.json"
 
 # 変更行数を取得（stop-guard と同じロジック、plan/ 除外）
 get_diff_lines() {
@@ -40,7 +41,16 @@ DIFF_LINES=$(get_diff_lines)
 mkdir -p "$(dirname "$BASELINE_FILE")"
 echo "{\"baseline_diff\": ${DIFF_LINES}}" > "$BASELINE_FILE"
 
-# 新セッション開始 → 前セッションの state + proof をクリア
+# セッション横断の累積カウント: 前セッションの未検証行数を引き継ぐ
+CARRYOVER=0
+if [[ -f "$CARRYOVER_FILE" ]]; then
+  CARRYOVER=$(jq -r '.lines // 0' "$CARRYOVER_FILE" 2>/dev/null || echo "0")
+  if [[ $CARRYOVER -gt 0 ]]; then
+    echo "📊 前セッションからの未検証行数: ${CARRYOVER} 行"
+  fi
+fi
+
+# 新セッション開始 → 前セッションの state + proof をクリア（carryover は保持）
 STATE_FILE=".claude/sisyphus-state.json"
 PROOF_FILE=".claude/quality-gate-proof.json"
 RUNNING_FILE=".claude/quality-gate-running"
