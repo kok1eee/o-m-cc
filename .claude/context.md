@@ -2,7 +2,7 @@
 
 > セッション間の引き継ぎ情報。学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md。
 
-### Snapshot (03/23 11:04, end)
+### Snapshot (03/23 22:50, end)
 
 **Intent:** 2.1.77
 
@@ -23,5 +23,5 @@
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/researcher.md`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/scout.md`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/agents/security-reviewer.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/CLAUDE.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/articles/auto-mode.md`
 
