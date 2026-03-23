@@ -81,6 +81,7 @@ TeamCreate:
      2. SendMessage で findings を security-reviewer・critic に共有
      3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
      4. 相互検証を経た最終 findings のみを報告
+     5. このプロジェクトで繰り返し発見した指摘パターンは memory に保存
 
      ## 出力
      - Confidence 80+ の問題のみ Critical/Warning で報告
@@ -110,6 +111,7 @@ TeamCreate:
      2. SendMessage で findings を code-reviewer・critic に共有
      3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
      4. 相互検証を経た最終 findings のみを報告
+     5. このプロジェクトで繰り返し発見した脆弱性パターンは memory に保存
 
      ## 出力
      - Confidence 80+ の問題のみ Critical/Warning で報告
@@ -138,6 +140,7 @@ TeamCreate:
      2. SendMessage で findings を code-reviewer・security-reviewer に共有
      3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
      4. 相互検証を経た最終 findings のみを報告
+     5. このプロジェクトで繰り返し発見した計画乖離パターンは memory に保存
 
      ## 出力
      - 計画との乖離があれば Critical/Warning で報告
