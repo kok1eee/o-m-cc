@@ -30,7 +30,7 @@ claude plugin marketplace add kok1eee/o-m-cc
 claude plugin install o-m-cc@kok1eee
 
 # 3. Initialize project (creates CLAUDE.md + enables Sisyphus)
-/o-m-cc:init
+/o-m-cc:install
 
 # 4. Just work normally
 "Fix the login button bug"
@@ -73,7 +73,7 @@ After planning completes:
 
 | Skill | Description | Auto-trigger |
 |-------|-------------|-------------|
-| `/o-m-cc:init` | Project initialization (CLAUDE.md + Sisyphus) | Manual only |
+| `/o-m-cc:install` | Project initialization (CLAUDE.md + Sisyphus) | Manual only |
 
 ### Planning Phase
 

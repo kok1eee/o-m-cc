@@ -28,7 +28,7 @@ claude plugin marketplace add kok1eee/o-m-cc
 claude plugin install o-m-cc@kok1eee
 
 # 3. プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化）
-/o-m-cc:init
+/o-m-cc:install
 
 # 4. あとは普通に作業するだけ
 「ログインボタンのバグを修正して」
@@ -67,9 +67,9 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | 自動発動 |
 |--------|------|----------|
-| `/o-m-cc:init` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） | 手動のみ |
+| `/o-m-cc:install` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） | 手動のみ |
 
-> 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:init` でOK。Sisyphusセクションのみ追加されます。
+> 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:install` でOK。Sisyphusセクションのみ追加されます。
 
 ### 計画フェーズ
 
@@ -95,7 +95,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 ### 初回セットアップ
 
 ```
-/o-m-cc:init
+/o-m-cc:install
   → CLAUDE.md 作成（既存なら Sisyphus セクション追加）
   → .claude/agents/sisyphus.md 配置（デフォルトエージェント）
   → .gitignore、推奨パーミッション設定
@@ -180,7 +180,7 @@ Council パターン（Discovery Council、Review Council）では全 teammate �
 
 ## Dependencies
 
-`/o-m-cc:init` 実行時に推奨プラグインをインストール。
+`/o-m-cc:install` 実行時に推奨プラグインをインストール。
 
 ```bash
 # マーケットプレイス追加（初回のみ）

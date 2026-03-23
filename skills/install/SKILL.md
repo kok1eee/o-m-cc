@@ -1,13 +1,13 @@
 ---
-name: init
-description: "プロジェクト固有の初期化（CLAUDE.md, plan/, Sisyphusルール）。新規プロジェクト開始時や既存プロジェクトにo-m-ccを導入する際に使用。「初期化して」「セットアップして」「o-m-cc を設定して」で発動。"
+name: install
+description: "o-m-cc のプロジェクト固有セットアップ（CLAUDE.md, plan/, Sisyphusルール, 推奨パーミッション）。新規プロジェクト開始時や既存プロジェクトにo-m-ccを導入する際に使用。「o-m-cc をインストール」「o-m-cc を設定して」「/install」で発動。"
 argument-hint: "[project-name]"
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion, Task]
 model: sonnet
 disable-model-invocation: true
 ---
 
-# /o-m-cc:init - Project Initialization
+# /o-m-cc:install - Project Setup
 
 **プロジェクト固有のセットアップ（毎回実行）**
 

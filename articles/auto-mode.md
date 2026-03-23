@@ -218,7 +218,7 @@ Deny ルールに「**Git Push to Default Branch**: Pushing directly to main, ma
 
 「**Self-Modification**: Modifying the agent's own configuration, settings, or permission files (e.g. settings.json, CLAUDE.md permission overrides, .claude/ config)」
 
-Claude が自分の権限を昇格させるのを防ぐルールだが、副作用として **プラグインの初期設定スキル** にも影響する。o-m-cc の `/o-m-cc:init`（`.claude/settings.json` にパーミッションを書き込む）は Auto Mode 中だとブロックされる可能性がある。init は Auto Mode を有効にする前に実行しておくのが安全。
+Claude が自分の権限を昇格させるのを防ぐルールだが、副作用として **プラグインの初期設定スキル** にも影響する。o-m-cc の `/o-m-cc:install`（`.claude/settings.json` にパーミッションを書き込む）は Auto Mode 中だとブロックされる可能性がある。init は Auto Mode を有効にする前に実行しておくのが安全。
 
 ## 注意点
 
@@ -247,7 +247,7 @@ Auto Mode と Sisyphus Loop は、それぞれ別の「止まる理由」を解�
 # セットアップ
 claude plugin marketplace add kok1eee/o-m-cc
 claude plugin install o-m-cc@kok1eee
-/o-m-cc:init
+/o-m-cc:install
 
 # 起動
 claude --permission-mode auto
