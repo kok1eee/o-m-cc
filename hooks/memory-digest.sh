@@ -131,6 +131,23 @@ for f in ${MEMORY_FILES[@]+"${MEMORY_FILES[@]}"}; do
   echo ""
 done
 
+# 過去の失敗パターン・注意点をハイライト（memory 内の警告的キーワード）
+WARNINGS=()
+for f in ${MEMORY_FILES[@]+"${MEMORY_FILES[@]}"}; do
+  while IFS= read -r line; do
+    WARNINGS+=("$line")
+  done < <(grep -i -E '注意|落とし穴|バグ|失敗|壊れ|ハマ|踏む|危険|avoid|gotcha|broken|fail' "$f" 2>/dev/null | head -3)
+done
+
+if [[ ${#WARNINGS[@]} -gt 0 ]]; then
+  echo "  ⚡ 過去の学び（注意すべきパターン）"
+  for w in "${WARNINGS[@]}"; do
+    cleaned=$(echo "$w" | sed 's/^[#*-]* *//')
+    echo "     - ${cleaned}"
+  done
+  echo ""
+fi
+
 echo "詳細は .claude/agent-memory/<agent>/MEMORY.md を Read してください。"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
