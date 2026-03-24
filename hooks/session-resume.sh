@@ -46,6 +46,7 @@ echo "🧭 ワークフロー"
 echo "  ピンポイント修正 → そのまま実行"
 echo "  複数ファイル変更 → /plan"
 echo "  新機能・設計判断 → /sisyphus"
+echo "  最適化・リファクタリング → /experiment"
 echo "  完了前 → /verification で証拠確認"
 
 emit_cta ".claude/context.md を Read して文脈を復元"
