@@ -20,7 +20,16 @@ if compgen -G "**/*.py" > /dev/null 2>&1; then
   fi
   if check_cmd ty; then
     echo "🐍 Python: ty check"
-    ty check . || PASS=false
+    # ty はプロジェクトルート（pyproject.toml がある場所）で実行しないとパースエラーになる
+    if [[ -f "pyproject.toml" ]]; then
+      ty check . || PASS=false
+    else
+      # pyproject.toml がなければ Python ファイルのあるディレクトリで実行
+      PY_DIR=$(dirname "$(find . -name "*.py" -not -path "./.claude/*" -not -path "./node_modules/*" -print -quit 2>/dev/null)" 2>/dev/null || echo "")
+      if [[ -n "$PY_DIR" && -d "$PY_DIR" ]]; then
+        (cd "$PY_DIR" && ty check .) || PASS=false
+      fi
+    fi
   fi
 fi
 
