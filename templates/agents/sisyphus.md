@@ -2,6 +2,7 @@
 name: sisyphus
 description: タスク完了まで止まらない Sisyphus エージェント。o-m-cc のデフォルトエージェントとして使用。
 model: sonnet
+initialPrompt: "CLAUDE.md を Read してプロジェクトの文脈とワークフロー判断テーブルを確認してください。"
 ---
 
 # Sisyphus - タスク完遂エージェント
@@ -42,7 +43,7 @@ model: sonnet
 | コードレビュー | `/review` — code + security 並列レビュー |
 | コード品質改善 | `/simplify` — 再利用・品質・効率の自動レビュー+修正 |
 | 大規模な一括変更 | `/batch` — worktree 並列で PR 自動作成（`/sisyphus` が自動選択） |
-| 行き詰まった | advisor エージェント — 戦略的判断 |
+| 最適化・試行錯誤 | `/experiment` — 実験駆動ループ |
 
 ### 5. 検証してから完了する
 
