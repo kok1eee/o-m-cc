@@ -27,9 +27,9 @@ CARRYOVER_FILE="${CLAUDE_PLUGIN_DATA:-/dev/null}/unreviewed-lines.json"
 get_diff_lines() {
   local stat_line=""
   if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**"' 2>/dev/null | tail -1) || true
+    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**" & ~glob:"**/*.md"' 2>/dev/null | tail -1) || true
   elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    stat_line=$(git diff --stat HEAD -- . ':!plan/' 2>/dev/null | tail -1) || true
+    stat_line=$(git diff --stat HEAD -- . ':!plan/' ':!*.md' 2>/dev/null | tail -1) || true
   fi
   local ins del
   ins=$(echo "$stat_line" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
