@@ -34,21 +34,28 @@ fi
 # 拡張子別にフィルタ
 py_files=$(echo "$CHANGED_FILES" | grep -E '\.py$' || true)
 sh_files=$(echo "$CHANGED_FILES" | grep -E '\.sh$' | grep -v '.claude/' || true)
-ts_files=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx)$' || true)
-js_files=$(echo "$CHANGED_FILES" | grep -E '\.(js|jsx)$' || true)
+ts_files=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' || true)
 rs_files=$(echo "$CHANGED_FILES" | grep -E '\.rs$' || true)
 
 # Python（変更ファイルのみ）
 if [[ -n "$py_files" ]]; then
   echo "🐍 Python: ruff check ($(echo "$py_files" | wc -l | tr -d ' ') files)"
   if check_cmd ruff; then
-    echo "$py_files" | xargs ruff check || PASS=false
+    echo "$py_files" | tr '\n' '\0' | xargs -0 ruff check -- || PASS=false
   else
     echo "  ⚠️ ruff not found, skipping"
   fi
   if check_cmd ty; then
     echo "🐍 Python: ty check"
-    echo "$py_files" | xargs ty check 2>/dev/null || PASS=false
+    # ty はプロジェクトルート（pyproject.toml がある場所）で実行しないとパースエラーになる
+    if [[ -f "pyproject.toml" ]]; then
+      ty check . || PASS=false
+    else
+      PY_DIR=$(dirname "$(find . -name "*.py" -not -path "./.claude/*" -not -path "./node_modules/*" -print -quit 2>/dev/null)" 2>/dev/null || echo "")
+      if [[ -n "$PY_DIR" && -d "$PY_DIR" ]]; then
+        (cd "$PY_DIR" && ty check .) || PASS=false
+      fi
+    fi
   fi
 fi
 
@@ -56,7 +63,7 @@ fi
 if [[ -n "$sh_files" ]]; then
   echo "🐚 Shell: shellcheck ($(echo "$sh_files" | wc -l | tr -d ' ') files)"
   if check_cmd shellcheck; then
-    echo "$sh_files" | xargs shellcheck -S warning || PASS=false
+    echo "$sh_files" | tr '\n' '\0' | xargs -0 shellcheck -S warning || PASS=false
   else
     echo "  ⚠️ shellcheck not found, skipping"
   fi
@@ -69,7 +76,7 @@ if [[ -n "$ts_files" ]]; then
     npx tsc --noEmit || PASS=false
   fi
   if [[ -f "node_modules/.bin/eslint" ]]; then
-    echo "$ts_files" | xargs npx eslint || PASS=false
+    echo "$ts_files" | tr '\n' '\0' | xargs -0 npx eslint -- || PASS=false
   fi
 fi
 
