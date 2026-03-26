@@ -56,6 +56,17 @@ $ARGUMENTS
 jj diff  # または git diff
 ```
 
+### Step 1.5: /simplify（自動修正）
+
+Review Council の前に、再利用性・品質・効率の自動レビュー+修正を実行する。
+レビュアーに渡す前にまず機械的に改善できるものは改善しておく。
+
+```
+Skill: simplify
+```
+
+> simplify がインストールされていない場合はスキップして Step 2 に進む。
+
 ### Step 2: レビューチーム作成
 
 **既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
