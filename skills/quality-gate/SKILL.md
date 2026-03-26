@@ -199,6 +199,7 @@ SendMessage で互いの発見を共有・議論し、相互検証する。
 ### Step 4.5: チーム解散
 
 結果を集約したらすぐにチームを解散する。**lint や修正の前に必ず実行。**
+**shutdown メッセージは送らない。** TeamDelete だけで十分。SendMessage でブロードキャストしない。
 
 ```
 TeamDelete
