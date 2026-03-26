@@ -142,7 +142,14 @@ Skill: task-decomposition
 │  5. Debugger の修正を Verifier に再検証させる         │
 │     → pass なら次のタスク                           │
 │     → fail なら 4 に戻る（最大2回）                  │
-│     → 2回失敗 → AskUserQuestion                    │
+│     → 2回失敗 → experiment ループに切り替え          │
+│                                                  │
+│  6. Experiment ループ（試行錯誤モード）               │
+│     原因不明で Debugger が修正できない場合:           │
+│     仮説を立てる → 1変更 → Verifier 検証             │
+│     → pass なら次のタスク                           │
+│     → fail なら revert して別の仮説（最大3回）        │
+│     → 3回失敗 → AskUserQuestion                    │
 │       （Headless なら [BLOCKED] 記録して次へ）        │
 └──────────────────────────────────────────────────┘
 ```
