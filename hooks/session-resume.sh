@@ -41,27 +41,28 @@ if [[ -f "$CHRONICLE_FILE" ]]; then
   fi
 fi
 
-# 未検証行数の表示（セッション横断の累積）
-CARRYOVER_FILE="${CLAUDE_PLUGIN_DATA:-}/unreviewed-lines.json"
-if [[ -n "${CLAUDE_PLUGIN_DATA:-}" && -f "$CARRYOVER_FILE" ]]; then
-  UNREVIEWED=$(jq -r '.lines // 0' "$CARRYOVER_FILE" 2>/dev/null || echo "0")
-  if [[ "$UNREVIEWED" -gt 0 ]]; then
-    echo ""
-    echo "⚠️ 未検証コード: ${UNREVIEWED} 行（前セッションからの累積）"
-    if [[ "$UNREVIEWED" -ge 500 ]]; then
-      echo "   → /quality-gate の実行を推奨"
+# CLAUDE_PLUGIN_DATA 依存の表示（未検証行数 + スキル使用ログ）
+# jq を使わず grep/sed で軽量化（JSON 構造が単純なため）
+if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
+  # 未検証行数
+  CARRYOVER_FILE="${CLAUDE_PLUGIN_DATA}/unreviewed-lines.json"
+  if [[ -f "$CARRYOVER_FILE" ]]; then
+    UNREVIEWED=$(grep -oE '"lines":[[:space:]]*[0-9]+' "$CARRYOVER_FILE" 2>/dev/null | grep -oE '[0-9]+' || echo "0")
+    if [[ "$UNREVIEWED" -gt 0 ]]; then
+      echo ""
+      echo "⚠️ 未検証コード: ${UNREVIEWED} 行（前セッションからの累積）"
+      [[ "$UNREVIEWED" -ge 500 ]] && echo "   → /quality-gate の実行を推奨"
     fi
   fi
-fi
-
-# スキル使用ログのサマリー
-USAGE_LOG="${CLAUDE_PLUGIN_DATA:-}/skill-usage.log"
-if [[ -n "${CLAUDE_PLUGIN_DATA:-}" && -f "$USAGE_LOG" ]]; then
-  TOTAL_USES=$(wc -l < "$USAGE_LOG" 2>/dev/null | tr -d ' ')
-  LAST_SKILL=$(tail -1 "$USAGE_LOG" 2>/dev/null | awk '{print $2}' || echo "")
-  if [[ "$TOTAL_USES" -gt 0 ]]; then
-    echo ""
-    echo "📊 スキル使用: 累計 ${TOTAL_USES} 回（最後: ${LAST_SKILL}）"
+  # スキル使用ログ
+  USAGE_LOG="${CLAUDE_PLUGIN_DATA}/skill-usage.log"
+  if [[ -f "$USAGE_LOG" ]]; then
+    TOTAL_USES=$(wc -l < "$USAGE_LOG" 2>/dev/null | tr -d ' ')
+    if [[ "$TOTAL_USES" -gt 0 ]]; then
+      LAST_SKILL=$(tail -1 "$USAGE_LOG" | awk '{print $2}')
+      echo ""
+      echo "📊 スキル使用: 累計 ${TOTAL_USES} 回（最後: ${LAST_SKILL}）"
+    fi
   fi
 fi
 
