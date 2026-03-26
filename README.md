@@ -494,6 +494,34 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 
 ## Changelog
 
+### 0.27.0
+
+- **verification スキル**: 完了宣言前に証拠を要求。Adversarial な検証姿勢で「動くはず」を信用しない
+- **experiment スキル**: 実験駆動の反復改善ループ（autoresearch パターン）。1回1変更 → Verifier 検証 → 保持 or revert
+- **retro スキル**: スキル使用状況・タスク作成ログの分析。未使用スキルの改善/削除判断に
+- **全タスク Verifier 必須化**: sisyphus の実装ループで全タスクに Verifier（adversarial 検証）を適用。S/M-L 分岐を廃止
+- **3エージェント方式**: Implementer → Verifier → Debugger の役割分離。確認バイアスの構造的排除
+- **designer 複数案自律評価**: 内部で3案（Minimal/Clean/Pragmatic）を検討し最良案を自律選択
+- **discovery-council 曖昧点確認**: Step 3 に独立した曖昧点確認ステップを追加（スキップ禁止）
+- **researcher 重要ファイルリスト**: 調査結果に「メインが Read すべきファイル」5-10件を含める
+- **動的コンテキスト注入**: sisyphus/quality-gate/discovery-council に `!`command`` で前処理注入
+- **Gotchas セクション**: sisyphus/quality-gate/discovery-council/verification に失敗パターンを追加
+- **lint.sh スクリプト化**: quality-gate の静的解析を独立スクリプトに抽出。ツール未インストール時のスキップ対応
+- **スキル使用ログ**: PreToolUse hook で Skill 使用を CLAUDE_PLUGIN_DATA に記録
+- **TaskCreated hook**: タスク作成をログし /retro で分析可能に
+- **paths glob**: quality-gate/experiment にコードファイルのみ発動する paths 制限
+- **セッション横断累積カウント**: stop-guard が CLAUDE_PLUGIN_DATA で未検証行数を引き継ぎ
+- **stop-guard 段階制**: 500行〜推奨（初回ブロック）、1000行〜強制
+- **diff から .md 除外**: stop-guard/session-baseline のカウントから .md ファイルを除外
+- **effort/disallowedTools/maxTurns**: 全エージェント・スキルに frontmatter 拡張を適用
+- **session-resume 最適化**: 出力 -41.8%（752→438 bytes）、jq 依存排除
+- **memory 蓄積指示**: Verifier/reviewer に繰り返し発見したパターンの memory 保存を指示
+- **memory-digest 強化**: 過去の失敗パターンをプロアクティブに表示
+- **/init → /install リネーム**: 公式 /init との競合回避。/install は o-m-cc 固有アドオンに特化
+- **エージェント整理**: vision/advisor/frontend を削除（12→9体）。ADR-0008
+- **ADR 導入**: docs/adr/ に設計判断を記録（8件）
+- **initialPrompt**: sisyphus テンプレートエージェントに自動開始プロンプト追加
+
 ### 0.23.0
 
 - **review スキルを quality-gate に統合**: review（Review Council のみ）を削除し、quality-gate に吸収。「レビューして」で quality-gate がフルパイプライン実行。スキル数 6→5、トリガー競合解消
