@@ -29,9 +29,9 @@ if [[ -f "$CONTEXT_FILE" ]]; then
   done
 fi
 
-# chronicle.md の直近5件を表示
+# chronicle.md の直近3件を表示
 if [[ -f "$CHRONICLE_FILE" ]]; then
-  ENTRIES=$(grep '^- \[' "$CHRONICLE_FILE" 2>/dev/null | head -5 || true)
+  ENTRIES=$(grep '^- \[' "$CHRONICLE_FILE" 2>/dev/null | head -3 || true)
   if [[ -n "$ENTRIES" ]]; then
     echo ""
     echo "📜 最近の経緯 (.claude/chronicle.md)"
