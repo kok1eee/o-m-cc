@@ -5,6 +5,15 @@ argument-hint: "<optimization goal and measurement method>"
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion]
 model: opus
 effort: high
+paths:
+  - "**/*.py"
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.sh"
+  - "**/*.rs"
+  - "**/*.go"
 ---
 
 # Experiment - 実験駆動の反復改善ループ

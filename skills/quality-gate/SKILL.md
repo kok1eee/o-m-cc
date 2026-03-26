@@ -6,6 +6,23 @@ allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, Agent, TeamCreate, Team
 model: opus
 effort: high
 context: fork
+paths:
+  - "**/*.py"
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.sh"
+  - "**/*.rs"
+  - "**/*.go"
+  - "**/*.java"
+  - "**/*.rb"
+  - "**/*.php"
+  - "**/*.swift"
+  - "**/*.kt"
+  - "**/*.c"
+  - "**/*.cpp"
+  - "**/*.cs"
 ---
 
 # Quality Gate - Review Council + Lint 連続実行
