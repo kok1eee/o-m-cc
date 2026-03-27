@@ -7,6 +7,16 @@ O_M_CC_LOG_FILE="${O_M_CC_LOG_FILE:-.claude/hooks-error.log}"
 O_M_CC_LOG_MAX_LINES=100
 
 # =============================================================================
+# Headless モード検出
+# =============================================================================
+
+# CLAUDE_HEADLESS=1 が設定されている場合、hook をスキップ
+# 用途: claude -p で ops 実行時にコンテキスト注入やブロックを防止
+is_headless() {
+  [[ "${CLAUDE_HEADLESS:-}" = "1" ]]
+}
+
+# =============================================================================
 # OS 検出
 # =============================================================================
 
@@ -138,6 +148,39 @@ to_number() {
   else
     echo "$value"
   fi
+}
+
+# =============================================================================
+# Diff 計測（cwd スコープ）
+# =============================================================================
+
+# cwd 配下の変更行数を取得（jj → git fallback）
+# plan/ と *.md は除外
+# 引数: $1 = 対象ディレクトリ（省略時は pwd）
+# 注意: jj の glob はリポジトリルートからの相対パス。
+#   サブディレクトリの場合は jj diff をリポジトリルートで実行し、
+#   glob でスコープを制限する。
+get_diff_lines() {
+  local target_dir="${1:-$(pwd)}"
+  local stat_line=""
+  if check_command jj && jj root >/dev/null 2>&1; then
+    local repo_root rel_path fileset
+    repo_root=$(jj root 2>/dev/null)
+    if [[ "$target_dir" == "$repo_root" ]]; then
+      fileset='all() & ~glob:"plan/**" & ~glob:"**/*.md"'
+    else
+      rel_path="${target_dir#"$repo_root"/}"
+      fileset="glob:\"${rel_path}/**\" & ~glob:\"${rel_path}/plan/**\" & ~glob:\"**/*.md\""
+    fi
+    # jj の glob はリポルートからの相対パスなので -R で実行
+    stat_line=$(jj diff -R "$repo_root" --stat -- "$fileset" 2>/dev/null | tail -1) || true
+  elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    stat_line=$(git -C "$target_dir" diff --stat HEAD -- . ':!plan/' ':!*.md' 2>/dev/null | tail -1) || true
+  fi
+  local ins del
+  ins=$(echo "$stat_line" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
+  del=$(echo "$stat_line" | grep -oE '[0-9]+ deletion' | grep -oE '[0-9]+' || echo "0")
+  echo $(( ${ins:-0} + ${del:-0} ))
 }
 
 # =============================================================================

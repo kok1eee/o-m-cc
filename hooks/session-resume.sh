@@ -9,6 +9,12 @@ if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
   source "${SCRIPT_DIR}/lib/cta.sh"
 fi
 
+# Headless モード（claude -p）ではスキップ
+if [[ "${CLAUDE_HEADLESS:-}" = "1" ]]; then
+  cat > /dev/null
+  exit 0
+fi
+
 cat > /dev/null
 
 CONTEXT_FILE=".claude/context.md"

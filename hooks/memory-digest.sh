@@ -10,6 +10,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/common.sh
 source "${SCRIPT_DIR}/lib/common.sh" 2>/dev/null || true
 
+# Headless モード（claude -p）ではスキップ
+if is_headless; then
+  cat > /dev/null
+  exit 0
+fi
+
 # Read hook input
 HOOK_INPUT=$(cat)
 

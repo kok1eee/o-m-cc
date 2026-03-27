@@ -4,6 +4,12 @@
 
 set -euo pipefail
 
+# Headless モード（claude -p）ではスキップ
+if [[ "${CLAUDE_HEADLESS:-}" = "1" ]]; then
+  cat > /dev/null
+  exit 0
+fi
+
 # CLAUDE_PLUGIN_DATA 確認（2.1.78+）
 if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
   echo "📦 CLAUDE_PLUGIN_DATA=${CLAUDE_PLUGIN_DATA}"
@@ -23,21 +29,9 @@ fi
 BASELINE_FILE=".claude/sisyphus-baseline.json"
 CARRYOVER_FILE="${CLAUDE_PLUGIN_DATA:-/dev/null}/unreviewed-lines.json"
 
-# 変更行数を取得（stop-guard と同じロジック、plan/ 除外）
-get_diff_lines() {
-  local stat_line=""
-  if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**" & ~glob:"**/*.md"' 2>/dev/null | tail -1) || true
-  elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    stat_line=$(git diff --stat HEAD -- . ':!plan/' ':!*.md' 2>/dev/null | tail -1) || true
-  fi
-  local ins del
-  ins=$(echo "$stat_line" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
-  del=$(echo "$stat_line" | grep -oE '[0-9]+ deletion' | grep -oE '[0-9]+' || echo "0")
-  echo $(( ${ins:-0} + ${del:-0} ))
-}
+# get_diff_lines は common.sh で定義（cwd スコープ済み）
 
-DIFF_LINES=$(get_diff_lines)
+DIFF_LINES=$(get_diff_lines "$PROJECT_CWD")
 mkdir -p "$(dirname "$BASELINE_FILE")"
 echo "{\"baseline_diff\": ${DIFF_LINES}}" > "$BASELINE_FILE"
 

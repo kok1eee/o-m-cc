@@ -3,6 +3,11 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [03/27 19:14, end] Run this exact command and show ALL output: env | grep -iE "claude|tty|term|inte
+- [03/27 11:00, end] ⏺ PreToolUse の末尾にテスト用 hook を追加します。
+- [03/27 10:42, end] 2.1.77
+- [03/27 10:42, end] 2.1.77
+- [03/26 14:01, end] 2.1.77
 - [03/25 16:17, end] 2.1.77
 - [03/24 10:54, end] help
 - [03/23 22:54, end] 2.1.77
@@ -28,8 +33,3 @@
 - [03/12 17:07, end]   1. teammate は Agent ツールを使えない（L73）
 - [03/12 14:35, end] teammate toolが使えるようになったか確認して
 - [03/12 14:35, end] teammate toolが使えるようになったか確認して
-- [03/12 14:34, end] teammate toolが使えるようになったか確認して
-- [03/12 14:14, end] TeamCreate, TeamDelete, SendMessage ツールが使えるか確認して。使えるなら各ツールの inputSchema を ToolSe
-- [03/12 14:07, end]   Enable auto mode?
-- [03/12 14:07, end]   Enable auto mode?
-- [03/12 13:37, end]   テスト案:

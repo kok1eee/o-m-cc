@@ -13,6 +13,12 @@ if [[ -f "${SCRIPT_DIR}/lib/cta.sh" ]]; then
   source "${SCRIPT_DIR}/lib/cta.sh"
 fi
 
+# Headless モード（claude -p）ではスキップ
+if is_headless; then
+  cat > /dev/null
+  exit 0
+fi
+
 if ! check_command jq; then
   exit 0
 fi
@@ -40,23 +46,9 @@ if [[ -n "$PROJECT_CWD" && -d "$PROJECT_CWD" ]]; then
   cd "$PROJECT_CWD"
 fi
 
-# 変更行数を取得（jj → git fallback）
-# plan/ 配下は計画成果物のため diff カウントから除外
-get_diff_lines() {
-  local stat_line=""
-  if check_command jj && jj root >/dev/null 2>&1; then
-    stat_line=$(jj diff --stat -- 'all() & ~glob:"plan/**" & ~glob:"**/*.md"' 2>/dev/null | tail -1) || true
-  elif check_command git && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    stat_line=$(git diff --stat HEAD -- . ':!plan/' ':!*.md' 2>/dev/null | tail -1) || true
-  fi
-  # "3 files changed, 42 insertions(+), 10 deletions(-)" → 42 + 10 = 52
-  local ins del
-  ins=$(echo "$stat_line" | grep -oE '[0-9]+ insertion' | grep -oE '[0-9]+' || echo "0")
-  del=$(echo "$stat_line" | grep -oE '[0-9]+ deletion' | grep -oE '[0-9]+' || echo "0")
-  echo $(( ${ins:-0} + ${del:-0} ))
-}
+# get_diff_lines は common.sh で定義（cwd スコープ済み）
 
-DIFF_LINES=$(get_diff_lines)
+DIFF_LINES=$(get_diff_lines "$PROJECT_CWD")
 
 # ベースライン計算: max(セッション開始時, 前回 quality-gate 通過時)
 BASELINE_FILE=".claude/sisyphus-baseline.json"
