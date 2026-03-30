@@ -1,4 +1,4 @@
-# o-m-cc v0.24.3
+# o-m-cc v0.28.0
 
 [English](README_en.md)
 
@@ -75,6 +75,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
+| `/o-m-cc:deep-interview <idea>` | ソクラテス式要件掘り下げ → discovery-council にハンドオフ | - | 「要件が曖昧」「掘り下げて」「インタビュー」で発動 |
 | `/o-m-cc:sisyphus <task>` | 計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー | fork | 「計画して」「この機能を実装したい」で発動 |
 | `/o-m-cc:discovery-council <task>` | 3エージェント並列要件分析 Council | fork | 「要件を整理して」「要件定義して」で発動 |
 | `/o-m-cc:design` | designer によるアーキテクチャ設計 | - | 「設計して」で発動 |
@@ -84,6 +85,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
+| `/o-m-cc:simplify [files]` | AI 生成コードの冗長部分を検出・除去（deletion-first） | - | 「簡潔にして」「deslop」「スリム化」で発動 |
 | `/o-m-cc:quality-gate [files]` | Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
 | `/o-m-cc:handover` | セッション文脈を `.claude/context.md` に保存 | - | 「引き継ぎ」「保存して」「今日はここまで」で発動 |

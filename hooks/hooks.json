@@ -81,6 +81,18 @@
         ]
       }
     ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/subagent-verify.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "TaskCreated": [
       {
         "matcher": "",

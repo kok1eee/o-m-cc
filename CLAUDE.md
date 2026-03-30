@@ -68,6 +68,7 @@ Layer 1・2 は品質が崩れた時だけ人間の判断を仰ぐ安全弁。La
 |------|-----------|
 | ピンポイントな修正（typo, 1ファイル変更） | そのまま実行 |
 | 複数ファイルにまたがる変更 | `/plan` で計画してから実行 |
+| 要件が曖昧・何を作るか不明確 | `/deep-interview` で掘り下げてから `/sisyphus` |
 | 新機能・設計判断が必要な変更 | `/sisyphus` で要件→設計→タスク分解→実装 |
 | 最適化・リファクタリング・試行錯誤 | `/experiment` で実験駆動ループ（試す→測る→保持 or revert） |
 | 完了を宣言する前 | `/verification` で証拠確認（テスト実行、動作確認） |
@@ -88,10 +89,25 @@ Layer 1・2 は品質が崩れた時だけ人間の判断を仰ぐ安全弁。La
 | SessionStart | memory-digest.sh | 3s | Memory ダイジェスト |
 | SessionStart | session-baseline.sh | 5s | diff ベースライン |
 | Stop | stop-guard.sh | 10s | quality-gate 強制 |
+| SubagentStop | subagent-verify.sh | 3s | サブエージェント成果物検証 |
 | PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |
 | PostCompact | post-compact-resume.sh | 5s | compaction 後の状態リマインド |
 | TaskCompleted | task-completed.sh | 5s | タスク完了通知 |
 | SessionEnd | pre-compact-handover.sh | 30s | 文脈自動保存 |
+
+## コミットメッセージ Trailers
+
+大規模変更・設計判断時のみ、コミットメッセージに trailers を付加:
+
+| Trailer | 用途 |
+|---------|------|
+| `Constraint:` | 意図的に守った制約 |
+| `Rejected:` | 検討して却下した代替案と理由 |
+| `Scope-risk:` | 影響しうる範囲 |
+
+- typo/1ファイル変更 → 不要
+- 新機能/アーキテクチャ変更 → `Constraint:` + `Rejected:` 推奨
+- 既存の振る舞いを変える変更 → `Scope-risk:` 推奨
 
 ## 開発ガイドライン
 - hooks スクリプトは `set -euo pipefail` + 共通ライブラリ (`hooks/lib/common.sh`) を使用
