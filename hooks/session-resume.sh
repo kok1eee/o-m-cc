@@ -28,11 +28,22 @@ fi
 echo ""
 
 # 最新スナップショットを表示
+NEXT_ACTIONS=""
 if [[ -f "$CONTEXT_FILE" ]]; then
   echo "📋 最新の文脈 (.claude/context.md)"
   { grep -E '^\*\*(Intent|Outcomes)' "$CONTEXT_FILE" 2>/dev/null || true; } | head -2 | while IFS= read -r line; do
     echo "  ${line}"
   done
+
+  # Next Actions を表示
+  NEXT_ACTIONS=$(sed -n '/^\*\*Next:\*\*/,/^$/p' "$CONTEXT_FILE" 2>/dev/null | grep '^- ' || true)
+  if [[ -n "$NEXT_ACTIONS" ]]; then
+    echo ""
+    echo "🎯 次のアクション"
+    echo "$NEXT_ACTIONS" | while IFS= read -r line; do
+      echo "  ${line}"
+    done
+  fi
 fi
 
 # chronicle.md の直近3件を表示
@@ -72,6 +83,10 @@ if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
   fi
 fi
 
-emit_cta ".claude/context.md を Read して文脈を復元"
+if [[ -n "$NEXT_ACTIONS" ]]; then
+  emit_cta ".claude/context.md を Read して次のアクションを確認"
+else
+  emit_cta ".claude/context.md を Read して文脈を復元"
+fi
 echo ""
 exit 0

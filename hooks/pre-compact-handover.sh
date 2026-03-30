@@ -97,11 +97,22 @@ fi
 
 # --- 3. 抽出 ---
 
-# Intent: 最初の実質的なユーザーメッセージ
-INTENT=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
+# 全ユーザーメッセージを一度だけ抽出（Intent + Next で共有）
+ALL_USER_MSGS=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
   jq -r '.message.content | if type == "array" then map(select(.type == "text")) | map(.text) | join(" ") else . end' 2>/dev/null | \
-  grep -v '^\[Request interrupted' | grep -v '^$' | sed -n '1p' | \
-  cut -c1-200 || echo "(抽出失敗)")
+  grep -v '^\[Request interrupted' | grep -v '^$' || true)
+
+# Intent: 最初の実質的なユーザーメッセージ
+INTENT=$(echo "$ALL_USER_MSGS" | sed -n '1p' | cut -c1-200)
+INTENT=${INTENT:-"(抽出失敗)"}
+
+# Next: セッション終盤のユーザーメッセージ（次の方向性）
+LAST_MSGS=$(echo "$ALL_USER_MSGS" | awk 'length >= 10' | tail -3)
+# Intent と完全一致する1行だけなら重複なので空にする
+if [[ "$(echo "$LAST_MSGS" | grep -c '[^[:space:]]')" -eq 1 ]]; then
+  LAST_FIRST=$(echo "$LAST_MSGS" | head -1 | cut -c1-200)
+  [[ "$LAST_FIRST" == "$INTENT" ]] && LAST_MSGS=""
+fi
 
 # Changed Files: Write/Edit で変更されたファイル一覧
 CHANGED_FILES=$(grep '"tool_use"' "$TRANSCRIPT_PATH" | \
@@ -123,6 +134,17 @@ cat > "$CONTEXT_FILE" << EOF
 **Intent:** $INTENT
 
 EOF
+
+# Next セクション
+if [[ -n "$LAST_MSGS" ]] && echo "$LAST_MSGS" | grep -q '[^[:space:]]'; then
+  {
+    echo "**Next:**"
+    echo "$LAST_MSGS" | while IFS= read -r msg; do
+      [[ -n "$msg" ]] && echo "- $(echo "$msg" | cut -c1-120)"
+    done
+    echo ""
+  } >> "$CONTEXT_FILE"
+fi
 
 if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
   {
