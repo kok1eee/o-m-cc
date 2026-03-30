@@ -62,7 +62,7 @@ Review Council の前に、再利用性・品質・効率の自動レビュー+�
 レビュアーに渡す前にまず機械的に改善できるものは改善しておく。
 
 ```
-Skill: o-m-cc:simplify
+Skill: simplify
 ```
 
 ### Step 2: レビューチーム作成

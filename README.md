@@ -85,7 +85,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:simplify [files]` | AI 生成コードの冗長部分を検出・除去（deletion-first） | - | 「簡潔にして」「deslop」「スリム化」で発動 |
 | `/o-m-cc:quality-gate [files]` | Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
 | `/o-m-cc:handover` | セッション文脈を `.claude/context.md` に保存 | - | 「引き継ぎ」「保存して」「今日はここまで」で発動 |
