@@ -3,7 +3,6 @@ name: handover
 description: "セッションの文脈を .claude/context.md に保存し、CLAUDE.md を改善する。作業を中断するとき、セッションを終えるとき、長い作業の区切りに使う。「引き継ぎ」「保存して」「今日はここまで」「文脈を残して」で発動。"
 argument-hint: ""
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Skill]
-model: sonnet
 effort: low
 ---
 

@@ -2,7 +2,6 @@
 name: install
 description: "o-m-cc のプロジェクトセットアップ。公式 /init の後に実行し、o-m-cc 固有のアドオン（plan/, sisyphus エージェント, パーミッション, プラグイン, .gitignore）を追加。「o-m-cc をインストール」「o-m-cc を設定して」で発動。"
 allowed-tools: [Read, Bash, Write, Edit, Glob, Grep, AskUserQuestion, Skill]
-model: sonnet
 effort: medium
 disable-model-invocation: true
 ---

@@ -3,7 +3,6 @@ name: deep-interview
 description: "要件が曖昧なとき、ソクラテス式に1問ずつ質問して要件を掘り下げる。十分に明確になったら discovery-council にハンドオフ。「要件が曖昧」「何を作ればいいか」「掘り下げて」「インタビューして」で発動。"
 argument-hint: "<vague feature idea>"
 allowed-tools: [Read, Glob, Grep, AskUserQuestion, Skill]
-model: sonnet
 effort: medium
 ---
 
