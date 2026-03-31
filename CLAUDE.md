@@ -44,9 +44,8 @@ templates/      # テンプレート
 |---|---|---|---|
 | **Layer 1**: 形式チェック（validate-plan.sh） | requirements.md/design.md の必須セクション・FR 言及率を自動検証 | なし | 再実行1回 → まだ失敗なら AskUserQuestion（Headless なら記録して続行） |
 | **Layer 2**: CTA（sisyphus SKILL.md） | 元の要求との内容乖離を LLM が判断 | あり | 同上 |
-| **Layer 3**: diff ベース品質ガード（stop-guard.sh） | 変更行数に応じて quality-gate を推奨/強制 | なし | 500行〜: 推奨（メッセージのみ）、1000行〜: ハードブロック |
 
-Layer 1・2 は品質が崩れた時だけ人間の判断を仰ぐ安全弁。Layer 3 は LLM 非依存の段階的ガード — 500行以上で推奨メッセージ、1000行以上で強制ブロック。普段の作業では柔軟に、大規模変更では確実に品質ゲートを通す。
+quality-gate はワークフローの自然なタイミング（コミット前、PR 前、実装完了時）で実行する。stop-guard は変更量を通知するのみでブロックしない。
 
 ## 設計思想と強み（変更提案時に必ず照合すること）
 
@@ -92,8 +91,7 @@ Layer 1・2 は品質が崩れた時だけ人間の判断を仰ぐ安全弁。La
 | SessionStart | archive-plans.sh | 5s | plan/ アーカイブ |
 | SessionStart | session-resume.sh | 3s | 文脈復元表示 |
 | SessionStart | memory-digest.sh | 3s | Memory ダイジェスト |
-| SessionStart | session-baseline.sh | 5s | diff ベースライン |
-| Stop | stop-guard.sh | 10s | quality-gate 強制 |
+| SessionStart | plugin-data-init.sh | 3s | PLUGIN_DATA 初期化 |
 | PermissionDenied | permission-denied.sh | 3s | 拒否ログ＋代替促進 |
 | SubagentStop | subagent-verify.sh | 3s | サブエージェント成果物検証 |
 | PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |

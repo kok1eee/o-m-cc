@@ -27,8 +27,8 @@
           },
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/session-baseline.sh",
-            "timeout": 5000
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/plugin-data-init.sh",
+            "timeout": 3000
           }
         ]
       }
@@ -41,18 +41,6 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/skill-usage-log.sh",
             "timeout": 2000
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/stop-guard.sh",
-            "timeout": 10000
           }
         ]
       }
