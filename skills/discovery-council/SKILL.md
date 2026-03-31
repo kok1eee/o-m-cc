@@ -18,10 +18,10 @@ $ARGUMENTS
 ## プロジェクト状態（動的注入）
 
 ### ディレクトリ構造
-!`find . -maxdepth 2 -type f \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.sh" \) 2>/dev/null | head -30 || echo "ソースファイルなし"`
+!`ls -d */ 2>/dev/null`
 
 ### 技術スタック
-!`ls package.json pyproject.toml Cargo.toml go.mod Gemfile setup.py requirements.txt 2>/dev/null || echo "検出なし"`
+!`ls package.json pyproject.toml Cargo.toml go.mod Gemfile setup.py requirements.txt 2>/dev/null`
 
 ## Headless モード
 
