@@ -94,6 +94,7 @@ Layer 1・2 は品質が崩れた時だけ人間の判断を仰ぐ安全弁。La
 | SessionStart | memory-digest.sh | 3s | Memory ダイジェスト |
 | SessionStart | session-baseline.sh | 5s | diff ベースライン |
 | Stop | stop-guard.sh | 10s | quality-gate 強制 |
+| PermissionDenied | permission-denied.sh | 3s | 拒否ログ＋代替促進 |
 | SubagentStop | subagent-verify.sh | 3s | サブエージェント成果物検証 |
 | PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |
 | PostCompact | post-compact-resume.sh | 5s | compaction 後の状態リマインド |
