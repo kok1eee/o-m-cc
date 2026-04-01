@@ -17,6 +17,6 @@ fi
 cat > /dev/null
 
 # 前セッションの一時ファイルをクリーンアップ
-rm -f .claude/quality-gate-running
+rm -f .claude/quality-gate-running .claude/evolve-done
 
 exit 0

@@ -12,7 +12,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 ```
 agents/         # 12 エージェント定義（.md）
 hooks/          # hooks スクリプト（.sh）+ hooks.json
-skills/         # スキル定義（sisyphus, discovery-council, design, task-decomposition, quality-gate, audit, handover, init）
+skills/         # スキル定義（sisyphus, discovery-council, design, task-decomposition, quality-gate, audit, evolve, init）
 facets/         # 共通ポリシー・リファレンス
 articles/       # 技術記事
 docs/           # ドキュメント
@@ -94,7 +94,7 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | SessionStart | plugin-data-init.sh | 3s | PLUGIN_DATA 初期化 |
 | PermissionDenied | permission-denied.sh | 3s | 拒否ログ＋代替促進 |
 | SubagentStop | subagent-verify.sh | 3s | サブエージェント成果物検証 |
-| PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 |
+| PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 + /evolve CTA |
 | PostCompact | post-compact-resume.sh | 5s | compaction 後の状態リマインド |
 | TaskCompleted | task-completed.sh | 5s | タスク完了通知 |
 | SessionEnd | pre-compact-handover.sh | 30s | 文脈自動保存 |

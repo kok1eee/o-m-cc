@@ -159,4 +159,16 @@ if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
 fi
 
 echo "📝 .claude/context.md updated（chronicle: ${CHRONICLE_COUNT} entries）"
+
+# PreCompact 時のみ: スキル進化の CTA を出す
+# SessionEnd では モデルが動けないのでスキップ
+if [[ "$EVENT" != "SessionEnd" ]]; then
+  EVOLVE_MARKER=".claude/evolve-done"
+  if [[ ! -f "$EVOLVE_MARKER" ]]; then
+    echo ""
+    echo "🧬 Skill ツールで o-m-cc:evolve を実行してください（スキルの自己進化）。" >&2
+    exit 2
+  fi
+fi
+
 exit 0

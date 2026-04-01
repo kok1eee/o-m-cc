@@ -53,7 +53,15 @@ cat "${CLAUDE_PLUGIN_DATA}/skill-usage.log" | tail -20
 - 曖昧な学び（「うまくいかないことがある」等）は追記しない。具体的な状況 + 回避方法がセットで必要
 - SKILL.md の Gotchas セクション以外は一切触らない
 
-### Step 4: 報告
+### Step 4: 完了マーカー
+
+PreCompact hook のループ防止用。evolve 完了を記録する。
+
+```bash
+mkdir -p .claude && touch .claude/evolve-done
+```
+
+### Step 5: 報告
 
 ```markdown
 ## Evolve 結果
