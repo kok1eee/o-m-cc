@@ -1,6 +1,6 @@
 ---
 name: task-decomposition
-description: "planner エージェントによるタスク分解。design.md を基に TaskCreate でネイティブタスクに登録。「タスクに分解して」「タスク分解して」「実装計画を立てて」で発動。"
+description: "planner エージェントによるタスク分解。design.md 完成後、実装前に使う。design.md を基に TaskCreate でネイティブタスクに登録。「タスクに分解して」「タスク分解して」「実装計画を立てて」「何から始める？」で発動。"
 argument-hint: ""
 allowed-tools: [Agent, Read, Glob, Grep, TaskCreate, TaskUpdate, AskUserQuestion]
 effort: medium

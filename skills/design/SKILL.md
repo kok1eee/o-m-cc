@@ -1,6 +1,6 @@
 ---
 name: design
-description: "designer エージェントによるアーキテクチャ設計。requirements.md を基に design.md を作成。「設計して」「アーキテクチャ設計して」「アーキテクチャを考えて」で発動。"
+description: "designer エージェントによるアーキテクチャ設計。requirements.md 完成後、実装前に使う。requirements.md を基に design.md を作成。「設計して」「アーキテクチャ設計して」「アーキテクチャを考えて」「設計書を作って」で発動。"
 argument-hint: ""
 allowed-tools: [Agent, Read, Write, Glob, Grep, WebSearch, WebFetch, AskUserQuestion]
 model: opus
