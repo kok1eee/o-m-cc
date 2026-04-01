@@ -178,6 +178,18 @@ Skill: quality-gate
 
 全フェーズ完了後、`TaskList` で残っている全タスク（[TRACKING] タスク + 実装タスク）を `TaskUpdate: status → deleted` で削除する。
 
+## 整合性チェック（CoDD inspired）
+
+上流の plan ドキュメントが変更されたら、下流も更新する。依存チェーン:
+
+```
+requirements.md → design.md → tasks → implementation
+```
+
+- validate-plan.sh が **staleness check** を行う（上流が下流より新しい場合に警告）
+- 要件が変わったら design を再生成、design が変わったらタスクを再分解
+- 実装中に要件変更が入った場合: 現在のタスクを完了 → 該当フェーズまで戻る
+
 ## Gotchas
 
 - **plan/ の古いファイルが Council を混乱させる**: Step 0 で必ず `rm -f plan/requirements.md plan/design.md` を実行。前回の成果物が残っていると analyst が既存要件と新規要件を混同する

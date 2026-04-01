@@ -84,6 +84,21 @@ validate_design() {
   fi
 }
 
+# --- 整合性チェック（CoDD inspired） ---
+# 上流が更新されたのに下流が古い場合に警告
+
+check_staleness() {
+  local req_file="${PLAN_DIR}/requirements.md"
+  local design_file="${PLAN_DIR}/design.md"
+
+  # design.md が requirements.md より古い → 整合性リスク
+  if [[ -f "$req_file" && -f "$design_file" ]]; then
+    if [[ "$req_file" -nt "$design_file" ]]; then
+      errors+=("design.md が requirements.md より古い — 要件変更後に設計が更新されていない可能性")
+    fi
+  fi
+}
+
 # --- メイン ---
 
 case "$TARGET" in
@@ -92,10 +107,12 @@ case "$TARGET" in
     ;;
   design)
     validate_design
+    check_staleness
     ;;
   all)
     validate_requirements
     validate_design
+    check_staleness
     ;;
   *)
     echo "Usage: bash validate-plan.sh [requirements|design|all]" >&2
