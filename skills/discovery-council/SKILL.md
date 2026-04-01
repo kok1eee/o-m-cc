@@ -3,6 +3,7 @@ name: discovery-council
 description: "3エージェント（researcher, analyst, scout）による並列要件分析 Council。peer-to-peer で相互検証し requirements.md を確定。「要件を整理して」「要件定義して」「現状分析して」「要件をまとめて」で発動。"
 argument-hint: "<feature description>"
 allowed-tools: [Agent, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, Read, Write, Edit, AskUserQuestion, Glob, Grep, WebSearch, WebFetch]
+model: sonnet
 effort: high
 context: fork
 ---
