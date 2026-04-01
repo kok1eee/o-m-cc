@@ -44,6 +44,14 @@ effort: low
 ### Changed Files
 変更したファイルと各ファイルの変更概要
 
+## スキル進化
+
+セッション中に得た学びをスキルの Gotchas に反映する。
+
+```
+Skill: evolve
+```
+
 ## CLAUDE.md の自動改善
 
 `claude-md-management` プラグインがインストールされている場合、セッションの学びを CLAUDE.md に反映する。

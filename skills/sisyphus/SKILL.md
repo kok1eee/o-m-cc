@@ -141,9 +141,12 @@ Skill: quality-gate
 
 → 通過後: `TaskUpdate: Phase 5 → completed`
 
-## Step 7: クリーンアップ
+## Step 7: 学習 + クリーンアップ
 
-全フェーズ完了後、`TaskList` で残っている全タスク（[TRACKING] タスク + 実装タスク）を `TaskUpdate: status → deleted` で削除する。
+全フェーズ完了後:
+
+1. `/evolve` でスキルの Gotchas を更新（今回の実行で得た学びを反映）
+2. `TaskList` で残っている全タスク（[TRACKING] タスク + 実装タスク）を `TaskUpdate: status → deleted` で削除
 
 ## 整合性チェック（CoDD inspired）
 
