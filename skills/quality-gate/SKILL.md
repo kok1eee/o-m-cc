@@ -82,6 +82,8 @@ TeamCreate:
 
 **3つの reviewer を Agent ツールで同時 spawn：**
 
+**原則: コンテキスト遮断** — reviewer は実装者の意図・理由・議論を知らない状態でレビューする。prompt に実装の「なぜ」を含めない。渡すのはコード差分のみ。これにより実装者のバイアスを排除し、コードそのものを客観的に評価する。
+
 ```
 1. Agent:
    subagent_type: "o-m-cc:code-reviewer"

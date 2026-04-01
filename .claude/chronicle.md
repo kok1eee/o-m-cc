@@ -3,6 +3,7 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
 - [03/30 14:06, end] ❯ ⏺ PreToolUse の末尾にテスト用 hook を追加します。
 - [03/30 14:05, end] ❯ ⏺ PreToolUse の末尾にテスト用 hook を追加します。
 - [03/30 11:05, end] ❯ ⏺ PreToolUse の末尾にテスト用 hook を追加します。
