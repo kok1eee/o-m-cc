@@ -1,12 +1,9 @@
 #!/bin/bash
 # quality-gate 静的解析スクリプト（変更ファイルのみ対象）
-# usage: bash lint.sh [--proof]
-#   --proof: 全チェック通過時に proof ファイルを書き込む
+# usage: bash lint.sh
 set -euo pipefail
 
 PASS=true
-WRITE_PROOF=false
-[[ "${1:-}" == "--proof" ]] && WRITE_PROOF=true
 
 check_cmd() { command -v "$1" >/dev/null 2>&1; }
 
@@ -22,12 +19,6 @@ get_changed_files() {
 CHANGED_FILES=$(get_changed_files)
 if [[ -z "$CHANGED_FILES" ]]; then
   echo "✅ 変更ファイルなし — スキップ"
-  if [[ "$WRITE_PROOF" == "true" ]]; then
-    mkdir -p .claude
-    echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-proof.json
-    echo "📝 proof ファイル書き込み完了"
-  fi
-  rm -f .claude/quality-gate-running
   exit 0
 fi
 
@@ -89,18 +80,10 @@ if [[ -n "$rs_files" ]]; then
   fi
 fi
 
-# running マーカー削除
-rm -f .claude/quality-gate-running
-
 # 結果
 if [[ "$PASS" == "true" ]]; then
   echo ""
   echo "✅ 静的解析通過"
-  if [[ "$WRITE_PROOF" == "true" ]]; then
-    mkdir -p .claude
-    echo "{\"passed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > .claude/quality-gate-proof.json
-    echo "📝 proof ファイル書き込み完了"
-  fi
 else
   echo ""
   echo "❌ 静的解析失敗 — エラーを修正して再実行してください"

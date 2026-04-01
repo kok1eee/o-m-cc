@@ -13,7 +13,7 @@
 ## 完了条件
 
 全てのTODOが完了し、レビューで Critical がない場合のみ完了。
-stop-guard が diff の変更量を検知し、閾値以上なら `/quality-gate` を強制する（proof ファイルが必要）。
+コミット前・PR 前・実装完了時に `/quality-gate` を実行する。
 
 ## Verification - 証拠なき完了は完了ではない
 

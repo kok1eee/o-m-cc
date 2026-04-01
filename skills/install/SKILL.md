@@ -83,10 +83,7 @@ o-m-cc のランタイムファイルを追加（重複しない場合のみ）�
 .claude/
 
 # o-m-cc runtime
-.claude/sisyphus-state.json
-.claude/quality-gate-proof.json
 .claude/quality-gate-running
-.claude/sisyphus-baseline.json
 ```
 
 ---

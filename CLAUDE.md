@@ -45,7 +45,7 @@ templates/      # テンプレート
 | **Layer 1**: 形式チェック（validate-plan.sh） | requirements.md/design.md の必須セクション・FR 言及率を自動検証 | なし | 再実行1回 → まだ失敗なら AskUserQuestion（Headless なら記録して続行） |
 | **Layer 2**: CTA（sisyphus SKILL.md） | 元の要求との内容乖離を LLM が判断 | あり | 同上 |
 
-quality-gate はワークフローの自然なタイミング（コミット前、PR 前、実装完了時）で実行する。stop-guard は変更量を通知するのみでブロックしない。
+quality-gate はワークフローの自然なタイミング（コミット前、PR 前、実装完了時）で実行する。
 
 ## 設計思想と強み（変更提案時に必ず照合すること）
 
@@ -120,9 +120,6 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 
 ## テスト・検証
 ```bash
-# hooks の単体テスト
-echo '{}' | bash hooks/stop-guard.sh
-
 # hooks.json の構文チェック
 jq . hooks/hooks.json
 

@@ -37,18 +37,7 @@ if [[ -n "${STAT:-}" ]]; then
 fi
 echo "  変更: ${DIFF_LINES} 行（plan/ 除外）"
 
-# 3. Quality Gate 状態
-PROOF_FILE=".claude/quality-gate-proof.json"
-RUNNING_FILE=".claude/quality-gate-running"
-if [[ -f "$PROOF_FILE" ]]; then
-  echo "  Quality Gate: ✅ 通過済み"
-elif [[ -f "$RUNNING_FILE" ]]; then
-  echo "  Quality Gate: ⏳ 実行中"
-else
-  echo "  Quality Gate: 未実行"
-fi
-
-# 4. plan/ の状態からフェーズ推測
+# 3. plan/ の状態からフェーズ推測
 if [[ -d "plan" ]]; then
   HAS_REQ=$(ls plan/requirements.md 2>/dev/null && echo "1" || echo "0")
   HAS_DESIGN=$(ls plan/design.md 2>/dev/null && echo "1" || echo "0")

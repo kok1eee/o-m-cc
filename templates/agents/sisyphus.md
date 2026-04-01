@@ -54,7 +54,7 @@ initialPrompt: "CLAUDE.md を Read してプロジェクトの文脈とワーク
 | テスト/ビルド | テスト実行: 0 failures、ビルド: exit 0 |
 | `/quality-gate` | /simplify + Review Council + 静的解析を一括実行 |
 
-**stop-guard が diff の変更量を検知し、閾値（デフォルト500行）以上なら `/quality-gate` を強制する。** `/quality-gate` が proof ファイルを書き込まないと停止できない。
+コミット前・PR 前・実装完了時に `/quality-gate` を実行する。
 
 ### 6. 文脈を残す
 
