@@ -31,7 +31,7 @@ validate_requirements() {
   fi
 
   # 必須セクション: 非スコープ
-  if ! echo "$content" | grep -qiE '(非スコープ|スコープ外|non.?scope|今回.*?(しない|変更しない|対象外))'; then
+  if ! echo "$content" | grep -qiE '(非スコープ|スコープ外|non.?scope|out.?of.?scope|今回.*?(しない|変更しない|対象外))'; then
     errors+=("requirements.md: 「非スコープ」セクションがない")
   fi
 
