@@ -84,128 +84,18 @@ TeamCreate:
 
 **原則: コンテキスト遮断** — reviewer は実装者の意図・理由・議論を知らない状態でレビューする。prompt に実装の「なぜ」を含めない。渡すのはコード差分のみ。これにより実装者のバイアスを排除し、コードそのものを客観的に評価する。
 
-```
-1. Agent:
-   subagent_type: "o-m-cc:code-reviewer"
-   name: "code-reviewer"
-   team_name: "quality-gate"
-   description: "Quality Gate: コード品質"
-   prompt: |
-     ## エージェント定義
-     agents/code-reviewer.md の指示に従ってください。
-
-     ## 参照ポリシー
-     facets/policies/confidence-scoring.md を Read して適用してください。
-
-     ## コンテキスト
-     - タスク: $ARGUMENTS のコードレビュー
-     - スコープ: コード品質（バグ、複雑性、保守性）
-
-     ## 入力
-     [変更差分を含める]
-
-     ## Council プロトコル
-     1. 独立にレビューを実施
-     2. SendMessage で findings を security-reviewer・critic に共有
-     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
-     4. 相互検証を経た最終 findings のみを報告
-     5. このプロジェクトで繰り返し発見した指摘パターンは memory に保存
-
-     ## 出力
-     - Confidence 80+ の問題のみ Critical/Warning で報告
-     - agents/code-reviewer.md の出力フォーマットに従う
-
-2. Agent:
-   subagent_type: "o-m-cc:security-reviewer"
-   name: "security-reviewer"
-   team_name: "quality-gate"
-   description: "Quality Gate: セキュリティ"
-   prompt: |
-     ## エージェント定義
-     agents/security-reviewer.md の指示に従ってください。
-
-     ## 参照ポリシー
-     facets/policies/confidence-scoring.md を Read して適用してください。
-
-     ## コンテキスト
-     - タスク: $ARGUMENTS のセキュリティレビュー
-     - スコープ: OWASP Top 10 + Trail of Bits パターン
-
-     ## 入力
-     [変更差分を含める]
-
-     ## Council プロトコル
-     1. 独立にセキュリティレビューを実施
-     2. SendMessage で findings を code-reviewer・critic に共有
-     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
-     4. 相互検証を経た最終 findings のみを報告
-     5. このプロジェクトで繰り返し発見した脆弱性パターンは memory に保存
-
-     ## 出力
-     - Confidence 80+ の問題のみ Critical/Warning で報告
-     - agents/security-reviewer.md の出力フォーマットに従う
-
-3. Agent:
-   subagent_type: "o-m-cc:critic"
-   name: "critic"
-   team_name: "quality-gate"
-   description: "Quality Gate: 計画整合性"
-   prompt: |
-     ## エージェント定義
-     agents/critic.md の指示に従ってください。
-
-     ## コンテキスト
-     - タスク: 実装が計画・設計に沿っているかレビュー
-     - スコープ: 計画整合性、設計原則の遵守、スコープ逸脱
-
-     ## 入力
-     [変更差分を含める]
-     - plan/ ディレクトリ内のファイルを自分で確認してください
-     - requirements.md / design.md の `## 既知の不足` セクションはレビュー対象外（上流で解決できなかった問題であり、人間が継続を判断済み）
-
-     ## Council プロトコル
-     1. 独立に計画整合性レビューを実施
-     2. SendMessage で findings を code-reviewer・security-reviewer に共有
-     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
-     4. 相互検証を経た最終 findings のみを報告
-     5. このプロジェクトで繰り返し発見した計画乖離パターンは memory に保存
-
-     ## 出力
-     - 計画との乖離があれば Critical/Warning で報告
-     - agents/critic.md の出力フォーマットに従う
-```
+3つの reviewer（code-reviewer, security-reviewer, critic）を Agent で同時 spawn。
+→ **prompt テンプレートは reference.md を Read して使用**
 
 **重要**: 3つの teammate を同時に spawn してレビュー時間を短縮。
 SendMessage で互いの発見を共有・議論し、相互検証する。
 
 ### Step 4: 結果の集約
 
-3つの teammate からの報告を集約：
-
-#### 集約ルール
+3つの teammate からの報告を集約（→ フォーマットは reference.md 参照）:
 
 - `all("Critical なし")` → 品質ゲート通過
-- `any("Critical あり")` → 修正必須。Step 5 へ（自動修正）
-
-```markdown
-# 統合レビュー結果
-
-## コード品質（code-reviewer teammate）
-- Critical: X件
-- Warning: X件
-
-## セキュリティ（security-reviewer teammate）
-- Critical: X件
-- Warning: X件
-
-## 計画整合性（critic teammate）
-- Critical: X件（計画なしの場合: スキップ）
-- Warning: X件
-
-## 総合判定
-→ all("Critical なし"): 品質ゲート通過
-→ any("Critical あり"): 修正必須
-```
+- `any("Critical あり")` → 修正必須。Step 5 へ
 
 ### Step 4.5: チーム解散
 
@@ -228,71 +118,15 @@ Critical が見つかった場合、**自動で修正を試みる**（ノンス�
 
 全修正が完了した最終成果物に対して、言語別のリンターを実行する。該当ファイルがなければスキップ。
 
-| ファイル種別 | リンター | コマンド |
-|-------------|---------|---------|
-| `*.py` | ruff + ty | `ruff check . && ty check .` |
-| `*.sh` | shellcheck | `shellcheck <files>` |
-| `*.ts` / `*.tsx` | tsc + eslint | `npx tsc --noEmit && npx eslint .` |
-| `*.rs` | cargo clippy + cargo test | `cargo clippy -- -D warnings && cargo test` |
+言語別リンターを実行する。該当ファイルがなければスキップ。
+→ **コマンド詳細は reference.md 参照**
 
-```bash
-# Python ファイルがある場合
-if compgen -G "**/*.py" > /dev/null 2>&1; then
-  ruff check .
-  ty check .
-fi
+- Python: `ruff check . && ty check .`
+- Shell: `shellcheck`
+- TypeScript: `npx tsc --noEmit && npx eslint .`
+- Rust: `cargo clippy && cargo test`
 
-# Shell スクリプトがある場合
-if compgen -G "**/*.sh" > /dev/null 2>&1; then
-  shellcheck -S warning **/*.sh
-fi
-
-# TypeScript ファイルがある場合
-if compgen -G "**/*.ts" > /dev/null 2>&1 || compgen -G "**/*.tsx" > /dev/null 2>&1; then
-  npx tsc --noEmit
-  npx eslint .
-fi
-
-# Rust ファイルがある場合（既にビルド/テスト済みならスキップ可）
-if [[ -f "Cargo.toml" ]]; then
-  cargo clippy -- -D warnings
-  cargo test
-fi
-```
-
-- エラーがあれば**この場で修正**して再実行
-- warning のみなら記録して続行
-
----
-
-## 完了時の出力
-
-```
-✅ 品質ゲート通過（Review Council + Lint）
-
-📊 コード品質
-   🟢 Critical: なし
-   🟡 Warning: X件
-
-🔒 セキュリティ
-   🟢 Critical: なし
-   🟡 Warning: X件
-
-📐 計画整合性
-   🟢 Critical: なし（または: 計画なし - スキップ）
-   🟡 Warning: X件
-
-🔍 静的解析
-   ruff: ✅ (or N/A)
-   ty: ✅ (or N/A)
-   shellcheck: ✅ (or N/A)
-   tsc: ✅ (or N/A)
-   eslint: ✅ (or N/A)
-   clippy: ✅ (or N/A)
-   cargo test: ✅ (or N/A)
-
-→ 品質ゲート通過
-```
+エラーがあればこの場で修正して再実行。warning のみなら記録して続行。
 
 ### Step 7: 静的解析の最終実行
 
