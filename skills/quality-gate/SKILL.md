@@ -142,6 +142,8 @@ bash ${CLAUDE_SKILL_DIR}/lint.sh
 - **静的解析ツールが未インストールで失敗**: `ruff`, `shellcheck`, `tsc` 等が PATH にない場合がある。`compgen -G` のファイル検出だけでなく、コマンドの存在確認も行う
 - **前回の TeamCreate の残骸でエラー**: Step 2 で既存チームの TeamDelete を先に実行する。前セッションのチームが残っているとチーム名が衝突する
 
+<!-- AUTO-GOTCHAS -->
+
 ---
 
 **品質ゲートを開始します。**

@@ -106,3 +106,5 @@ effort: medium
 - **テストコマンドが不明で実行しない**: CLAUDE.md にテストコマンドが書かれていない場合、`package.json` の scripts や `Makefile` を確認する。それでも不明なら AskUserQuestion で聞く
 - **exit code 0 だけ見て出力を読まない**: `0 tests ran` でも exit 0 になる。テスト件数や出力内容まで確認する
 - **ビルドの警告を無視**: 警告はエラーではないが、新規の警告は報告すべき
+
+<!-- AUTO-GOTCHAS -->
