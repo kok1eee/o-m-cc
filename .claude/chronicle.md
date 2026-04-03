@@ -3,6 +3,10 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [04/03 16:07, end] ⏺ Next セクションが表示されていないですね。context.md
+- [04/03 16:07, end] ⏺ Next セクションが表示されていないですね。context.md
+- [04/03 11:49, end] ⏺ Next セクションが表示されていないですね。context.md
+- [04/03 11:38, manual] ⏺ Next セクションが表示されていないですね。context.md
 - [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
 - [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
 - [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
@@ -29,7 +33,3 @@
 - [03/17 15:12, end] 2.1.77
 - [03/16 12:59, end] いよいよ人に使ってもらうレベルになってきた気がする
 - [03/16 12:52, end] いよいよ人に使ってもらうレベルになってきた気がする
-- [03/16 12:52, end] いよいよ人に使ってもらうレベルになってきた気がする
-- [03/16 12:43, end] <command-message>o-m-cc:quality-gate</command-message>
-- [03/16 12:43, end] <command-message>o-m-cc:quality-gate</command-message>
-- [03/16 12:12, end] <command-message>o-m-cc:quality-gate</command-message>

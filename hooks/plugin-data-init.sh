@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-if [[ "${CLAUDE_HEADLESS:-}" = "1" ]]; then
+if [[ "${CLAUDE_NON_INTERACTIVE:-}" = "1" ]]; then
   cat > /dev/null
   exit 0
 fi
