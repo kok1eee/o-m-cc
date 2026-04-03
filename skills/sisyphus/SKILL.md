@@ -61,7 +61,7 @@ Skill: discovery-council
 **CTA**（再実行は最大1回。品質が崩れたら止まる）:
 1. 自動形式チェック:
    ```bash
-   bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-plan.sh requirements
+   validate-plan requirements
    ```
 2. **形式チェック失敗** → 1回だけ discovery-council を再実行 → 再度形式チェック
 3. **形式チェック通過** → requirements.md を Read し、$ARGUMENTS と内容に重大な乖離がないか確認
@@ -78,7 +78,7 @@ Skill: design
 **CTA**（再実行は最大1回。品質が崩れたら止まる）:
 1. 自動形式チェック:
    ```bash
-   bash ${CLAUDE_PLUGIN_ROOT}/hooks/validate-plan.sh design
+   validate-plan design
    ```
 2. **形式チェック失敗** → 1回だけ design を再実行 → 再度形式チェック
 3. **形式チェック通過** → design.md を Read し、requirements.md との重大な乖離がないか確認
@@ -156,7 +156,7 @@ Skill: quality-gate
 requirements.md → design.md → tasks → implementation
 ```
 
-- validate-plan.sh が **staleness check** を行う（上流が下流より新しい場合に警告）
+- `validate-plan` が **staleness check** を行う（上流が下流より新しい場合に警告）
 - 要件が変わったら design を再生成、design が変わったらタスクを再分解
 - 実装中に要件変更が入った場合: 現在のタスクを完了 → 該当フェーズまで戻る
 

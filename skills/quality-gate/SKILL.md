@@ -130,10 +130,10 @@ Critical が見つかった場合、**自動で修正を試みる**（ノンス�
 
 ### Step 7: 静的解析の最終実行
 
-**全ステップ完了後**、lint.sh を実行する。
+**全ステップ完了後**、lint を実行する。
 
 ```bash
-bash ${CLAUDE_SKILL_DIR}/lint.sh
+lint
 ```
 
 ## Gotchas

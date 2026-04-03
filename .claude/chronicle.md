@@ -4,6 +4,8 @@
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
 - [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
+- [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
+- [03/31 11:38, end] 例えばo-m-ccの中じゃなくてもいいかもなんだけど
 - [03/30 14:06, end] ❯ ⏺ PreToolUse の末尾にテスト用 hook を追加します。
 - [03/30 14:05, end] ❯ ⏺ PreToolUse の末尾にテスト用 hook を追加します。
 - [03/30 11:05, end] ❯ ⏺ PreToolUse の末尾にテスト用 hook を追加します。
@@ -31,6 +33,3 @@
 - [03/16 12:43, end] <command-message>o-m-cc:quality-gate</command-message>
 - [03/16 12:43, end] <command-message>o-m-cc:quality-gate</command-message>
 - [03/16 12:12, end] <command-message>o-m-cc:quality-gate</command-message>
-- [03/16 11:47, end] <command-message>o-m-cc:quality-gate</command-message>
-- [03/16 11:10, end] <command-message>o-m-cc:quality-gate</command-message>
-- [03/14 19:00, manual] o-m-cc v0.21→v0.23 — sisyphus ワークフロー改善、公式プラグイン連携、hooks 整理

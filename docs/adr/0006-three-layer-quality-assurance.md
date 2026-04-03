@@ -13,9 +13,8 @@ Sisyphus Loop は「品質が維持される限り止まらない」が原則。
 
 | 層 | 仕組み | LLM 依存 |
 |---|---|---|
-| Layer 1 | 形式チェック（validate-plan.sh）: 必須セクション・FR 言及率を自動検証 | なし |
+| Layer 1 | 形式チェック（`validate-plan`）: 必須セクション・FR 言及率を自動検証 | なし |
 | Layer 2 | CTA（sisyphus SKILL.md）: 元の要求との内容乖離を LLM が判断 | あり |
-| Layer 3 | diff ベース品質ガード（stop-guard.sh）: 変更行数に応じて推奨/強制 | なし |
 
 ## Consequences
 

@@ -1,6 +1,6 @@
 #!/bin/bash
-# quality-gate 静的解析スクリプト（変更ファイルのみ対象）
-# usage: bash lint.sh
+# lint — quality-gate 静的解析スクリプト（変更ファイルのみ対象）
+# Usage: lint
 set -euo pipefail
 
 PASS=true

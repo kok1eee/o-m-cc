@@ -507,7 +507,7 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **researcher 重要ファイルリスト**: 調査結果に「メインが Read すべきファイル」5-10件を含める
 - **動的コンテキスト注入**: sisyphus/quality-gate/discovery-council に `!`command`` で前処理注入
 - **Gotchas セクション**: sisyphus/quality-gate/discovery-council/verification に失敗パターンを追加
-- **lint.sh スクリプト化**: quality-gate の静的解析を独立スクリプトに抽出。ツール未インストール時のスキップ対応
+- **lint スクリプト化**: quality-gate の静的解析を `bin/lint` として独立コマンド化。ツール未インストール時のスキップ対応
 - **スキル使用ログ**: PreToolUse hook で Skill 使用を CLAUDE_PLUGIN_DATA に記録
 - **TaskCreated hook**: タスク作成をログし /retro で分析可能に
 - **paths glob**: quality-gate/experiment にコードファイルのみ発動する paths 制限

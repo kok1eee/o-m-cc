@@ -11,6 +11,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 ## ディレクトリ構造
 ```
 agents/         # 12 エージェント定義（.md）
+bin/            # CLI ユーティリティ（validate-plan, lint）— bare command として Bash tool から直接実行可能
 hooks/          # hooks スクリプト（.sh）+ hooks.json
 skills/         # スキル定義（sisyphus, discovery-council, design, task-decomposition, quality-gate, audit, evolve, init）
 facets/         # 共通ポリシー・リファレンス
@@ -42,7 +43,7 @@ templates/      # テンプレート
 
 | 層 | 仕組み | LLM 依存 | 失敗時の挙動 |
 |---|---|---|---|
-| **Layer 1**: 形式チェック（validate-plan.sh） | requirements.md/design.md の必須セクション・FR 言及率を自動検証 | なし | 再実行1回 → まだ失敗なら AskUserQuestion（Headless なら記録して続行） |
+| **Layer 1**: 形式チェック（`validate-plan`） | requirements.md/design.md の必須セクション・FR 言及率を自動検証 | なし | 再実行1回 → まだ失敗なら AskUserQuestion（Headless なら記録して続行） |
 | **Layer 2**: CTA（sisyphus SKILL.md） | 元の要求との内容乖離を LLM が判断 | あり | 同上 |
 
 quality-gate はワークフローの自然なタイミング（コミット前、PR 前、実装完了時）で実行する。

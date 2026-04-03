@@ -1,6 +1,6 @@
 #!/bin/bash
-# validate-plan.sh — 中間成果物の形式チェック
-# Usage: bash validate-plan.sh [requirements|design|tasks]
+# validate-plan — 中間成果物の形式チェック
+# Usage: validate-plan [requirements|design|all]
 # Exit 0: OK, Exit 1: 形式不備あり（stdout にエラー詳細）
 
 set -euo pipefail
@@ -115,7 +115,7 @@ case "$TARGET" in
     check_staleness
     ;;
   *)
-    echo "Usage: bash validate-plan.sh [requirements|design|all]" >&2
+    echo "Usage: validate-plan [requirements|design|all]" >&2
     exit 1
     ;;
 esac
