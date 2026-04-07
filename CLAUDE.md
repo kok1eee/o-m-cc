@@ -89,6 +89,7 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 
 | Event | Script | Timeout | 役割 |
 |-------|--------|---------|------|
+| SessionStart | resolve-conflicts.sh | 3s | chronicle.md / context.md のコンフリクト自動解決 |
 | SessionStart | check-dependencies.sh | 3s | 依存チェック |
 | SessionStart | archive-plans.sh | 5s | plan/ アーカイブ |
 | SessionStart | session-resume.sh | 3s | 文脈復元表示 |
