@@ -98,16 +98,33 @@ fi
 # --- 3. 抽出 ---
 
 # 全ユーザーメッセージを一度だけ抽出（Intent + Next で共有）
-ALL_USER_MSGS=$(grep '"role":"user"' "$TRANSCRIPT_PATH" | \
-  jq -r '.message.content | if type == "array" then map(select(.type == "text")) | map(.text) | join(" ") else . end' 2>/dev/null | \
-  grep -v '^\[Request interrupted' | grep -v '^$' || true)
+# 抽出: jq select でトップレベル user メッセージのみ取得（grep 経由だと nested role:user に誤マッチする）
+#       改行をスペースに変換し、メッセージごとに1行にする
+# フィルタ: ノイズを除外して「人間の実際の発話」だけを残す
+#   - [Request interrupted]: 中断メッセージ
+#   - ⏺ を含む行: Claude の出力マーカー（pasted content）
+#   - <system-reminder>, <command-name>, <local-command->: システム生成
+#   - "This session is being continued": compaction サマリ
+#   - "Caveat: The messages below": local command 実行のキャベアット
+#   - 10文字未満: 短すぎる（"yes" 等）
+#   - 500文字超: 長すぎる（pasted log/changelog 等）
+ALL_USER_MSGS=$(jq -r 'select(.type? == "user" and (.message?.content?)) | .message.content | if type == "array" then map(select(.type? == "text")) | map(.text? // "") | join(" ") else . end | gsub("\n"; " ") | gsub("\r"; " ")' "$TRANSCRIPT_PATH" 2>/dev/null | \
+  grep -v '^\[Request interrupted' | \
+  grep -v '⏺' | \
+  grep -v '<system-reminder>' | \
+  grep -v '<command-name>' | \
+  grep -v '<local-command-' | \
+  grep -v 'This session is being continued' | \
+  grep -v 'Caveat: The messages below' | \
+  awk 'length >= 10 && length <= 500' | \
+  grep -v '^$' || true)
 
 # Intent: 最初の実質的なユーザーメッセージ
 INTENT=$(echo "$ALL_USER_MSGS" | sed -n '1p' | cut -c1-200)
 INTENT=${INTENT:-"(抽出失敗)"}
 
 # Next: セッション終盤のユーザーメッセージ（次の方向性）
-LAST_MSGS=$(echo "$ALL_USER_MSGS" | awk 'length >= 10' | tail -3)
+LAST_MSGS=$(echo "$ALL_USER_MSGS" | tail -3)
 # Intent と完全一致する1行だけなら重複なので空にする
 if [[ "$(echo "$LAST_MSGS" | grep -c '[^[:space:]]')" -eq 1 ]]; then
   LAST_FIRST=$(echo "$LAST_MSGS" | head -1 | cut -c1-200)

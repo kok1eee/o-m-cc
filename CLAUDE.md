@@ -13,7 +13,7 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 agents/         # 12 エージェント定義（.md）
 bin/            # CLI ユーティリティ（validate-plan, lint）— bare command として Bash tool から直接実行可能
 hooks/          # hooks スクリプト（.sh）+ hooks.json
-skills/         # スキル定義（sisyphus, discovery-council, design, task-decomposition, quality-gate, audit, evolve, init）
+skills/         # スキル定義（sisyphus, discovery-council, design, task-decomposition, quality-gate, evolve, handoff, ...）
 facets/         # 共通ポリシー・リファレンス
 articles/       # 技術記事
 docs/           # ドキュメント
@@ -72,6 +72,7 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | 新機能・設計判断が必要な変更 | `/sisyphus` で要件→設計→タスク分解→実装 |
 | 最適化・リファクタリング・試行錯誤 | `/experiment` で実験駆動ループ（試す→測る→保持 or revert） |
 | 完了を宣言する前 | `/verification` で証拠確認（テスト実行、動作確認） |
+| 長くなって区切りたい・新セッションに引き継ぎたい | `/handoff` で context.md に保存し新ターミナルで再開 |
 
 **実装完了時のフロー:**
 1. `/simplify` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等）
