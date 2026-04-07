@@ -93,6 +93,7 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | SessionStart | session-resume.sh | 3s | 文脈復元表示 |
 | SessionStart | memory-digest.sh | 3s | Memory ダイジェスト |
 | SessionStart | plugin-data-init.sh | 3s | PLUGIN_DATA 初期化 |
+| PreToolUse(Bash) | quality-gate-cta.sh | 3s | push 前に quality-gate を促す（非強制 CTA） |
 | PermissionDenied | permission-denied.sh | 3s | 拒否ログ＋代替促進 |
 | SubagentStop | subagent-verify.sh | 3s | サブエージェント成果物検証 |
 | PreCompact | pre-compact-handover.sh | 30s | 文脈自動保存 + /evolve CTA |

@@ -43,6 +43,16 @@
             "timeout": 2000
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/quality-gate-cta.sh",
+            "timeout": 3000
+          }
+        ]
       }
     ],
     "PreCompact": [

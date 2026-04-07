@@ -2,14 +2,14 @@
 
 > セッション間の引き継ぎ情報。学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md。
 
-### Snapshot (04/05 11:06, end)
+### Snapshot (04/07 16:05, end)
 
 **Intent:** ⏺ Next セクションが表示されていないですね。context.md
 
 **Next:**
-- 統一する
-- これ設定されていたら
-- hooksとかスキップされるってことだよね？
+- jj gitPush
+- ver あげないと認識されないので細かくあげて
+- ローカルの環境をあげて
 
 **Outcomes:** 15 files changed
 
