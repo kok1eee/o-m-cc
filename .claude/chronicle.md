@@ -3,6 +3,9 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [04/08 11:56, manual-handoff] Claude Code v2.1.94 の sessionTitle 機能を o-m-cc に組み込み、wez-sidebar の API 使用量更新問題を診断
+- [04/08 11:56, manual] Claude Code v2.1.94 の sessionTitle 機能を o-m-cc に組み込み、wez-sidebar の API 使用量更新問題を診断する
+- [04/07 16:05, end] ⏺ Next セクションが表示されていないですね。context.md
 - [04/05 11:06, end] ⏺ Next セクションが表示されていないですね。context.md
 - [04/05 11:06, end] ⏺ Next セクションが表示されていないですね。context.md
 - [04/03 16:07, end] ⏺ Next セクションが表示されていないですね。context.md
@@ -30,6 +33,3 @@
 - [03/19 15:02, end] 2.1.77
 - [03/18 01:22, end] 2.1.77
 - [03/17 18:53, end] 2.1.77
-- [03/17 15:40, end] config
-- [03/17 15:19, end] 2.1.77
-- [03/17 15:12, end] 2.1.77

@@ -2,31 +2,23 @@
 
 > セッション間の引き継ぎ情報。学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md。
 
-### Snapshot (04/07 16:05, end)
+### Snapshot (04/08 11:58, end)
 
-**Intent:** ⏺ Next セクションが表示されていないですね。context.md
+**Intent:**   o-m-cc で確認したい点:   1. スキルの frontmatter に hooks   を書いている箇所があるか（あれば動作確認）   2. sessionTitle を使えば session-resume.sh   からタイトル設定できる可能性  これについて確認しようか
 
 **Next:**
-- jj gitPush
-- ver あげないと認識されないので細かくあげて
-- ローカルの環境をあげて
+- おすすめで
+- 実装ありがとう
+- これってsessionの再起動が必要とかではない？
 
-**Outcomes:** 15 files changed
+**Outcomes:** 7 files changed
 
 **Changed Files:**
-- `/Users/tazawa-masayoshi/.claude/settings.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/marketplace.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/plugin.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/settings.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/bin/lint`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/bin/validate-plan`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/CLAUDE.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/docs/adr/0006-three-layer-quality-assurance.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/facets/policies/confidence-scoring.md`
+- `/tmp/test-session-title-hook.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude/chronicle.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude/context.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude/settings.local.json`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/hooks.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/lib/common.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/permission-denied.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/plugin-data-init.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/post-compact-resume.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/pre-compact-handover.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/session-title.sh`
+- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/scripts/statusline.sh`
 
