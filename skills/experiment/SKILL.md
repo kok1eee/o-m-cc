@@ -2,7 +2,7 @@
 name: experiment
 description: "実験駆動の反復改善ループ（autoresearch 方式）。毎回フレッシュなサブエージェントで 1変更→測定→保持 or revert。progress.md がイテレーション間の記憶。パフォーマンス最適化、リファクタリング、UI改善、バグ修正の試行錯誤に使う。「最適化して」「パフォーマンス改善」「リファクタリング」「試行錯誤して」「実験的に改善」で発動。"
 argument-hint: "<optimization goal and measurement method>"
-allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Agent, Monitor, AskUserQuestion]
 model: opus
 effort: high
 paths:
@@ -97,6 +97,34 @@ $ARGUMENTS
 │  3. 次のイテレーションへ                                  │
 └─────────────────────────────────────────────────────────┘
 ```
+
+### Monitor 活用: 長時間テストの非同期測定
+
+Metric コマンドの実行に **10秒以上かかる場合**（フルテストスイート、ベンチマーク等）、Monitor を使って測定を非同期化する。テスト実行中に progress.md の更新や次の仮説の検討を並行できる。
+
+**判定基準**: Step 1 のベースライン測定で実行時間を確認。10秒以上 → Monitor 方式、10秒未満 → サブエージェント内で直接測定（従来方式）。
+
+```
+┌─ Monitor 方式の Iteration N ───────────────────────────┐
+│                                                         │
+│  1. Agent spawn → 変更のみ実装して報告（測定は省略）      │
+│                                                         │
+│  2. Monitor で測定コマンドを非同期実行                    │
+│     Monitor:                                            │
+│       description: "Experiment iteration N measurement"  │
+│       timeout_ms: 300000                                │
+│       persistent: false                                 │
+│       command: "<progress.md の Metric コマンド>"         │
+│                                                         │
+│  3. 測定待ちの間にメインエージェントが:                    │
+│     - progress.md の Iterations セクションに仮説を記録    │
+│     - 次のイテレーションの仮説を検討                      │
+│                                                         │
+│  4. Monitor から結果が到着 → 評価して keep/revert         │
+└─────────────────────────────────────────────────────────┘
+```
+
+Monitor 方式の場合、サブエージェントの spawn テンプレートから手順 5（測定）を省略する。
 
 ### サブエージェント spawn テンプレート
 

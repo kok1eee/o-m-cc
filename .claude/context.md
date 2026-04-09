@@ -2,23 +2,25 @@
 
 > セッション間の引き継ぎ情報。学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md。
 
-### Snapshot (04/08 11:58, end)
+### Snapshot (04/10 10:07, end)
 
-**Intent:**   o-m-cc で確認したい点:   1. スキルの frontmatter に hooks   を書いている箇所があるか（あれば動作確認）   2. sessionTitle を使えば session-resume.sh   からタイトル設定できる可能性  これについて確認しようか
+**Intent:** 今だとだめじゃない？  いつかわからない
 
 **Next:**
-- おすすめで
-- 実装ありがとう
-- これってsessionの再起動が必要とかではない？
+- そんなに激しく同期しなくていいんだけど
+- そんなに激しく同期しなくていいんだけど  cronで一週間に一回くらいやっておくくらいでいいかなって
+- 違うcronじゃなくてstdtabでやろう実装方針だけ教えて
 
-**Outcomes:** 7 files changed
+**Outcomes:** 9 files changed
 
 **Changed Files:**
-- `/tmp/test-session-title-hook.sh`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude/chronicle.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude/context.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude/settings.local.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/hooks.json`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/session-title.sh`
+- `/Users/tazawa-masayoshi/.claude/CLAUDE.md`
+- `/Users/tazawa-masayoshi/.claude/plans/squishy-moseying-fiddle.md`
+- `/Users/tazawa-masayoshi/.claude/settings.json`
+- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/.mcp.json`
+- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/mcp.json`
+- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/rules/jj.md`
 - `/Users/tazawa-masayoshi/dotfiles/claude/.claude/scripts/statusline.sh`
+- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/scripts/sync-tasks.sh`
+- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/settings.json`
 

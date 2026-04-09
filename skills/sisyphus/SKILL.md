@@ -2,7 +2,7 @@
 name: sisyphus
 description: "計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー。Agent Teams で要件→設計→タスク分解→実装→quality-gate を一括実行。新機能開発や設計判断が必要な変更に使う。「計画して」「この機能を実装したい」「新機能を作りたい」「要件から実装まで」で発動。"
 argument-hint: "<feature description>"
-allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
+allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
 model: opus
 effort: high
 context: fork
@@ -118,6 +118,20 @@ Skill: task-decomposition
 3. fail → Debugger spawn → 修正 → Verifier 再検証（最大2回）
 4. Debugger 2回失敗 → Experiment ループ（仮説→1変更→検証、最大3回）
 5. 3回失敗 → AskUserQuestion（Headless なら [BLOCKED] 記録して次へ）
+
+### Monitor 活用: テスト実行の非同期監視
+
+Verifier がテストを実行する際、テストスイートが長時間（>10秒）かかる場合は **Monitor でテスト出力をストリーミング** する。テスト実行中にメインエージェントは次のタスクの準備（コード読み込み、実装方針の検討）を並行できる。
+
+```
+Monitor:
+  description: "sisyphus verifier: test execution"
+  timeout_ms: 300000
+  persistent: false
+  command: "<テストコマンド> 2>&1 | grep --line-buffered 'PASS\|FAIL\|ERROR\|test'"
+```
+
+**判断基準**: Verifier を Agent spawn で実行するのが基本。テストコマンドが既知で長時間の場合のみ、Verifier の代わりに Monitor でテスト結果を直接取得し、メインエージェントが判定する。
 
 → **詳細フロー（Agent prompt テンプレート含む）は reference.md を Read**
 

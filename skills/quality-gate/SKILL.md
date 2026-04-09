@@ -2,7 +2,7 @@
 name: quality-gate
 description: "Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。code-reviewer, security-reviewer, critic を並列実行して品質・セキュリティ・計画整合性をチェック。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
-allowed-tools: [Read, Glob, Grep, Bash, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
+allowed-tools: [Read, Glob, Grep, Bash, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
 model: opus
 effort: high
 context: fork
@@ -114,19 +114,37 @@ Critical が見つかった場合、**自動で修正を試みる**（ノンス�
 2. Step 1 に戻り Review Council を再実行して修正を確認
 3. 修正不可能な場合は AskUserQuestion で判断を委ねる
 
-### Step 6: 静的解析（言語別 Lint — 最終チェック）
+### Step 6: 静的解析（言語別 Lint — Monitor で並列ストリーミング）
 
-全修正が完了した最終成果物に対して、言語別のリンターを実行する。該当ファイルがなければスキップ。
+全修正が完了した最終成果物に対して、言語別のリンターを **Monitor で並列実行** する。該当ファイルがなければスキップ。
 
-言語別リンターを実行する。該当ファイルがなければスキップ。
 → **コマンド詳細は reference.md 参照**
 
+**Monitor で並列実行**: 各 lint の出力がリアルタイムでストリーミングされる。最初の lint 結果が出た時点で修正に着手でき、全ツール完了を待たない。
+
+```
+Monitor:
+  description: "quality-gate lint (parallel)"
+  timeout_ms: 120000
+  persistent: false
+  command: |
+    (
+      command -v ruff >/dev/null 2>&1 && { echo "=== [ruff] ===" && ruff check . 2>&1 | sed -u 's/^/[ruff] /'; } &
+      command -v shellcheck >/dev/null 2>&1 && { echo "=== [shellcheck] ===" && shellcheck **/*.sh 2>&1 | sed -u 's/^/[shellcheck] /'; } &
+      command -v npx >/dev/null 2>&1 && { echo "=== [tsc] ===" && npx tsc --noEmit 2>&1 | sed -u 's/^/[tsc] /'; } &
+      command -v cargo >/dev/null 2>&1 && { echo "=== [clippy] ===" && cargo clippy 2>&1 | sed -u 's/^/[clippy] /'; } &
+      wait
+      echo "=== lint complete ==="
+    )
+```
+
+**tag prefix** (`[ruff]`, `[shellcheck]` 等) で出力元を識別し、エラーがあれば該当ツールの指摘から順に修正して再実行。warning のみなら記録して続行。
+
+**fallback**: Monitor が使えない環境では従来通り Bash で順次実行:
 - Python: `ruff check . && ty check .`
 - Shell: `shellcheck`
 - TypeScript: `npx tsc --noEmit && npx eslint .`
 - Rust: `cargo clippy && cargo test`
-
-エラーがあればこの場で修正して再実行。warning のみなら記録して続行。
 
 ### Step 7: 静的解析の最終実行
 
