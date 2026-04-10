@@ -175,16 +175,26 @@ if [[ -n "$CHANGED_FILES" ]] && [[ "$FILE_COUNT" -gt 0 ]]; then
   } >> "$CONTEXT_FILE"
 fi
 
+# --- 5. Safety check: handover が成功したか ---
+# 2.1.105+ で exit 2 が compaction を block するようになった。
+# handover 失敗（context.md 未生成 or 空）時は compaction を止めて文脈喪失を防ぐ。
+if [[ ! -f "$CONTEXT_FILE" ]] || [[ ! -s "$CONTEXT_FILE" ]]; then
+  echo "❌ context.md の保存に失敗。Compaction を中止します。" >&2
+  echo "  → .claude/ の書き込み権限を確認してください。" >&2
+  exit 2
+fi
+
 echo "📝 .claude/context.md updated（chronicle: ${CHRONICLE_COUNT} entries）"
 
-# PreCompact 時のみ: スキル進化の CTA を出す
+# PreCompact 時のみ: スキル進化の CTA（nag only、block はしない）
 # SessionEnd では モデルが動けないのでスキップ
+# 注: 2.1.105+ では exit 2 が compaction を block するため、意図的に exit 0 にしている。
+# evolve は「やってほしい」ことだが、compaction 自体を止めるほど重要ではない。
 if [[ "$EVENT" != "SessionEnd" ]]; then
   EVOLVE_MARKER=".claude/evolve-done"
   if [[ ! -f "$EVOLVE_MARKER" ]]; then
     echo ""
     echo "🧬 Skill ツールで o-m-cc:evolve を実行してください（スキルの自己進化）。" >&2
-    exit 2
   fi
 fi
 
