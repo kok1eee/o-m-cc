@@ -1,4 +1,4 @@
-# o-m-cc v0.40.0
+# o-m-cc v0.40.1
 
 [English](README_en.md)
 
@@ -365,6 +365,19 @@ bash hooks/reset-state.sh
 
 **詳細**: [docs/hooks-guide.md](docs/hooks-guide.md), [docs/hooks-errors.md](docs/hooks-errors.md)
 
+### Hook の型（Claude Code 仕様）
+
+Claude Code の hook は **4種類の型** をサポート（公式ドキュメントで確認、2025年末の流出コード分析で言及された「5種類」は不正確）:
+
+| 型 | 用途 | o-m-cc の使用 |
+|---|---|---|
+| `command` | シェルコマンド実行 | ✅ 全 hook（13個）で使用 |
+| `prompt` | LLM による文脈判断・注入 | ⚪ 未使用（決定的処理なので `command` で十分） |
+| `agent` | サブエージェントによる検証ループ | ⚪ 未使用（spawn コスト高） |
+| `http` | Webhook POST | ⚪ 未使用 |
+
+o-m-cc の hook は全て決定的（deterministic）処理なので `command` 型で最適。`prompt` 型が有効なのは「LLM 判断が必要」なケース（例: コンテンツモデレーション、状況に応じた動的文脈注入）のみ。
+
 ## Structure
 
 ```
@@ -497,6 +510,41 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 
 通常モードでは品質が崩れた時点で AskUserQuestion で人間に判断を委ねる。
 
+## CLAUDE.md のベストプラクティス
+
+Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置付けのファイル（2025年末の流出コード分析で判明）。o-m-cc では以下の運用を推奨:
+
+### 階層構造
+
+| ファイル | 用途 | VCS |
+|---|---|---|
+| `~/.claude/CLAUDE.md` | グローバル：個人のコーディングスタイル・好み | dotfiles git |
+| `./CLAUDE.md` | プロジェクト：アーキテクチャ判断、設計原則、アンチパターン警告 | project git |
+| `.claude/rules/*.md` | モジュール化ルール（言語別、ツール別） | project git（任意で dotfiles 共有）|
+| `CLAUDE.local.md` | 個人メモ、一時的な注意点（`.gitignore` 対象） | **gitignore** |
+
+### サイズの目安
+
+- **上限**: 40,000 文字程度（Claude Code 内部仕様）
+- **推奨**: 2,000〜5,000 文字（トークン効率とのバランス）
+- **o-m-cc 本体**: 93 行 / 約 7KB（v0.38.1 でスリム化済み）
+
+### 書くべき内容（永続的なルール）
+
+- 設計思想・アンチパターン警告（変更提案時の照合基準）
+- ワークフロー判断（どの skill をいつ使うか）
+- コミット規約、テスト規約
+- 「絶対にこうするな」のルール
+
+### 書かないべき内容
+
+- 詳細な API 仕様、ディレクトリ構造の全体（→ docs/ へ）
+- バージョン履歴（→ Changelog へ）
+- 一回きりの TODO（→ TaskCreate へ）
+- コード実例（→ skills/ や references/ へ）
+
+毎ターン再注入されることを意識して、**「どの決定にも関わる永続的な判断基準」だけ** を残すのがコツ。
+
 ## Best Use Cases
 
 ### ✅ 向いているタスク
@@ -514,6 +562,14 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.40.1
+
+- **README に CLAUDE.md ベストプラクティスセクション追加** — 流出コード分析の知見を反映
+  - 階層構造（global / project / rules / CLAUDE.local）、サイズ目安（推奨 2k-5k 文字、上限 40k）、書くべき/書かないべき内容
+- **Hook の型セクション追加** — 公式仕様の 4 種類（`command` / `prompt` / `agent` / `http`）を明記
+  - 流出分析で言及された「5種類」は不正確（`function` 型は存在しない）
+  - o-m-cc は全 hook で `command` 型が最適である理由を説明
 
 ### 0.40.0
 
