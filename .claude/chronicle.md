@@ -3,6 +3,7 @@
 > context.md のスナップショットを1行に圧縮して蓄積。直近30件を保持。
 > 超過分は .claude/context-archive.md に退避（VCS で参照可能）。
 
+- [04/13 19:59, end] 今だとだめじゃない？  いつかわからない
 - [04/10 18:46, end] 今だとだめじゃない？  いつかわからない
 - [04/10 13:13, end] 今だとだめじゃない？  いつかわからない
 - [04/10 13:10, end] 今だとだめじゃない？  いつかわからない
@@ -32,4 +33,3 @@
 - [03/27 19:16, end] env | grep -iE 'claude|tty|term|interactive' && tty
 - [03/27 19:14, end] Run this exact command and show ALL output: env | grep -iE "claude|tty|term|inte
 - [03/27 11:00, end] ⏺ PreToolUse の末尾にテスト用 hook を追加します。
-- [03/27 10:42, end] 2.1.77

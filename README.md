@@ -1,4 +1,4 @@
-# o-m-cc v0.36.0
+# o-m-cc v0.37.0
 
 [English](README_en.md)
 
@@ -331,6 +331,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | - | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
 | SessionStart | - | `memory-digest.sh` | サブエージェント Memory ダイジェスト |
 | SessionStart | - | `plugin-data-init.sh` | `CLAUDE_PLUGIN_DATA` 初期化 |
+| SessionStart | - | `dotfiles-pull.sh` | dotfiles repo を24h throttle で自動 pull（bg 実行） |
 | UserPromptSubmit | - | `session-title.sh` | context.md の Intent を sessionTitle に自動設定 |
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/retro で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
@@ -514,6 +515,16 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.37.0
+
+- **dotfiles 自動同期 hook 追加** (`hooks/dotfiles-pull.sh`)
+  - 複数マシン（Mac/EC2 等）で dotfiles を共有している場合の軽量な自動同期
+  - SessionStart で `~/dotfiles` を 24h throttle 付きで `git pull`
+  - バックグラウンド実行で SessionStart をブロックしない（~200ms）
+  - `~/dotfiles` がなければ no-op（他プロジェクト影響なし）
+  - `O_M_CC_DOTFILES` env var で path override 可
+  - 代替案（sdtab/launchd）との比較: Claude Code を毎日開く運用ならこれで十分、セットアップは plugin install だけで完結
 
 ### 0.36.0
 

@@ -2,14 +2,14 @@
 
 > セッション間の引き継ぎ情報。学びは MEMORY.md、タスクは TaskList、設定は CLAUDE.md。
 
-### Snapshot (04/13 19:59, end)
+### Snapshot (04/14 12:49, end)
 
 **Intent:** 今だとだめじゃない？  いつかわからない
 
 **Next:**
-- いや、やっぱりinstallの代わりにはならないってことね
-- 消していいよ
-- 101は何か変えることはなくて勝手にverあげれば享受できるものってことね
+- okとりあえず更新できたかな？
+- sisyphusがたまに動かないんだよね  planモードでプラン作成して実装モードの時って  コンパクションしてから動くかみたいなモードがあるんだけど  そこでsisyphusも自動で動かないかな？
+- おすすめで
 
 **Outcomes:** 15 files changed
 
@@ -22,11 +22,11 @@
 - `/Users/tazawa-masayoshi/.claude/skills/test-watch/SKILL.md`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/marketplace.json`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/.claude-plugin/plugin.json`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/hooks.json`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/plan-mode-exit-cta.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/post-compact-resume.sh`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/hooks/pre-compact-handover.sh`
 - `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/ONBOARDING.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/experiment/SKILL.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/quality-gate/SKILL.md`
-- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/skills/sisyphus/SKILL.md`
-- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/.mcp.json`
-- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/mcp.json`
-- `/Users/tazawa-masayoshi/dotfiles/claude/.claude/rules/jj.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/README_en.md`
+- `/Users/tazawa-masayoshi/Documents/personal-dev/o-m-cc/README.md`
 
