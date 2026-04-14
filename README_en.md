@@ -1,18 +1,16 @@
-# o-m-cc v0.24.3
+# o-m-cc v0.35.1
 
 [日本語](README.md)
 
-**Sisyphus Loop for Claude Code** — A multi-agent workflow that never stops until TODOs are done.
+**Sisyphus Loop for Claude Code** — A multi-agent workflow plugin that injects spec-driven development (SDD) into Claude Code.
 
 ## Overview
 
-o-m-cc is a Claude Code plugin that injects an "unstoppable developer" mindset.
-
-- **Agent Teams**: Peer-to-peer multi-agent coordination via TeamCreate + SendMessage
-- **Sisyphus Philosophy**: Never stop until the task is complete
-- **TODO-Driven**: Work based on clear task lists
-- **Spec-Driven Development**: Structured flow from requirements → design → tasks → implementation
-- **Gap Analysis**: Discover missing requirements before planning
+- **Skill Chain**: Requirements → Design → Task Decomposition → Implementation → Quality Gate, chained as independent skills with context separation per phase
+- **Agent Teams**: Peer-to-peer multi-agent coordination via TeamCreate + SendMessage. 10 specialist agents cross-verify via SendMessage
+- **Monitor Integration**: experiment/quality-gate/sisyphus leverage the Monitor tool for async long-running operations (lint/test streaming)
+- **Two-stage Verification**: `verification` skill (self-evidence collection) + Verifier agent (independent adversarial check) to eliminate implementer bias
+- **Progressive Disclosure**: Agent definitions split across 3 layers; constant load limited to ~10%
 
 ## Prerequisites
 
@@ -37,37 +35,7 @@ claude plugin install o-m-cc@kok1eee
 → Automatically runs in Sisyphus mode
 ```
 
-> Agent Teams is enabled automatically via plugin settings.json. No manual env var setup needed.
-
-## Usage
-
-### Simple Tasks (bug fixes, small features)
-
-Just ask normally after Sisyphus mode is enabled:
-
-```
-"Add error handling to the API"
-"Change the button color to blue"
-"Fix the login page bug"
-```
-
-Automatically runs: TODO creation → Implementation → Review → Done.
-
-### Complex Tasks (new features, large refactoring)
-
-Run the planning phase first:
-
-```bash
-/o-m-cc:sisyphus "Implement authentication system"
-```
-
-After planning completes:
-
-```
-"Start implementation based on the plan"
-```
-
-## Skills
+## Skills (13 total)
 
 ### Setup
 
@@ -75,23 +43,39 @@ After planning completes:
 |-------|-------------|-------------|
 | `/o-m-cc:install` | Project initialization (CLAUDE.md + Sisyphus) | Manual only |
 
-### Planning Phase
+### Planning
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:sisyphus <task>` | Plan → Implement → Quality Gate (skill chain, never stops) | fork | On "plan this" |
-| `/o-m-cc:discovery-council <task>` | 3-agent parallel requirements analysis Council | fork | On "analyze requirements" |
-| `/o-m-cc:design` | Architecture design by designer agent | - | On "design this" |
-| `/o-m-cc:task-decomposition` | Task decomposition by planner agent | - | On "break into tasks" |
+| `/o-m-cc:deep-interview <idea>` | Socratic requirements exploration → hands off to discovery-council | - | "requirements unclear", "dig deeper" |
+| `/o-m-cc:sisyphus <task>` | Plan → Implement → Quality Gate (skill chain, never stops) | fork | "plan this", "implement feature" |
+| `/o-m-cc:discovery-council <task>` | 3-agent parallel requirements analysis Council | fork | "analyze requirements" |
+| `/o-m-cc:design` | Architecture design by designer agent | - | "design this" |
+| `/o-m-cc:task-decomposition` | Task decomposition by planner agent | - | "break into tasks" |
 
-### Quality
+### Verification
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:quality-gate [files]` | Review Council + Lint for final quality check | fork | On "review this", "quality check" |
+| `/o-m-cc:quality-gate [files]` | Review Council + Lint (Monitor parallel streaming) | fork | "review this", "quality check" |
+| `/o-m-cc:verification` | Evidence collection before completion declaration (Iron Law) | - | "verify this", "is it actually working?" |
 | `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
 
-## Agents (9 specialists)
+### Experiment & Learning
+
+| Skill | Description | Context | Auto-trigger |
+|-------|-------------|---------|-------------|
+| `/o-m-cc:experiment <goal>` | Autoresearch-style iterative improvement loop | - | "optimize", "experiment" |
+| `/o-m-cc:retro` | Analyze skill usage patterns | - | "retrospective", "usage stats" |
+| `/o-m-cc:evolve` | Self-evolve skills by extracting learnings into Gotchas (L3 inspired) | - | Auto CTA via PreCompact hook |
+
+### Operations
+
+| Skill | Description | Context | Auto-trigger |
+|-------|-------------|---------|-------------|
+| `/o-m-cc:handoff` | Save session context to `.claude/context.md` for handoff | - | "handoff", "save context" |
+
+## Agents (10 specialists + @capabilities meta)
 
 ### Planning
 
@@ -107,16 +91,8 @@ After planning completes:
 
 | Agent | Role | Model |
 |-------|------|-------|
-| @advisor | Strategy & debugging consultation | opus |
 | @researcher | Codebase exploration & documentation research | sonnet |
 | @debugger | Systematic debugging | sonnet |
-| @vision | PDF/image analysis | sonnet |
-
-### Implementation
-
-| Agent | Role | Model |
-|-------|------|-------|
-| @frontend | UI/UX component creation | sonnet |
 
 ### Quality
 
@@ -124,6 +100,14 @@ After planning completes:
 |-------|------|-------|
 | @code-reviewer | Code quality review | sonnet |
 | @security-reviewer | Security review | sonnet |
+
+### Meta
+
+| Agent | Role |
+|-------|------|
+| @capabilities | Reference doc for agent selection & dispatch strategy |
+
+> **Deprecated (removed in v0.27.0 ADR-0008)**: @advisor, @vision, @frontend. Functionality merged into other agents or delegated to official plugins (e.g., frontend-design).
 
 ## Planning Workflow
 
@@ -140,27 +124,32 @@ Agent Teams (Council + Pipeline Hybrid):
   design.md             TaskCreate
                            │
           ┌────────────────────────────────┐
-          │    Phase 4: Review Council      │
-          │    critic ◄──► advisor          │
+          │    Phase 5: Quality Gate        │
+          │  code-reviewer ◄──► security-reviewer │
+          │          ◄──► critic            │
           └────────────────────────────────┘
 ```
 
 ## Hooks
 
-| Hook | Event | Timeout | Description |
-|------|-------|---------|-------------|
-| check-dependencies | SessionStart | 3s | Check required commands (jq) |
-| archive-plans | SessionStart | 5s | Archive old plan files |
-| session-resume | SessionStart | 3s | Display `.claude/context.md` + `chronicle.md` context |
-| memory-digest | SessionStart | 3s | Display subagent Memory digest |
-| session-baseline | SessionStart | 5s | Record session start diff baseline |
-| stop-guard | Stop | 10s | Sisyphus loop control (diff-based quality-gate enforcement) |
-| pre-compact-handover | PreCompact | 30s | Auto-save context on compaction (3-layer rotation) |
-| post-compact-resume | PostCompact | 5s | Project state reminder after compaction |
-| task-completed | TaskCompleted | 5s | Progress tracking & next task assignment |
-| pre-compact-handover | SessionEnd | 30s | Auto-save context on session end |
-
-> **Note**: Claude Code 2.1.50+ adds `WorktreeCreate` / `WorktreeRemove` hook events for custom VCS setup/teardown with worktree isolation (useful for non-git VCS like jj).
+| Event | Matcher | Hook | Description |
+|-------|---------|------|-------------|
+| SessionStart | - | resolve-conflicts.sh | Auto-resolve chronicle/context conflicts |
+| SessionStart | - | check-dependencies.sh | Check required commands (jq etc.) |
+| SessionStart | - | archive-plans.sh | Archive old plan/ files |
+| SessionStart | - | session-resume.sh | Display context.md + chronicle.md |
+| SessionStart | - | memory-digest.sh | Subagent Memory digest |
+| SessionStart | - | plugin-data-init.sh | Initialize CLAUDE_PLUGIN_DATA |
+| UserPromptSubmit | - | session-title.sh | Auto-set sessionTitle from context.md Intent |
+| PreToolUse | Skill | skill-usage-log.sh | Log skill usage (for /retro) |
+| PreToolUse | Bash | quality-gate-cta.sh | Non-blocking CTA before push commands |
+| PreCompact | - | pre-compact-handover.sh | Auto-save context + safety block on failure (2.1.105+) |
+| PostCompact | - | post-compact-resume.sh | Project state reminder |
+| SubagentStop | - | subagent-verify.sh | Verify subagent output |
+| TaskCreated | - | task-created-log.sh | Log task creation |
+| TaskCompleted | - | task-completed.sh | Task completion notification |
+| PermissionDenied | - | permission-denied.sh | Log denial + suggest alternative |
+| SessionEnd | - | pre-compact-handover.sh | Auto-save context on session end |
 
 ## Update
 
@@ -172,13 +161,13 @@ claude plugin update o-m-cc@kok1eee
 
 "Can't a single Claude Code session just loop?" — Fair question.
 
-The advantage of multi-agent is **separation of expertise**. Even with the same model, different system prompts produce different output tendencies:
+Technical advantages of multi-agent:
 
-- **analyst vs scout**: analyst structures requirements (FR-X, NFR-X), scout looks for gaps. Different perspectives from the same input
-- **code-reviewer vs security-reviewer**: code-reviewer focuses on logic/readability, security-reviewer hunts OWASP Top 10 vulnerabilities. More accurate than asking one agent to do both
-- **Council pattern**: multiple agents analyze simultaneously and exchange messages peer-to-peer, reducing blind spots
+1. **Context separation**: Each agent runs in an independent context. Single-session role-play mixes all information into one context, where analyst views get biased by security-reviewer perspectives
+2. **Parallel execution**: Agent Teams can run 3 teammates simultaneously. Discovery Council (researcher + analyst + scout) reduces time cost via parallel spawn. Role-play is serial only
+3. **Persistent memory**: Agents with `memory: project` accumulate project-specific knowledge (patterns, conventions, past decisions). Carried across sessions. Role-play context dies with the session
 
-Honestly, not all 12 agents are needed for every task. The frequently used core is analyst, designer, planner, code-reviewer, and researcher (5-6 agents). The rest are specialists called for specific situations.
+Honestly, not all 10 agents are needed for every task. The frequently used core is analyst, designer, planner, code-reviewer, and researcher (5-6 agents). The rest are specialists called for specific situations (security audit, debugging, gap analysis). Constant load is only frontmatter (~10% of total), so the existence cost is low.
 
 ## Token & Cost
 
@@ -194,22 +183,24 @@ The Sisyphus Loop's "never stop" philosophy has a cost.
 
 ### Cost Management
 
-```bash
-# Limit iterations (default: 50)
-export SISYPHUS_MAX_ITERATIONS=20
+- **Small tasks**: Skip `/o-m-cc:sisyphus`, ask normally or use `/o-m-cc:experiment`
+- **Large tasks**: Sisyphus is designed assuming mid-session compaction
+- **Cost-conscious**: Keep all agents on `sonnet` (default). `opus` is reserved for designer, quality-gate, sisyphus (200k+ context)
 
-# Adjust quality-gate threshold (default: 500 lines)
-export SISYPHUS_MIN_DIFF=500
-```
+## Configuration
 
-- **Small tasks**: `MAX_ITERATIONS=10` is sufficient
-- **Large tasks**: Default (50). Designed to handle compaction mid-session
-- **Cost-conscious**: Keep all agents on `sonnet` (default). Only advisor and designer use `opus`
+No special env vars required. Main behavior is self-contained via plugin.json + settings.json + hooks.json.
+
+| Variable | Purpose |
+|----------|---------|
+| `CLAUDE_NON_INTERACTIVE=1` | Headless mode. Skip AskUserQuestion and move forward |
+| `O_M_CC_DEBUG=1` | Enable hooks debug output |
 
 ## Inspired By
 
 - [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) — Multi-agent blueprint. Redesigned from central orchestrator to peer-to-peer
 - [ralph-wiggum](https://ghuntley.com/ralph/) — Stop Hook loop continuation pattern
+- [autoresearch](https://karpathy.github.io/) — Iterative experiment design behind `/o-m-cc:experiment`
 
 ## License
 

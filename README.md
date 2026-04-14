@@ -1,4 +1,4 @@
-# o-m-cc v0.34.0
+# o-m-cc v0.35.1
 
 [English](README_en.md)
 
@@ -9,8 +9,9 @@
 o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追加するプラグインです。
 
 - **Skill Chain**: 要件分析 → 設計 → タスク分解 → 実装 → 品質ゲートを独立スキルとして chain 実行。各フェーズのコンテキストが分離される
-- **Agent Teams**: peer-to-peer マルチエージェント協調。9の専門エージェントが SendMessage で相互検証
-- **diff ベース品質強制**: Stop hook が変更行数を検知し、閾値超過時に quality-gate を自動強制。Claude の出力に依存しない
+- **Agent Teams**: peer-to-peer マルチエージェント協調。10の専門エージェントが SendMessage で相互検証
+- **Monitor 統合**: experiment/quality-gate/sisyphus で Monitor ツールを活用し、長時間処理を非同期化
+- **二段階検証**: verification（自己エビデンス収集）+ Verifier agent（独立 adversarial 検証）で実装者バイアスを排除
 - **Progressive Disclosure**: エージェント定義を3層に分離し、常時ロードは全体の約10%に抑制
 
 ## 動作環境
@@ -63,6 +64,8 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Skills
 
+合計 13 スキル（セットアップ 1 + 計画 5 + 検証 3 + 実験・学習 3 + 運用 1）。
+
 ### セットアップ
 
 | スキル | 説明 | 自動発動 |
@@ -81,15 +84,29 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | `/o-m-cc:design` | designer によるアーキテクチャ設計 | - | 「設計して」で発動 |
 | `/o-m-cc:task-decomposition` | planner によるタスク分解 | - | 「タスクに分解して」で発動 |
 
-### 品質・運用
+### 検証
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:quality-gate [files]` | Review Council + 静的解析で品質最終確認 | fork | 「レビューして」「品質チェックして」で発動 |
+| `/o-m-cc:quality-gate [files]` | Review Council + 静的解析（Monitor 並列ストリーミング） | fork | 「レビューして」「品質チェックして」で発動 |
+| `/o-m-cc:verification` | 完了宣言前の証拠収集（Iron Law: 実行し出力を確認するまで成功と言わない） | - | 「完了前チェック」「本当に動く？」「検証して」で発動 |
 | `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
-| `/o-m-cc:handover` | セッション文脈を `.claude/context.md` に保存 | - | 「引き継ぎ」「保存して」「今日はここまで」で発動 |
 
-> **Context: fork** — Council 系スキルが fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
+### 実験・学習
+
+| スキル | 説明 | Context | 自動発動 |
+|--------|------|---------|----------|
+| `/o-m-cc:experiment <goal>` | autoresearch 方式の反復改善ループ（試す→測る→保持 or revert） | - | 「最適化して」「試行錯誤して」で発動 |
+| `/o-m-cc:retro` | スキル使用状況の振り返り・分析 | - | 「振り返り」「棚卸し」で発動 |
+| `/o-m-cc:evolve` | スキルの自己進化（auto-memory から学びを抽出し各スキルの Gotchas に反映） | - | PreCompact hook が CTA、手動でも呼び出し可 |
+
+### 運用
+
+| スキル | 説明 | Context | 自動発動 |
+|--------|------|---------|----------|
+| `/o-m-cc:handoff` | セッション文脈を `.claude/context.md` に保存して新セッションに引き継ぎ | - | 「ハンドオーバー」「引き継ぎ」「handoff」で発動 |
+
+> **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
 ## Workflow
 
@@ -106,7 +123,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ```
 「○○を修正して」→ TODO → 実装 → レビュー → 完了
-※ stop-guard が diff 変更量を検知し、閾値以上なら /quality-gate を強制
+※ 実装後、push 前に PreToolUse(Bash) hook が quality-gate を促す CTA を表示
 ```
 
 ### 複雑なタスク（/o-m-cc:sisyphus）
@@ -157,19 +174,21 @@ sisyphus（オーケストレーター）
 
 各スキルが `context: fork` で実行されるため、Council の大量のメッセージ交換がメインコンテキストを消費しない。フェーズ間の受け渡しは `plan/requirements.md`、`plan/design.md`、`TaskCreate` というファイル/タスクベース。
 
-### diff ベース品質強制
+### 品質ゲート CTA
 
-品質ゲートの強制は Claude の出力に一切依存しない:
+品質チェックのリマインドは hooks で自動化されている:
 
 ```
-stop-guard.sh（Stop hook）
-  → jj diff --stat で変更行数を取得
-  → セッションベースライン（開始時の既存差分）を差し引く
-  → SISYPHUS_MIN_DIFF（デフォルト500行）以上なら quality-gate を強制
-  → quality-gate 通過は proof ファイル（.claude/quality-gate-proof.json）で検証
+quality-gate-cta.sh（PreToolUse:Bash hook）
+  → push 系コマンド（jj git push / git push / gh pr create 等）を検知
+  → 変更があれば "/quality-gate 実行済みですか？" と stderr に CTA 表示
+  → 強制はしない（non-blocking）、ユーザー判断を尊重
+
+subagent-verify.sh（SubagentStop hook）
+  → サブエージェント成果物の検証
 ```
 
-LLM のトークン消費ゼロで品質チェックの実行を保証する。
+Monitor ツール（Claude Code 2.1.98+）と組み合わせて、lint/test を並列ストリーミング実行。
 
 ### peer-to-peer Council
 
@@ -205,9 +224,11 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | Go | gopls | `claude plugin install gopls` |
 | Rust | rust-analyzer | `claude plugin install rust-analyzer` |
 
-> **Note**: stop-guard は diff の変更量ベースで quality-gate を強制。Claude の出力に依存しない設計。外部プラグイン不要。
+> **Note**: quality-gate は PreToolUse(Bash) hook の CTA と verification skill の組み合わせで発動。強制はしない non-blocking 設計。
 
 ## Agents
+
+合計 10 エージェント（計画 5 + 分析 3 + 品質 2）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。
 
 ### Planning Agents（計画系）
 
@@ -223,16 +244,8 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 | Agent | 役割 | Model | Permission | Memory |
 |-------|------|-------|------------|--------|
-| @advisor | デバッグ・戦略相談 | opus | **plan** | project |
 | @researcher | コードベース探索・外部調査 | sonnet | **plan** | project |
 | @debugger | 体系的デバッグ | sonnet | default | project |
-| @vision | PDF/画像分析 | sonnet | **plan** | - |
-
-### Implementation Agents（実装系）
-
-| Agent | 役割 | Model | Permission | Memory |
-|-------|------|-------|------------|--------|
-| @frontend | UI/UXコンポーネント作成 | sonnet | write | project |
 
 ### Quality Agents（品質系）
 
@@ -241,12 +254,20 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | @code-reviewer | コードレビュー | sonnet | default | project |
 | @security-reviewer | セキュリティレビュー | sonnet | default | project |
 
+### Meta
+
+| Agent | 役割 |
+|-------|------|
+| @capabilities | エージェント選択とディスパッチ戦略の参照ドキュメント |
+
 > **Permission**:
 > - `plan`: 読み取り専用モード（permissionMode: plan）。権限確認なしで高速動作
 > - `write`: 書き込み可能（Write/Edit ツール使用）
 > - `default`: Bashなど特殊ツール使用のため標準権限
 >
 > **Memory**: `project` スコープのエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を永続的に記憶
+>
+> **削除されたエージェント**（v0.27.0 ADR-0008）: @advisor, @vision, @frontend。機能は他エージェントに統合、あるいは公式プラグイン（frontend-design 等）に委譲
 
 ## Output Files
 
@@ -290,7 +311,7 @@ Layer 3: facets/references/（必要時に Read） → ポリシー、チェッ�
 
 - **Skill Chain**: 各フェーズが `context: fork` で分離され、Council の大量メッセージがメインコンテキストを消費しない
 - **要約返却**: teammate は処理した情報の要約のみを返却（生出力を返さない）
-- **diff ベース判定**: stop-guard は hooks だけで完結し、LLM のトークン消費ゼロで品質ゲートを強制
+- **Monitor 非同期化**: 長時間の lint/test を Monitor で並列ストリーミング。待ち時間中に次の作業を進められる
 
 ## Agent Capabilities
 
@@ -302,20 +323,24 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 
 ### 概要
 
-| イベント | Hook | Timeout | 説明 |
-|---------|------|---------|------|
-| SessionStart | `check-dependencies.sh` | 3s | 依存コマンド（jq）の確認 |
-| SessionStart | `archive-plans.sh` | 5s | 古いプランファイルをアーカイブ |
-| SessionStart | `session-resume.sh` | 3s | `.claude/context.md` + `chronicle.md` の文脈表示 |
-| SessionStart | `memory-digest.sh` | 3s | サブエージェント Memory ダイジェスト表示 |
-| SessionStart | `session-baseline.sh` | 5s | セッション開始時の diff ベースライン記録 |
-| Stop | `stop-guard.sh` | 10s | Sisyphus ガード（diff ベース quality-gate 強制） |
-| PreCompact | `pre-compact-handover.sh` | 30s | compaction 時の文脈自動保存（3層分離） |
-| PostCompact | `post-compact-resume.sh` | 5s | compaction 後のプロジェクト状態リマインド |
-| TaskCompleted | `task-completed.sh` | 5s | タスク完了時の進捗表示・依存タスクアンブロック |
-| SessionEnd | `pre-compact-handover.sh` | 30s | セッション終了時の文脈自動保存 |
-
-> **Note**: Claude Code 2.1.50+ では `WorktreeCreate` / `WorktreeRemove` フックイベントが利用可能です。非 git VCS（jj 等）で worktree 分離を使う場合のカスタムセットアップに活用できます。
+| イベント | Matcher | Hook | 説明 |
+|---------|---------|------|------|
+| SessionStart | - | `resolve-conflicts.sh` | chronicle.md / context.md のコンフリクト自動解決 |
+| SessionStart | - | `check-dependencies.sh` | 依存コマンド（jq 等）の確認 |
+| SessionStart | - | `archive-plans.sh` | 古い plan/ ファイルをアーカイブ |
+| SessionStart | - | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
+| SessionStart | - | `memory-digest.sh` | サブエージェント Memory ダイジェスト |
+| SessionStart | - | `plugin-data-init.sh` | `CLAUDE_PLUGIN_DATA` 初期化 |
+| UserPromptSubmit | - | `session-title.sh` | context.md の Intent を sessionTitle に自動設定 |
+| PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/retro で集計可能） |
+| PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
+| PreCompact | - | `pre-compact-handover.sh` | 文脈自動保存（3層分離）+ 失敗時は compaction を block（2.1.105+） |
+| PostCompact | - | `post-compact-resume.sh` | compaction 後のプロジェクト状態リマインド |
+| SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
+| TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/retro で集計可能） |
+| TaskCompleted | - | `task-completed.sh` | タスク完了通知・依存タスクアンブロック |
+| PermissionDenied | - | `permission-denied.sh` | 拒否ログ + 代替提案 |
+| SessionEnd | - | `pre-compact-handover.sh` | セッション終了時の文脈自動保存 |
 
 ### デバッグモード
 
@@ -343,72 +368,75 @@ bash hooks/reset-state.sh
 ```
 o-m-cc/
 ├── .claude-plugin/
-│   ├── plugin.json
-│   ├── marketplace.json
+│   ├── plugin.json            # version, name, description
+│   ├── marketplace.json       # git marketplace 配布設定
 │   └── settings.json          # プラグインデフォルト設定（spinnerVerbs, permissions）
 ├── facets/                    # エージェント横断の共通ポリシー（Faceted Prompting）
 │   ├── policies/
 │   │   └── confidence-scoring.md  # Confidence Scoring 共通基準
-│   └── references/                # 段階的開示（Progressive Disclosure）用リファレンス
-│       ├── frontend-design.md     # デザイン哲学・AI Slop回避・実装パターン
-│       ├── security-checklist.md  # OWASP Top 10・Rationalizations・Insecure Defaults
-│       ├── task-quality.md        # タスクテンプレート・見積もり基準・品質基準
-│       ├── gap-analysis.md        # スコープ確認フォーマット・出力テンプレート
-│       ├── design-template.md     # design.md 出力テンプレート
-│       ├── requirements-template.md # requirements.md 出力テンプレート
-│       ├── debugging-methodology.md # 4フェーズ方法論・Red Flags
-│       ├── code-review-criteria.md  # レビュー優先順位・Blast Radius
-│       ├── thinking-frameworks.md   # First Principles・Inversion・5 Whys
-│       ├── plan-review-checklist.md # 完全性・実現可能性・リスク管理チェック
-│       ├── vision-formats.md        # 画像/PDF分析フォーマット
-│       └── research-depth.md        # 調査深度レベル・回答フォーマット
-├── agents/                    # エージェント定義（teammate spawn 時に参照）
+│   └── references/                # Progressive Disclosure 用リファレンス（10個）
+│       ├── code-review-criteria.md    # レビュー優先順位・Blast Radius
+│       ├── debugging-methodology.md   # 4フェーズ方法論・Red Flags
+│       ├── design-template.md         # design.md 出力テンプレート
+│       ├── frontend-design.md         # デザイン哲学・AI Slop回避・実装パターン
+│       ├── gap-analysis.md            # スコープ確認フォーマット・出力テンプレート
+│       ├── plan-review-checklist.md   # 完全性・実現可能性・リスク管理チェック
+│       ├── requirements-template.md   # requirements.md 出力テンプレート
+│       ├── research-depth.md          # 調査深度レベル・回答フォーマット
+│       ├── security-checklist.md      # OWASP Top 10・Rationalizations・Insecure Defaults
+│       └── task-quality.md            # タスクテンプレート・見積もり基準・品質基準
+├── agents/                    # 10 エージェント定義
 │   ├── capabilities.md        # エージェント能力サマリー + キーワード
 │   ├── analyst.md             # 要件定義
 │   ├── scout.md               # ギャップ分析（Prometheus式）
 │   ├── designer.md            # アーキテクチャ設計
 │   ├── planner.md             # タスク分解
 │   ├── critic.md              # 計画レビュー
-│   ├── advisor.md             # 戦略アドバイザー
 │   ├── researcher.md          # コードベース探索・外部調査
-│   ├── frontend.md            # UI/UXエンジニア
-│   ├── vision.md              # マルチモーダル分析
-│   ├── debugger.md             # 体系的デバッグ
+│   ├── debugger.md            # 体系的デバッグ
 │   ├── code-reviewer.md       # コード品質レビュー
-│   ├── security-reviewer.md   # セキュリティレビュー（並列 spawn 推奨）
-├── skills/                    # スラッシュコマンド（スキル）
-│   ├── init/SKILL.md          # プロジェクト初期化
-│   ├── audit/SKILL.md         # 品質監査
-│   ├── sisyphus/SKILL.md      # Sisyphus ワークフロー（計画→実装→品質ゲート）
-│   ├── discovery-council/SKILL.md  # 3エージェント並列要件分析 Council
-│   ├── design/SKILL.md        # アーキテクチャ設計
-│   ├── task-decomposition/SKILL.md  # タスク分解
-│   ├── quality-gate/SKILL.md  # 品質ゲート（Review Council + Lint）
-│   └── handover/SKILL.md      # セッション文脈保存・引き継ぎ
-├── hooks/                     # フック
-│   ├── hooks.json             # フック設定
-│   ├── lib/
-│   │   └── common.sh          # 共通ライブラリ
-│   ├── check-dependencies.sh  # 依存コマンド確認
-│   ├── archive-plans.sh       # プランアーカイブ
-│   ├── session-resume.sh      # 文脈表示（context.md + chronicle.md）
-│   ├── memory-digest.sh       # エージェント Memory ダイジェスト
-│   ├── pre-compact-handover.sh # compaction 時の文脈自動保存
-│   ├── stop-guard.sh          # Sisyphus ガード
-│   ├── session-baseline.sh    # セッション開始時の diff ベースライン
-│   ├── post-compact-resume.sh # compaction 後の状態リマインド
-│   ├── task-completed.sh      # タスク完了時の進捗・アンブロック（Agent Teams）
+│   └── security-reviewer.md   # セキュリティレビュー
+├── bin/                       # CLI ユーティリティ（Bash tool から直接実行可能）
+│   ├── validate-plan          # plan ドキュメントの形式検証
+│   └── lint                   # 言語別 lint 一括実行
+├── skills/                    # 13 スキル定義
+│   ├── install/SKILL.md
+│   ├── deep-interview/SKILL.md
+│   ├── sisyphus/SKILL.md
+│   ├── discovery-council/SKILL.md
+│   ├── design/SKILL.md
+│   ├── task-decomposition/SKILL.md
+│   ├── quality-gate/SKILL.md
+│   ├── verification/SKILL.md
+│   ├── audit/SKILL.md
+│   ├── experiment/SKILL.md
+│   ├── retro/SKILL.md
+│   ├── evolve/SKILL.md
+│   └── handoff/SKILL.md
+├── hooks/                     # 16 フック + hooks.json
+│   ├── hooks.json             # フックイベントマッピング
+│   ├── lib/                   # 共通ライブラリ
+│   ├── resolve-conflicts.sh   # chronicle/context コンフリクト自動解決
+│   ├── check-dependencies.sh
+│   ├── archive-plans.sh
+│   ├── session-resume.sh
+│   ├── memory-digest.sh
+│   ├── plugin-data-init.sh
+│   ├── session-title.sh       # Intent を sessionTitle に設定
+│   ├── skill-usage-log.sh     # スキル使用ログ
+│   ├── quality-gate-cta.sh    # push 前の quality-gate CTA
+│   ├── pre-compact-handover.sh # 文脈自動保存 + safety block
+│   ├── post-compact-resume.sh
+│   ├── subagent-verify.sh     # サブエージェント成果物検証
+│   ├── task-created-log.sh    # タスク作成ログ
+│   ├── task-completed.sh      # タスク完了通知・アンブロック
+│   ├── permission-denied.sh
 │   └── reset-state.sh         # 状態リセットツール
-├── docs/                      # ドキュメント
-│   ├── hooks-guide.md         # Hooks 使い方ガイド
-│   └── hooks-errors.md        # エラーリファレンス
-├── templates/                 # テンプレート
-│   ├── agents/
-│   │   └── sisyphus.md        # Sisyphus デフォルトエージェント
-│   ├── rules/
-│   │   ├── sisyphus.md        # Sisyphus ルール
-│   │   └── plan-or-act.md     # Plan or Act ルール
-│   └── agent-output-mode.md   # エージェント出力モード設定
+├── docs/
+│   ├── adr/                   # Architecture Decision Records
+│   ├── hooks-guide.md
+│   └── hooks-errors.md
+├── templates/                 # 初期セットアップ用テンプレート
 └── README.md
 ```
 
@@ -431,7 +459,7 @@ Sisyphus Loop の背後にある哲学：
 2. **並列実行**: Agent Teams で3体同時に分析できる。Discovery Council（researcher + analyst + scout）は並列 spawn で時間コストを削減する。ロールプレイは直列実行しかできない
 3. **永続メモリ**: `memory: project` を持つエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を蓄積する。次のセッションでも引き継がれる。ロールプレイのコンテキストはセッション終了で消える
 
-ただし正直に言うと、12体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, code-reviewer, researcher の5〜6体。残りは特定の状況（セキュリティ監査、UI 実装、デバッグ等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。
+ただし正直に言うと、10体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, code-reviewer, researcher の5〜6体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。
 
 ## Token & Cost
 
@@ -449,27 +477,18 @@ Max plan（$200/月）でも、大規模タスクを1日に何本も回すとコ
 
 ### コスト管理の推奨
 
-```bash
-# イテレーション数を制限（デフォルト: 50）
-export SISYPHUS_MAX_ITERATIONS=20
-
-# quality-gate の閾値を調整（デフォルト: 500行）
-export SISYPHUS_MIN_DIFF=500
-```
-
-- **小規模タスク**: `MAX_ITERATIONS=10` で十分
-- **大規模タスク**: デフォルト（50）のまま。ただし途中で compaction が走る前提で設計されている
-- **コストを意識する場合**: エージェントの `model` を `sonnet` に統一する（デフォルト）。`opus` は advisor、designer、quality-gate スキル（200k 超のコンテキスト）
+- **小規模タスク**: `/o-m-cc:sisyphus` を使わず、普通に指示するか `/o-m-cc:experiment` で試行錯誤
+- **大規模タスク**: `/o-m-cc:sisyphus` は途中で compaction が走る前提で設計されている
+- **コストを意識する場合**: エージェントの `model` を `sonnet` に統一（デフォルト）。`opus` は designer、quality-gate、sisyphus（200k 超のコンテキスト）
 
 ## Configuration
 
-```bash
-# quality-gate 強制の最小変更行数（デフォルト: 500行）
-export SISYPHUS_MIN_DIFF=500
+特別な環境変数の設定は不要。主な動作は plugin.json + settings.json + hooks.json で完結。
 
-# 最大イテレーション数（デフォルト: 50）
-export SISYPHUS_MAX_ITERATIONS=30
-```
+| 環境変数 | 用途 |
+|---|---|
+| `CLAUDE_NON_INTERACTIVE=1` | Headless モード。AskUserQuestion をスキップして先に進む |
+| `O_M_CC_DEBUG=1` | hooks のデバッグ出力を有効化 |
 
 ### Headless モード（`claude -p` / `CLAUDE_NON_INTERACTIVE=1`）
 
@@ -494,6 +513,59 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.35.1
+
+- **PreCompact safety block**: Claude Code 2.1.105 で PreCompact hook が compaction を block できるようになったのを活用。`pre-compact-handover.sh` で context.md 保存失敗時に exit 2 で block し、文脈喪失を防ぐ
+- **verification を sisyphus Step 5 に組み込み**: 実装後に `Skill: verification` を明示的に呼び、自己エビデンス収集を強制。retro で「30日間 0 回呼び出し」を観測したのが動機
+- **retro の awk バグ修正**: `$1 >= d` が Claude Code の `!`command`` 評価で `$1` が shell 引数として解釈される問題を、`substr($0, 1, 10)` への置換で回避
+
+### 0.35.0
+
+- **Monitor ツール統合**: Claude Code 2.1.98 の新ツール Monitor を experiment/quality-gate/sisyphus に組み込み
+  - `experiment`: 10秒超のテストを Monitor で非同期測定（待ち時間に次の仮説検討）
+  - `quality-gate`: lint (ruff/shellcheck/tsc/clippy) を Monitor で並列ストリーミング（tag prefix で出力識別）
+  - `sisyphus`: Verifier のテスト実行をストリーミング
+- opt-in 設計（短時間テストは従来方式）、fallback 保持
+
+### 0.34.0
+
+- **chronicle.md / context.md コンフリクト自動解決 hook**: 跨マシン同期（Mac ⇄ EC2 等）でコンフリクトが頻発していた問題を SessionStart hook（`resolve-conflicts.sh`）で自動解決
+- **UserPromptSubmit hook で sessionTitle 自動設定**: Claude Code 2.1.94 の sessionTitle 機能を活用し、新セッション開始時に context.md の Intent を pane title として設定
+
+### 0.33.0
+
+- **handover 機構の改善 + `/handoff` スキル追加**: Intent 抽出ロジックを修正、明示スキル化（旧 `/handover` から改名）
+- Sisyphus Step 7 の /evolve 自動呼び出しを整理
+
+### 0.32.0
+
+- **PreToolUse(Bash) hook で quality-gate CTA 追加**: push 系コマンド（`jj git push` / `git push` / `gh pr create` 等）実行前に「/quality-gate 実行済みですか？」を stderr で問いかける non-blocking CTA
+
+### 0.31.1 / 0.31.0
+
+- **headless 検出を `CLAUDE_NON_INTERACTIVE` に統一**: 全スキル横断で判定ロジックを統一
+
+### 0.30.0
+
+- **`bin/` executables 導入**: `validate-plan`、`lint` を bare command として Bash tool から直接実行可能に。スクリプト経由の間接化を廃止
+
+### 0.29.0
+
+- **`/evolve` スキル追加**: auto-memory から学びを抽出し、各スキルの Gotchas に自動追記（L3 inspired）
+- **旧 handover スキル削除** → PreCompact hook で /evolve を自動 CTA
+- **Sisyphus Step 7 に /evolve 組み込み**: 実行完了後に自動で学びを反映
+
+### 0.28.1
+
+- **`/experiment` を autoresearch 方式に改修**: イテレーション間の記憶は `progress.md`、各イテレーションを独立サブエージェントで実行（コンテキスト劣化防止）
+- **stop-guard 撤去**: diff 強制の quality-gate を廃止（後続で PreToolUse(Bash) の quality-gate-cta hook に置き換え）
+- **CoDD inspired staleness check**: `validate-plan.sh` に上流ドキュメント変更時の下流検証を追加
+- **Anti-Slop Bias + reviewer コンテキスト遮断原則**: reviewer が実装者のバイアスに影響されないよう設計
+- **スキルの Progressive Disclosure**: `reference.md` 分離でトークン消費を削減
+- **PermissionDenied hook 追加**（2.1.88 対応）
+- **独自 simplify → ネイティブ `/simplify` に委譲**
+- **deep-interview スキル追加**、SubagentStop hook 追加、commit trailers 追加
 
 ### 0.27.0
 
