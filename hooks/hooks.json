@@ -87,6 +87,16 @@
             "timeout": 3000
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/post-vcs-resolve.sh",
+            "timeout": 3000
+          }
+        ]
       }
     ],
     "PreCompact": [

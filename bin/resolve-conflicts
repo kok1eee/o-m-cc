@@ -1,0 +1,22 @@
+#!/bin/bash
+# resolve-conflicts — .claude/chronicle.md と .claude/context.md のコンフリクトを自動解決
+# Usage: resolve-conflicts [--quiet]
+#
+# rebase/pull 後に手動で呼び出す用のラッパー。
+# ロジック本体は hooks/resolve-conflicts.sh と共有。
+#
+# ⚠️ 対象は .claude/chronicle.md と .claude/context.md のみ。
+#   他のファイルは一切触らない（Sdtabfile.toml 等の実データは手動解決）。
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+HOOK="${PLUGIN_ROOT}/hooks/resolve-conflicts.sh"
+
+if [[ ! -f "$HOOK" ]]; then
+  echo "Error: ${HOOK} not found" >&2
+  exit 1
+fi
+
+bash "$HOOK" </dev/null

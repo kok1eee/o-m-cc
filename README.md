@@ -1,4 +1,4 @@
-# o-m-cc v0.37.0
+# o-m-cc v0.38.0
 
 [English](README_en.md)
 
@@ -336,6 +336,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/retro で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
+| PostToolUse | `Bash` | `post-vcs-resolve.sh` | VCS 操作後に `.claude/` メタファイルの conflict を auto-resolve |
 | PreCompact | - | `pre-compact-handover.sh` | 文脈自動保存（3層分離）+ 失敗時は compaction を block（2.1.105+） |
 | PostCompact | - | `post-compact-resume.sh` | compaction 後のプロジェクト状態リマインド |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
@@ -515,6 +516,19 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.38.0
+
+- **`.claude/` メタファイル auto-resolve の jj 3-way conflict 対応**
+  - `resolve-conflicts.sh`: jj 形式 (`%%%%%%%` / `+++++++`) のマーカーを認識・解決
+    - chronicle.md: diff section の `+- [...]` 行も entry として拾って union
+    - context.md: side #2（通常 remote）を verbatim 採用
+  - 既存の git 形式もそのまま動く（後方互換）
+- **PostToolUse(Bash) 自動トリガー追加** (`hooks/post-vcs-resolve.sh`)
+  - `jj rebase` / `jj git fetch` / `git pull` / `git merge` / `git rebase` 直後に auto-resolve
+  - これまで SessionStart でしか動かなかった auto-merge が session 中にも発動
+- **`bin/resolve-conflicts` 追加**: 手動で auto-resolve を呼び出す口
+- **安全策**: 対象は `.claude/chronicle.md` と `.claude/context.md` の **2ファイル固定**。他のファイル（Sdtabfile.toml など実データ）は絶対に触らない
 
 ### 0.37.0
 
