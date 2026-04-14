@@ -1,4 +1,4 @@
-# o-m-cc v0.39.0
+# o-m-cc v0.40.0
 
 [日本語](README.md)
 
@@ -35,7 +35,7 @@ claude plugin install o-m-cc@kok1eee
 → Automatically runs in Sisyphus mode
 ```
 
-## Skills (13 total)
+## Skills (12 total)
 
 ### Setup
 
@@ -59,7 +59,6 @@ claude plugin install o-m-cc@kok1eee
 |-------|-------------|---------|-------------|
 | `/o-m-cc:quality-gate [files]` | Review Council + Lint (Monitor parallel streaming) | fork | "review this", "quality check" |
 | `/o-m-cc:verification` | Evidence collection before completion declaration (Iron Law) | - | "verify this", "is it actually working?" |
-| `/o-m-cc:audit [target]` | Quality audit for agents/skills | - | Manual only |
 
 ### Experiment & Learning
 

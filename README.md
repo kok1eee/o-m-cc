@@ -1,4 +1,4 @@
-# o-m-cc v0.39.0
+# o-m-cc v0.40.0
 
 [English](README_en.md)
 
@@ -64,7 +64,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Skills
 
-合計 13 スキル（セットアップ 1 + 計画 5 + 検証 3 + 実験・学習 3 + 運用 1）。
+合計 12 スキル（セットアップ 1 + 計画 5 + 検証 2 + 実験・学習 3 + 運用 1）。
 
 ### セットアップ
 
@@ -90,7 +90,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 |--------|------|---------|----------|
 | `/o-m-cc:quality-gate [files]` | Review Council + 静的解析（Monitor 並列ストリーミング） | fork | 「レビューして」「品質チェックして」で発動 |
 | `/o-m-cc:verification` | 完了宣言前の証拠収集（Iron Law: 実行し出力を確認するまで成功と言わない） | - | 「完了前チェック」「本当に動く？」「検証して」で発動 |
-| `/o-m-cc:audit [target]` | エージェント・スキルの品質監査 | - | 手動のみ |
 
 ### 実験・学習
 
@@ -402,7 +401,7 @@ o-m-cc/
 ├── bin/                       # CLI ユーティリティ（Bash tool から直接実行可能）
 │   ├── validate-plan          # plan ドキュメントの形式検証
 │   └── lint                   # 言語別 lint 一括実行
-├── skills/                    # 13 スキル定義
+├── skills/                    # 12 スキル定義
 │   ├── install/SKILL.md
 │   ├── deep-interview/SKILL.md
 │   ├── sisyphus/SKILL.md
@@ -411,7 +410,6 @@ o-m-cc/
 │   ├── task-decomposition/SKILL.md
 │   ├── quality-gate/SKILL.md
 │   ├── verification/SKILL.md
-│   ├── audit/SKILL.md
 │   ├── experiment/SKILL.md
 │   ├── retro/SKILL.md
 │   ├── evolve/SKILL.md
@@ -516,6 +514,14 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.40.0
+
+- **`audit` スキル削除** (13 → 12 skills)
+  - retro での使用頻度分析で 30日間 0 回使用、他スキルからの chain 参照もなしと判明
+  - 実態は Claude 向けのプロンプトテンプレート（コード自体は静的チェックリスト）
+  - 同等の監査作業は Claude に直接依頼すれば OK。独立スキルとして保持する価値が低い
+  - discoverability 改善: 残り 12 スキルの役割がより明確に
 
 ### 0.39.0
 
