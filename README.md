@@ -1,4 +1,4 @@
-# o-m-cc v0.38.1
+# o-m-cc v0.39.0
 
 [English](README_en.md)
 
@@ -517,6 +517,15 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 
 ## Changelog
 
+### 0.39.0
+
+- **`/evolve` に Quality Gate 追加** — oh-my-claudecode の `/learner` にインスパイア
+  - Step 2.5 新設: 追記前に 3 質問で検証（Googleable？ / codebase 固有？ / 試行錯誤で発見？）
+  - 価値ある Gotchas の4条件（Non-Googleable / Context-Specific / Actionable with Precision / Hard-Won）
+  - Anti-Patterns 明記（Generic patterns / Refactoring techniques / Library 使用例 等は追記しない）
+  - Core Principle: 「コードスニペット」ではなく「考え方のヒューリスティック」を残す
+- **README に Similar Projects セクション追加**: oh-my-claudecode との立ち位置の違いを明記（Lightweight vs TypeScript、Claude Code ネイティブ vs 多モデル）
+
 ### 0.38.1
 
 - **CLAUDE.md をスリム化** (143行 → 93行、9.4KB → 7KB、**-26%**)
@@ -838,6 +847,28 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 
 - 初期リリース
 - Sisyphus Loop、SDD フロー、13 エージェント
+
+## Similar Projects / 関連プロジェクト
+
+Claude Code のマルチエージェント協調領域には他にも選択肢があります。位置付けの違いを明記:
+
+### [oh-my-claudecode (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode)
+- **28k⭐ / TypeScript / npm+plugin**
+- 機能豊富：Team / ccg / Autopilot / Ultrawork / Ralph / Pipeline など **9種類のオーケストレーションモード**
+- マルチモデル対応：tmux 経由で Claude + Codex + Gemini を並列起動
+- HUD statusline、通知統合（Telegram/Discord/Slack）、Rate limit auto-resume
+- **向いている人**: 多機能・多モデルが欲しい、TypeScript runtime 許容、Discord コミュニティ
+
+### o-m-cc（このプロジェクト）
+- **Markdown + Shell のみ / Claude Code ネイティブ**
+- Lightweight 原則：ビルド不要、ランタイム依存最小
+- Claude Code ネイティブ活用：TaskCreate / Agent Teams / auto-memory をそのまま
+- 設計思想明文化：アンチパターン警告を含めて CLAUDE.md に明記
+- **向いている人**: 軽量さを重視、Claude Code 専用で十分、設計原則を大切にしたい
+
+> **参考にしている部分**: OMC の `/learner` quality gates（3 questions + 4 criteria）を v0.39.0 で `/evolve` に取り込み。Skill auto-learning の品質基準として相互に学び合える関係。
+
+---
 
 ## Inspired By
 

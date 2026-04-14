@@ -34,6 +34,38 @@ cat "${CLAUDE_PLUGIN_DATA}/skill-usage.log" | tail -20
 - 既に記載されている内容と重複する学びは除外
 - 新しい学びのみを候補にする
 
+### Step 2.5: Quality Gate（追記前に必ず照合）
+
+Gotchas として追記する前に、**以下の3つの質問すべてに YES か検証**（oh-my-claudecode の `/learner` にインスパイア）:
+
+1. **「Google で5分以内に見つけられない？」** → YES（= Googleable なら却下）
+2. **「この codebase / skill 固有の話？」** → YES（= 普遍的パターンなら却下）
+3. **「実際にデバッグや試行錯誤で発見したもの？」** → YES（= 推測・想像なら却下）
+
+#### 価値ある Gotchas の4条件
+
+| 条件 | OK | NG |
+|---|---|---|
+| **Non-Googleable** | "o-m-cc の TeamCreate で name 未指定だと SendMessage が silent loss" | "Bash で set -e を使う" |
+| **Context-Specific** | "sisyphus Step 5 で verification auto-trigger しない問題" | "エージェントの使い方" |
+| **Actionable with Precision** | "`hooks/pre-compact-handover.sh` の exit 2 は 2.1.105+ で compaction を block する" | "hook を気をつけて使う" |
+| **Hard-Won** | 「実際に壊して原因を突き止めた学び」 | 「マニュアルに書いてあること」 |
+
+#### Anti-Patterns（絶対に追記しない）
+
+- ❌ Generic programming patterns（言語やフレームワーク一般の話）
+- ❌ Refactoring techniques（汎用技術）
+- ❌ Library 使用例（ドキュメント参照で十分）
+- ❌ Type 定義や boilerplate
+- ❌ ジュニアが5分で Google できる内容
+
+#### Core Principle
+
+**再利用可能な Gotchas は「コードスニペット」ではなく「考え方のヒューリスティック」**。
+
+- ❌ 悪い例（mimicking）: "ConnectionResetError を見たらこの try/except を追加"
+- ✅ 良い例（reusable）: "async ネットワークコードでは I/O 操作は client/server ライフサイクルのズレで独立に失敗する。各 I/O を個別に wrap する"
+
 ### Step 3: Gotchas 追記
 
 `<!-- AUTO-GOTCHAS -->` マーカーの後に追記する。マーカーがなければ Gotchas セクション末尾に追加する。

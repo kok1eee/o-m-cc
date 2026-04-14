@@ -1,4 +1,4 @@
-# o-m-cc v0.35.1
+# o-m-cc v0.39.0
 
 [日本語](README.md)
 
@@ -195,6 +195,28 @@ No special env vars required. Main behavior is self-contained via plugin.json + 
 |----------|---------|
 | `CLAUDE_NON_INTERACTIVE=1` | Headless mode. Skip AskUserQuestion and move forward |
 | `O_M_CC_DEBUG=1` | Enable hooks debug output |
+
+## Similar Projects
+
+Other options exist in the Claude Code multi-agent orchestration space. Here's how they compare:
+
+### [oh-my-claudecode (OMC)](https://github.com/Yeachan-Heo/oh-my-claudecode)
+- **28k⭐ / TypeScript / npm + plugin distribution**
+- Feature-rich: **9 orchestration modes** (Team / ccg / Autopilot / Ultrawork / Ralph / Pipeline / etc.)
+- Multi-model: spawns Claude + Codex + Gemini in parallel via tmux
+- HUD statusline, notification integrations (Telegram/Discord/Slack), Rate limit auto-resume
+- **Best for**: Users wanting many features and multi-model orchestration, comfortable with TypeScript runtime, Discord community
+
+### o-m-cc (this project)
+- **Markdown + Shell only / Claude Code native**
+- Lightweight principle: no build step, minimal runtime dependencies
+- Claude Code native: uses TaskCreate / Agent Teams / auto-memory directly
+- Design principles made explicit: anti-patterns documented in CLAUDE.md
+- **Best for**: Users who value minimalism, Claude Code-only workflows, and explicit design principles
+
+> **Cross-pollination**: o-m-cc v0.39.0+ incorporates OMC's `/learner` quality gates (3 questions + 4 criteria) into its `/evolve` skill. The two projects learn from each other in the skill auto-learning space.
+
+---
 
 ## Inspired By
 
