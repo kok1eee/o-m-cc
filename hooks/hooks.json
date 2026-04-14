@@ -72,6 +72,18 @@
         ]
       }
     ],
+    "PostToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/plan-mode-exit-cta.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "matcher": "",

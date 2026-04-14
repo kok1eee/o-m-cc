@@ -1,4 +1,4 @@
-# o-m-cc v0.35.1
+# o-m-cc v0.36.0
 
 [English](README_en.md)
 
@@ -334,6 +334,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | UserPromptSubmit | - | `session-title.sh` | context.md の Intent を sessionTitle に自動設定 |
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/retro で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
+| PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
 | PreCompact | - | `pre-compact-handover.sh` | 文脈自動保存（3層分離）+ 失敗時は compaction を block（2.1.105+） |
 | PostCompact | - | `post-compact-resume.sh` | compaction 後のプロジェクト状態リマインド |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
@@ -513,6 +514,13 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.36.0
+
+- **Sisyphus 自動発動 CTA**: plan mode → 実装の流れで sisyphus を起動しやすく
+  - `PostToolUse(ExitPlanMode)` hook: Claude Code built-in plan mode 終了時、plan file が5行以上あれば `/o-m-cc:sisyphus` を促す stderr CTA を表示
+  - `PostCompact` hook: compaction 後、`plan/requirements.md` or `plan/design.md` があれば sisyphus 再開を促す CTA を追加
+- non-blocking 設計: CTA はリマインダーに留まり、Claude の判断を尊重
 
 ### 0.35.1
 

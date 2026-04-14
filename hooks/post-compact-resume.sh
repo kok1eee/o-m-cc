@@ -38,14 +38,17 @@ fi
 echo "  変更: ${DIFF_LINES} 行（plan/ 除外）"
 
 # 3. plan/ の状態からフェーズ推測
+PLAN_EXISTS=0
 if [[ -d "plan" ]]; then
   HAS_REQ=$(ls plan/requirements.md 2>/dev/null && echo "1" || echo "0")
   HAS_DESIGN=$(ls plan/design.md 2>/dev/null && echo "1" || echo "0")
 
   if [[ "$HAS_DESIGN" == "1" ]]; then
     echo "  フェーズ: 設計完了 → 実装中"
+    PLAN_EXISTS=1
   elif [[ "$HAS_REQ" == "1" ]]; then
     echo "  フェーズ: 要件定義完了 → 設計中"
+    PLAN_EXISTS=1
   else
     echo "  フェーズ: Discovery（計画開始）"
   fi
@@ -53,6 +56,13 @@ fi
 
 echo ""
 echo "→ .claude/context.md を Read して詳細な文脈を復元し、中断した作業を続行してください。"
+
+# plan/ が存在する場合、sisyphus で実装継続を促す
+if [[ "$PLAN_EXISTS" == "1" ]]; then
+  echo ""
+  echo "📋 plan/ にドキュメントがあります。実装を再開するなら Skill ツールで /o-m-cc:sisyphus を起動してください。"
+fi
+
 echo ""
 
 exit 0
