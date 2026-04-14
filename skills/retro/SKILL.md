@@ -15,7 +15,7 @@ effort: low
 
 ## 直近7日間
 
-!`if [ -f "${CLAUDE_PLUGIN_DATA}/skill-usage.log" ]; then awk -v d="$(date -u -v-7d +%Y-%m-%d 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%d 2>/dev/null)" '$1 >= d' "${CLAUDE_PLUGIN_DATA}/skill-usage.log" | awk '{print $2}' | sort | uniq -c | sort -rn; else echo "ログなし"; fi`
+!`D=$(date -u -v-7d +%Y-%m-%d 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%d 2>/dev/null); if [ -f "${CLAUDE_PLUGIN_DATA}/skill-usage.log" ]; then awk -v d="$D" 'substr($0, 1, 10) >= d { sub(/^[^ ]+ /, ""); print }' "${CLAUDE_PLUGIN_DATA}/skill-usage.log" | sort | uniq -c | sort -rn; else echo "ログなし"; fi`
 
 ## タスク作成ログ
 
@@ -23,7 +23,7 @@ effort: low
 !`cat "${CLAUDE_PLUGIN_DATA}/task-created.log" 2>/dev/null | wc -l | tr -d ' ' | xargs -I{} echo "累計 {} タスク作成" || echo "ログなし"`
 
 ### 直近7日間
-!`if [ -f "${CLAUDE_PLUGIN_DATA}/task-created.log" ]; then awk -v d="$(date -u -v-7d +%Y-%m-%d 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%d 2>/dev/null)" '$1 >= d' "${CLAUDE_PLUGIN_DATA}/task-created.log" | wc -l | tr -d ' ' | xargs -I{} echo "{} タスク（直近7日）"; else echo "ログなし"; fi`
+!`D=$(date -u -v-7d +%Y-%m-%d 2>/dev/null || date -u -d '7 days ago' +%Y-%m-%d 2>/dev/null); if [ -f "${CLAUDE_PLUGIN_DATA}/task-created.log" ]; then awk -v d="$D" 'substr($0, 1, 10) >= d' "${CLAUDE_PLUGIN_DATA}/task-created.log" | wc -l | tr -d ' ' | xargs -I{} echo "{} タスク（直近7日）"; else echo "ログなし"; fi`
 
 ## 分析してほしいこと
 

@@ -111,13 +111,19 @@ Skill: task-decomposition
 
 ## Step 5: 実装 → 検証 → 修正ループ
 
-各タスクを以下のループで消化する。**全タスクで Verifier による検証を行う。自分でテストして「通った」と言わない。**
+各タスクを以下のループで消化する。**実装者の「通ったはず」は信用しない。verification（自己エビデンス収集）+ Verifier（独立視点）の二段階で検証する。**
 
-1. 実装 → Verifier spawn（adversarial 検証）
-2. pass → 次のタスク
-3. fail → Debugger spawn → 修正 → Verifier 再検証（最大2回）
-4. Debugger 2回失敗 → Experiment ループ（仮説→1変更→検証、最大3回）
-5. 3回失敗 → AskUserQuestion（Headless なら [BLOCKED] 記録して次へ）
+1. 実装
+2. `Skill: verification` — 実装者自身がエビデンスを収集（Iron Law: 検証コマンドを実行し出力を確認するまで完了宣言しない）
+3. verification 通過 → Verifier spawn（独立視点で adversarial 検証）
+4. Verifier 通過 → 次のタスク
+5. verification or Verifier fail → Debugger spawn → 修正 → 再検証（最大2回）
+6. Debugger 2回失敗 → Experiment ループ（仮説→1変更→検証、最大3回）
+7. 3回失敗 → AskUserQuestion（Headless なら [BLOCKED] 記録して次へ）
+
+**verification と Verifier の役割分担**:
+- **verification** (skill): 実装者自身の自己検証。構造化されたチェックリスト（IDENTIFY → RUN → READ → VERIFY → DECLARE）で証拠を収集。`Skill: verification` で呼び出すと自動実行される
+- **Verifier** (agent): 独立したサブエージェントによる adversarial 検証。実装者のバイアスを排除
 
 ### Monitor 活用: テスト実行の非同期監視
 
