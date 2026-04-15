@@ -106,7 +106,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:handoff` | セッション文脈を `.claude/context.md` に保存して新セッションに引き継ぎ | - | 「ハンドオーバー」「引き継ぎ」「handoff」で発動 |
+| `/o-m-cc:handoff` | Recap（現セッションの LLM 要約）と Next Actions を `.claude/journal.md` に追記。EC2 など別マシンへの引き継ぎにも対応（VCS 同期前提） | - | 「ハンドオーバー」「引き継ぎ」「別マシンに渡したい」「handoff」で発動 |
 
 > **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
@@ -348,25 +348,19 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 
 | イベント | Matcher | Hook | 説明 |
 |---------|---------|------|------|
-| SessionStart | - | `resolve-conflicts.sh` | chronicle.md / context.md のコンフリクト自動解決 |
 | SessionStart | - | `check-dependencies.sh` | 依存コマンド（jq 等）の確認 |
 | SessionStart | - | `archive-plans.sh` | 古い plan/ ファイルをアーカイブ |
-| SessionStart | - | `session-resume.sh` | `.claude/context.md` + `chronicle.md` の文脈表示 |
+| SessionStart | - | `session-resume.sh` | `.claude/journal.md` の最新エントリ（Recap + Next Actions）を表示（resume 時は built-in `/recap` も併用可） |
 | SessionStart | - | `memory-digest.sh` | サブエージェント Memory ダイジェスト |
 | SessionStart | - | `plugin-data-init.sh` | `CLAUDE_PLUGIN_DATA` 初期化 |
 | SessionStart | - | `dotfiles-pull.sh` | dotfiles repo を24h throttle で自動 pull（bg 実行） |
-| UserPromptSubmit | - | `session-title.sh` | context.md の Intent を sessionTitle に自動設定 |
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/retro で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
-| PostToolUse | `Bash` | `post-vcs-resolve.sh` | VCS 操作後に `.claude/` メタファイルの conflict を auto-resolve |
-| PreCompact | - | `pre-compact-handover.sh` | 文脈自動保存（3層分離）+ 失敗時は compaction を block（2.1.105+） |
-| PostCompact | - | `post-compact-resume.sh` | compaction 後のプロジェクト状態リマインド |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
 | TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/retro で集計可能） |
 | TaskCompleted | - | `task-completed.sh` | タスク完了通知・依存タスクアンブロック |
 | PermissionDenied | - | `permission-denied.sh` | 拒否ログ + 代替提案 |
-| SessionEnd | - | `pre-compact-handover.sh` | セッション終了時の文脈自動保存 |
 
 ### デバッグモード
 
@@ -451,20 +445,18 @@ o-m-cc/
 │   ├── retro/SKILL.md
 │   ├── evolve/SKILL.md
 │   └── handoff/SKILL.md
-├── hooks/                     # 16 フック + hooks.json
+├── hooks/                     # 11 フック + hooks.json
 │   ├── hooks.json             # フックイベントマッピング
 │   ├── lib/                   # 共通ライブラリ
-│   ├── resolve-conflicts.sh   # chronicle/context コンフリクト自動解決
 │   ├── check-dependencies.sh
 │   ├── archive-plans.sh
-│   ├── session-resume.sh
+│   ├── session-resume.sh      # journal.md の最新エントリ（Recap + Next）を表示
 │   ├── memory-digest.sh
 │   ├── plugin-data-init.sh
-│   ├── session-title.sh       # Intent を sessionTitle に設定
+│   ├── dotfiles-pull.sh       # dotfiles を 24h throttle で自動 pull
 │   ├── skill-usage-log.sh     # スキル使用ログ
 │   ├── quality-gate-cta.sh    # push 前の quality-gate CTA
-│   ├── pre-compact-handover.sh # 文脈自動保存 + safety block
-│   ├── post-compact-resume.sh
+│   ├── plan-mode-exit-cta.sh  # plan mode 終了時に sisyphus を促す
 │   ├── subagent-verify.sh     # サブエージェント成果物検証
 │   ├── task-created-log.sh    # タスク作成ログ
 │   ├── task-completed.sh      # タスク完了通知・アンブロック
@@ -586,6 +578,30 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.42.0
+
+- **セッション引き継ぎを /recap 中心に再設計（破壊的変更）**
+  - 削除ファイル: `.claude/context.md` / `.claude/chronicle.md` / `.claude/context-archive.md`
+  - 削除 hook: `pre-compact-handover.sh` / `post-compact-resume.sh` / `session-title.sh` / `resolve-conflicts.sh` / `post-vcs-resolve.sh`
+  - 削除 CLI: `bin/resolve-conflicts`
+  - 削除 hook イベント: `PreCompact` / `PostCompact` / `SessionEnd` / `UserPromptSubmit`（それぞれ単一 hook のみだったため）
+  - 新設: `.claude/journal.md`（Recap + Next Actions の時系列アーカイブ、append-only、ホスト識別子付き）
+  - `/o-m-cc:handoff` は `.claude/journal.md` の先頭に **Recap（現セッションの LLM 要約 2〜4 文）+ Next Actions（1〜5 件）** を追記する役割に変更。Intent/Outcomes/Blockers/Working Dir/MEMORY.md 反映/Skill 提案等の旧フローは全廃
+  - `session-resume.sh` は journal.md の最新 1 エントリ全体（Recap + Next）と skill-usage ログを表示
+  - **EC2 など別マシンへの引き継ぎに対応**: journal.md は VCS 同期で別マシンから読めるため、`/recap`（ローカル端末固有）では不可能な跨マシン引き継ぎが可能。日付見出しに `[hostname]` を付与して発生元を識別
+  - 動機: Claude Code v2.1.108+ の built-in `/recap` が Intent/Outcomes の LLM 要約を高品質で提供するため、独自実装を廃止。`pre-compact-handover.sh` の Intent 抽出バグ（transcript 空時に既存 context.md から読み戻す循環で chronicle.md に壊れた Intent を蓄積）を根本解消
+  - トークンコスト純減: SessionStart 固定出力が context.md + chronicle.md → journal.md 最新 1 エントリのみに
+  - 後方互換なし: 既存 context.md / chronicle.md は VCS 履歴で参照可能（o-m-cc 側は触らない）
+  - プライバシー注記: `hostname -s` が EC2 内部 IP を返す場合、public repo では `.gitignore` に `.claude/journal.md` を追加するか private repo 運用を推奨
+
+### 0.41.0
+
+- **`feature-flow` スキル追加** — 新規 web アプリ機能を構造化する 5 フェーズワークフロー
+  - 2 モード（最初から / 途中から）対応。Phase B で並列 3 エージェントによる Prior Art 調査、Phase E で Reader Test を行うことで spec の質を担保
+  - `deep-interview`（5軸）/ `discovery-council`（複数機能統合）と棲み分け、単一機能の構造化 spec という空白フェーズを担当
+  - 公式 feature-dev / brainstorming / doc-coauthoring の設計パターンを参考
+- **Prior Art Agents 6 体追加** — `architecture-mapper` / `code-explorer` / `convention-scout` / `market-researcher` / `oss-scout` / `pattern-observer`（エージェント総数 9 → 15）
 
 ### 0.40.1
 

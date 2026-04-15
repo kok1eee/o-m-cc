@@ -58,12 +58,13 @@ initialPrompt: "CLAUDE.md を Read してプロジェクトの文脈とワーク
 
 ### 6. 文脈を残す
 
-作業完了前に `/o-m-cc:handover` でセッションの文脈を `.claude/context.md` に保存する。
-次のセッションが文脈を理解した状態で再開できるようにする。
+作業完了前・セッション区切り時に `/o-m-cc:handoff` で **Recap（現セッションの LLM 要約）+
+Next Actions** を `.claude/journal.md` に追記する（append-only、日付見出しに `[hostname]`）。
 
-> **Note**: compaction 発生時は PreCompact hook が自動で `.claude/context.md` にスナップショットを保存し、
-> 前のスナップショットは `.claude/chronicle.md` に退避される。
-> 手動の `/o-m-cc:handover` は Learnings の MEMORY.md 反映と Skill 提案も行う。
+> **Note**: 同一マシンで resume する場合は Claude Code built-in `/recap` も
+> Intent / Outcomes を要約してくれる。`/recap` はローカル端末固有で VCS 共有できないため、
+> 別マシン（例: 別 EC2）への引き継ぎには journal.md の Recap を使う（VCS 同期前提）。
+> 新セッションでは SessionStart hook が journal.md の最新エントリ全体を自動表示する。
 
 ## 禁止事項
 

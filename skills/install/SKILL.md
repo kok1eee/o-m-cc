@@ -110,33 +110,6 @@ o-m-cc のランタイムファイルを追加（重複しない場合のみ）�
 
 ---
 
-## Step 8: SessionEnd hook の設定
-
-`.claude/settings.json` の hooks に SessionEnd を**マージ**する：
-
-```json
-{
-  "hooks": {
-    "SessionEnd": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact-handover.sh",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-公式 /init が設定した hooks を壊さないよう、**SessionEnd のみ追加/更新**する。
-
----
-
 ## 完了時の出力
 
 ```
@@ -148,7 +121,7 @@ o-m-cc のランタイムファイルを追加（重複しない場合のみ）�
 📁 plan/: 計画ファイル用ディレクトリ準備済み
 🤖 Agent: .claude/agents/sisyphus.md に配置
 🔓 Permissions: 推奨パーミッション追加済み
-🔄 SessionEnd: context.md 自動保存設定済み
+📝 Handoff: /o-m-cc:handoff で .claude/journal.md に Next Actions を記録（詳細要約は /recap）
 
 💡 デフォルトエージェント有効化:
    .claude/settings.json → "agent": "sisyphus"

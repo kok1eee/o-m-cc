@@ -11,9 +11,6 @@
 
 # Runtime state
 .claude/sisyphus-state.json
-.claude/context.md
-.claude/chronicle.md
-.claude/context-archive.md
 .claude/.completed-phases
 .claude/.completed-tasks
 .claude/.task-counter

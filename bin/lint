@@ -22,11 +22,20 @@ if [[ -z "$CHANGED_FILES" ]]; then
   exit 0
 fi
 
-# 拡張子別にフィルタ
-py_files=$(echo "$CHANGED_FILES" | grep -E '\.py$' || true)
-sh_files=$(echo "$CHANGED_FILES" | grep -E '\.sh$' | grep -v '.claude/' || true)
-ts_files=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' || true)
-rs_files=$(echo "$CHANGED_FILES" | grep -E '\.rs$' || true)
+# 削除されたファイル（working copy に存在しない）は静的解析対象外
+filter_existing() {
+  local out=""
+  while IFS= read -r f; do
+    [[ -n "$f" && -f "$f" ]] && out+="${f}"$'\n'
+  done
+  printf '%s' "$out" | sed '/^$/d'
+}
+
+# 拡張子別にフィルタ（存在するファイルのみ）
+py_files=$(echo "$CHANGED_FILES" | grep -E '\.py$' | filter_existing || true)
+sh_files=$(echo "$CHANGED_FILES" | grep -E '\.sh$' | grep -v '.claude/' | filter_existing || true)
+ts_files=$(echo "$CHANGED_FILES" | grep -E '\.(ts|tsx|js|jsx)$' | filter_existing || true)
+rs_files=$(echo "$CHANGED_FILES" | grep -E '\.rs$' | filter_existing || true)
 
 # Python（変更ファイルのみ）
 if [[ -n "$py_files" ]]; then

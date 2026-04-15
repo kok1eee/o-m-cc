@@ -72,7 +72,7 @@ claude plugin install o-m-cc@kok1eee
 
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
-| `/o-m-cc:handoff` | Save session context to `.claude/context.md` for handoff | - | "handoff", "save context" |
+| `/o-m-cc:handoff` | Append Recap (LLM summary) + Next Actions to `.claude/journal.md`. Supports handoff to other machines (e.g., EC2) via VCS sync | - | "handoff", "next actions", "hand off to another machine" |
 
 ## Agents (10 specialists + @capabilities meta)
 
@@ -133,22 +133,19 @@ Agent Teams (Council + Pipeline Hybrid):
 
 | Event | Matcher | Hook | Description |
 |-------|---------|------|-------------|
-| SessionStart | - | resolve-conflicts.sh | Auto-resolve chronicle/context conflicts |
 | SessionStart | - | check-dependencies.sh | Check required commands (jq etc.) |
 | SessionStart | - | archive-plans.sh | Archive old plan/ files |
-| SessionStart | - | session-resume.sh | Display context.md + chronicle.md |
+| SessionStart | - | session-resume.sh | Display latest entry (Recap + Next Actions) from `.claude/journal.md` (built-in `/recap` also available on resume) |
 | SessionStart | - | memory-digest.sh | Subagent Memory digest |
 | SessionStart | - | plugin-data-init.sh | Initialize CLAUDE_PLUGIN_DATA |
-| UserPromptSubmit | - | session-title.sh | Auto-set sessionTitle from context.md Intent |
+| SessionStart | - | dotfiles-pull.sh | Auto-pull dotfiles with 24h throttle |
 | PreToolUse | Skill | skill-usage-log.sh | Log skill usage (for /retro) |
 | PreToolUse | Bash | quality-gate-cta.sh | Non-blocking CTA before push commands |
-| PreCompact | - | pre-compact-handover.sh | Auto-save context + safety block on failure (2.1.105+) |
-| PostCompact | - | post-compact-resume.sh | Project state reminder |
+| PostToolUse | ExitPlanMode | plan-mode-exit-cta.sh | Prompt /o-m-cc:sisyphus when plan mode exits |
 | SubagentStop | - | subagent-verify.sh | Verify subagent output |
 | TaskCreated | - | task-created-log.sh | Log task creation |
 | TaskCompleted | - | task-completed.sh | Task completion notification |
 | PermissionDenied | - | permission-denied.sh | Log denial + suggest alternative |
-| SessionEnd | - | pre-compact-handover.sh | Auto-save context on session end |
 
 ## Update
 

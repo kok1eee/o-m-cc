@@ -48,7 +48,7 @@ Gotchas として追記する前に、**以下の3つの質問すべてに YES �
 |---|---|---|
 | **Non-Googleable** | "o-m-cc の TeamCreate で name 未指定だと SendMessage が silent loss" | "Bash で set -e を使う" |
 | **Context-Specific** | "sisyphus Step 5 で verification auto-trigger しない問題" | "エージェントの使い方" |
-| **Actionable with Precision** | "`hooks/pre-compact-handover.sh` の exit 2 は 2.1.105+ で compaction を block する" | "hook を気をつけて使う" |
+| **Actionable with Precision** | "`hooks/subagent-verify.sh` の exit 2 は 2.1.105+ で subagent を停止させる（非ブロッキングは exit 0）" | "hook を気をつけて使う" |
 | **Hard-Won** | 「実際に壊して原因を突き止めた学び」 | 「マニュアルに書いてあること」 |
 
 #### Anti-Patterns（絶対に追記しない）
