@@ -11,8 +11,8 @@
   "plugins": [
     {
       "name": "o-m-cc",
-      "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。9の専門エージェント + hooks による品質チェック。仕様駆動開発（SDD）フロー対応。",
-      "version": "0.40.1",
+      "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。15 の専門エージェント + hooks による品質チェック。仕様駆動開発（SDD）フロー対応。web アプリ機能定義（feature-flow）対応。",
+      "version": "0.41.0",
       "source": {
         "source": "url",
         "url": "https://github.com/kok1eee/o-m-cc.git"

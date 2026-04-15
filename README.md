@@ -64,7 +64,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Skills
 
-合計 12 スキル（セットアップ 1 + 計画 5 + 検証 2 + 実験・学習 3 + 運用 1）。
+合計 13 スキル（セットアップ 1 + 計画 6 + 検証 2 + 実験・学習 3 + 運用 1）。
 
 ### セットアップ
 
@@ -79,10 +79,13 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
 | `/o-m-cc:deep-interview <idea>` | ソクラテス式要件掘り下げ → discovery-council にハンドオフ | - | 「要件が曖昧」「掘り下げて」「インタビュー」で発動 |
+| `/o-m-cc:feature-flow <feature>` | web アプリ機能を 5 フェーズで構造化（2 モード + 並列 3 エージェント Prior Art + Reader Test） | - | 「機能を考えたい」「web アプリ作りたい」「機能から設計」で発動 |
 | `/o-m-cc:sisyphus <task>` | 計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー | fork | 「計画して」「この機能を実装したい」で発動 |
 | `/o-m-cc:discovery-council <task>` | 3エージェント並列要件分析 Council | fork | 「要件を整理して」「要件定義して」で発動 |
 | `/o-m-cc:design` | designer によるアーキテクチャ設計 | - | 「設計して」で発動 |
 | `/o-m-cc:task-decomposition` | planner によるタスク分解 | - | 「タスクに分解して」で発動 |
+
+> **棲み分け**: `deep-interview`（曖昧アイデア → 5軸サマリー） → `feature-flow`（機能 → 構造化 spec） → `discovery-council`（複数機能 → requirements.md）の順で詳細度が上がる。単一機能なら `feature-flow` から、要件統合まで必要なら `discovery-council` も使う。
 
 ### 検証
 
@@ -227,7 +230,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ## Agents
 
-合計 10 エージェント（計画 5 + 分析 3 + 品質 2）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。
+合計 16 エージェント（計画 5 + 分析 3 + 品質 2 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。
 
 ### Planning Agents（計画系）
 
@@ -253,6 +256,26 @@ claude plugin marketplace add anthropics/claude-plugins-official
 | @code-reviewer | コードレビュー | sonnet | default | project |
 | @security-reviewer | セキュリティレビュー | sonnet | default | project |
 
+### Prior Art Agents（feature-flow Phase B 専用）
+
+新規 web アプリ機能を作る前の **Prior Art 並列調査** で起動される。3 体ずつ 2 グループ。
+
+**Mode 1（最初から / 外向き）**
+
+| Agent | 役割 | Model | Permission | Memory |
+|-------|------|-------|------------|--------|
+| @market-researcher | 商用 SaaS / 既製アプリ調査（作る vs 買う判断） | sonnet | **plan** | project |
+| @oss-scout | OSS / GitHub の類似実装調査（依存 / フォーク / 参考 / 不採用判定） | sonnet | **plan** | project |
+| @pattern-observer | UI/UX パターン観察（共通 / 差別化 / アンチパターン分類） | sonnet | **plan** | project |
+
+**Mode 2（途中から / 内向き）**
+
+| Agent | 役割 | Model | Permission | Memory |
+|-------|------|-------|------------|--------|
+| @code-explorer | 既存類似機能のエントリポイントから実装をトレース | sonnet | **plan** | project |
+| @architecture-mapper | 既存抽象境界・データモデルのマッピングと配置候補提示 | sonnet | **plan** | project |
+| @convention-scout | 命名・配置・テスト・コーディング規約の抽出 | sonnet | **plan** | project |
+
 ### Meta
 
 | Agent | 役割 |
@@ -274,10 +297,11 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ```
 plan/
-├── requirements.md     # 要件定義（Discovery Council が生成）
-└── design.md           # 設計書（designer が生成）
+├── YYYY-MM-DD-feature-<slug>.md  # 機能 spec（feature-flow が生成、日付付き）
+├── requirements.md                # 要件定義（Discovery Council が生成）
+└── design.md                      # 設計書（designer が生成）
 
-TaskCreate               # 実装タスク（planner がネイティブタスクシステムに登録）
+TaskCreate                          # 実装タスク（planner がネイティブタスクシステムに登録）
 ```
 
 ## Token Efficiency
