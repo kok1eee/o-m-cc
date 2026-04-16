@@ -2,7 +2,7 @@
 name: experiment
 description: "実験駆動の反復改善ループ（autoresearch 方式）。毎回フレッシュなサブエージェントで 1変更→測定→保持 or revert。progress.md がイテレーション間の記憶。パフォーマンス最適化、リファクタリング、UI改善、バグ修正の試行錯誤に使う。「最適化して」「パフォーマンス改善」「リファクタリング」「試行錯誤して」「実験的に改善」で発動。"
 argument-hint: "<optimization goal and measurement method>"
-allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Agent, Monitor, AskUserQuestion]
+allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, Agent, Monitor, AskUserQuestion, PushNotification]
 model: opus
 effort: high
 paths:
@@ -199,6 +199,8 @@ jj abandon
 ### 学び
 - [次回の実験に活かせること]
 ```
+
+**完了通知**: 実験が **10 分以上走った** または `CLAUDE_NON_INTERACTIVE=1` / EC2 バックグラウンド実行が前提だった場合、`PushNotification` で結果サマリを送る（例: `experiment 完了: 7 iter, +12% 改善、revert 3 件`）。短時間（数分以内）で収束した場合は送らない。
 
 ## Gotchas
 

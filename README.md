@@ -1,4 +1,4 @@
-# o-m-cc v0.42.0
+# o-m-cc v0.43.0
 
 [English](README_en.md)
 
@@ -582,6 +582,16 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.43.0
+
+- **PushNotification を sisyphus / experiment / quality-gate に組み込み**
+  - Claude Code v2.1.110+ の built-in `PushNotification` tool を利用。Remote Control 有効時はモバイルへの push、未設定時はデスクトップ通知
+  - `sisyphus` Step 7（完了）: 長時間実行（目安 10 分以上）or `CLAUDE_NON_INTERACTIVE=1` / EC2 バックグラウンド実行時に結果サマリを通知
+  - `experiment` Step 3（収束）: 同条件で通知
+  - `quality-gate` Step 8 新設: Critical 停止（ユーザー判断待ち）、Review Council が 10 分以上、lint Error 残存時に通知
+  - ポリシー: **err toward not sending**。短時間＆ユーザー在席時は送らない。メッセージは行動可能な情報でリード（200 文字以内）
+  - ユースケース: EC2 で sisyphus を走らせて完了をスマホで受ける
 
 ### 0.42.0
 

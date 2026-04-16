@@ -2,7 +2,7 @@
 name: quality-gate
 description: "Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。code-reviewer, security-reviewer, critic を並列実行して品質・セキュリティ・計画整合性をチェック。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
-allowed-tools: [Read, Glob, Grep, Bash, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
+allowed-tools: [Read, Glob, Grep, Bash, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
 effort: high
 context: fork
@@ -153,6 +153,16 @@ Monitor:
 ```bash
 lint
 ```
+
+### Step 8: 通知（条件付き）
+
+以下のいずれかに該当する場合、`PushNotification` で結果を送る。短時間（数分以内）＆ユーザーが画面を見ている可能性がある場合は送らない。
+
+- **Critical 発見で Step 5 の自動修正も不可**（ユーザー判断が必要で停止）: 例 `quality-gate 停止: SQL injection in auth.ts:42、判断待ち`
+- **Review Council が 10 分以上走った**（ユーザー離席想定）: 例 `quality-gate 通過: Critical 0, 12 ファイルレビュー完了`
+- **静的解析で Error が残った**: 例 `lint 失敗: shellcheck 3 errors in hooks/foo.sh`
+
+メッセージは行動可能な情報でリードし、200 文字以内。
 
 ## Gotchas
 

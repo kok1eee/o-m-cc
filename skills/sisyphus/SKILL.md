@@ -2,7 +2,7 @@
 name: sisyphus
 description: "計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー。Agent Teams で要件→設計→タスク分解→実装→quality-gate を一括実行。新機能開発や設計判断が必要な変更に使う。「計画して」「この機能を実装したい」「新機能を作りたい」「要件から実装まで」で発動。"
 argument-hint: "<feature description>"
-allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill]
+allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
 effort: high
 context: fork
@@ -161,12 +161,15 @@ Skill: quality-gate
 
 → 通過後: `TaskUpdate: Phase 5 → completed`
 
-## Step 7: 学習 + クリーンアップ
+## Step 7: 学習 + クリーンアップ + 完了通知
 
 全フェーズ完了後:
 
 1. `/evolve` でスキルの Gotchas を更新（今回の実行で得た学びを反映）
 2. `TaskList` で残っている全タスク（[TRACKING] タスク + 実装タスク）を `TaskUpdate: status → deleted` で削除
+3. **長時間実行（目安: Phase 1 開始から 10 分以上経過、or EC2 バックグラウンド実行が想定される）**だった場合は、`PushNotification` で完了通知を送る。メッセージは行動可能な情報でリード（例: `sisyphus 完了: 12 ファイル変更、quality-gate 通過。jj git push 待ち`）。セッション開始から数分で完了した場合や `CLAUDE_NON_INTERACTIVE=1` でない場合（ユーザーが画面を見ている可能性大）は送らない。
+
+> **PushNotification のポリシー**: `message <200 文字, status: "proactive"`。送信コスト（ユーザーの注意を奪う）があるので、err toward not sending。quality-gate **失敗** で止まった場合も「ユーザー判断が必要」として通知候補。
 
 ## 整合性チェック（CoDD inspired）
 
