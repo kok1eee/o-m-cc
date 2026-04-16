@@ -1,4 +1,4 @@
-# o-m-cc v0.40.1
+# o-m-cc v0.42.0
 
 [English](README_en.md)
 
@@ -18,6 +18,8 @@ o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追�
 
 - **macOS / Linux**: フルサポート
 - **Windows**: WSL (Windows Subsystem for Linux) 経由で使用してください
+- **Claude Code v2.1.108+**: built-in `/recap` をセッション文脈の復元に利用します。v2.1.110+ なら telemetry 無効環境（Bedrock / Vertex / `DISABLE_TELEMETRY`）でも `/recap` が動作します
+- **jq**: hooks 用（`brew install jq` / `apt install jq`）
 
 ## Quick Start
 
@@ -151,6 +153,8 @@ Agent Teams (Council + Pipeline ハイブリッド):
 ```
 
 **Phase 1 は Discovery Council（peer-to-peer）、Phase 2-3 は Pipeline（順次）**
+
+> **推奨モデル**: Claude Code v2.1.111+ の Max 契約なら **Opus 4.7 + Auto mode** が `/o-m-cc:sisyphus` のような長時間ループと相性が良い（`--enable-auto-mode` は不要）。`/effort xhigh` で速度と知能のバランス調整も可能。
 
 ### 実装フェーズ
 

@@ -59,6 +59,8 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | 最適化・リファクタリング・試行錯誤 | `/experiment` で実験駆動ループ（試す→測る→保持 or revert） |
 | 完了を宣言する前 | `/verification` で証拠確認（テスト実行、動作確認） |
 | 長くなって区切りたい・新セッションに引き継ぎたい・**別マシン(EC2)に渡したい** | `/handoff` で journal.md に Recap + Next Actions を追記。同一マシンは `/recap` 併用、別マシンは VCS 同期で journal.md の最新エントリから復元（ホスト識別子 `[hostname]` 付き） |
+| permission prompts が頻繁に出る・allowlist を育てたい | `/less-permission-prompts`（built-in）で直近 transcripts から read-only bash/MCP の allowlist を提案させ `.claude/settings.json` に追加 |
+| PR レビューが欲しい | `/ultrareview <PR#>`（built-in, クラウド並列多エージェント）。ローカル＋静的解析込みなら `/quality-gate`（o-m-cc）|
 
 **実装完了時のフロー:**
 1. `/simplify` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等）

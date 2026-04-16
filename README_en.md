@@ -1,4 +1,4 @@
-# o-m-cc v0.40.0
+# o-m-cc v0.42.0
 
 [日本語](README.md)
 
@@ -15,7 +15,7 @@
 ## Prerequisites
 
 - **macOS / Linux** (Windows: use via WSL)
-- [Claude Code](https://claude.com/claude-code) CLI installed
+- [Claude Code](https://claude.com/claude-code) CLI **v2.1.108+** (built-in `/recap` is used for session context restoration; v2.1.110+ also enables `/recap` for telemetry-disabled environments such as Bedrock / Vertex / `DISABLE_TELEMETRY`)
 - `jq` (required for hooks): `brew install jq` / `apt install jq`
 
 ## Quick Start
