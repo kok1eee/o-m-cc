@@ -30,9 +30,53 @@ $ARGUMENTS
 
 ---
 
-## Step 0: 初期化
+## Step 0: タスク確認 + 初期化
 
-**plan/ の掃除**: 前回の sisyphus 実行で残った plan/ 内のファイル（requirements.md, design.md）を削除する。古いドキュメントが残っていると Council が混乱する。
+### 0A: `$ARGUMENTS` の確認
+
+**`$ARGUMENTS` に具体的なタスク記述がある場合**: 0B へ進む（通常フロー）。
+
+**`$ARGUMENTS` が空、または `" "` / 抽象的すぎて何をすべきか判別不能な場合**:
+
+プロジェクトの文脈から **候補を 2〜5 件推測** して AskUserQuestion で確認する。
+盲目的に `discovery-council` を呼ばない（ゴミ requirements.md が生まれる上に既存 plan/ を破壊するため）。
+
+**推測に使う情報**（上の「プロジェクト状態」動的注入 + 以下を必要に応じて Read）:
+
+1. 動的注入された変更統計（`jj diff --stat`）と最近のコミット
+2. `plan/requirements.md` / `plan/design.md` — 既存なら Read して対象機能・完了度を把握
+3. `TaskList` — pending / in_progress のタスク
+4. 直前の会話コンテキスト — ユーザーが最近言及した機能・修正
+
+**候補の組み立て方**:
+
+- 未コミット変更が特定機能を示す → 「その変更を feature として spec 化する」
+- `plan/requirements.md` が未完了（Phase 5 まで通っていない）→ 「既存 plan の続きを実装する」
+- 未実装の pending タスクがある → 「それを対象にする」
+- 未コミット変更が 30 行未満の小修正のみ → 「sisyphus を使わず普通にコミット」も選択肢に
+- 文脈が薄い → 「具体的タスクを自由入力してもらう」を提示
+
+**AskUserQuestion の形式例**:
+
+```
+質問: sisyphus で何を実装しますか？
+選択肢:
+  A) 未コミットの sidebar.tsx / globals.css の修正を feature として spec 化
+  B) plan/requirements.md の「コンパニオン案件統合」の続きを実装
+  C) 新規タスクを自由入力
+  D) sisyphus は不要（小修正のみなので普通にコミット）
+```
+
+**Headless モード (`CLAUDE_NON_INTERACTIVE=1`)**: 候補推測で明らかに有力な 1 つがあれば自動選択。
+判断不能なら **エラーで停止**（`Error: sisyphus requires task context; $ARGUMENTS is empty and project state is ambiguous`）。推測で無理やり走らせない。
+
+ユーザー（or 自動選択）から対象タスクが確定したら、それを以降のフェーズへの入力として扱い 0B へ。
+
+### 0B: plan/ 掃除 + タスク登録
+
+**plan/ の掃除**:
+- 0A で「**既存 plan の続きを実装**」が選ばれた場合は `plan/requirements.md` / `plan/design.md` を **保持**（削除しない）。Phase 1〜2 もスキップ可能なら判断する
+- それ以外の場合は前回の残骸を削除:
 
 ```bash
 rm -f plan/requirements.md plan/design.md
@@ -48,7 +92,7 @@ TaskCreate: "[TRACKING] Phase 4: 実装"
 TaskCreate: "[TRACKING] Phase 5: Quality Gate"
 ```
 
-> [TRACKING] タスクは進捗管理用。Skill chain 開始前に登録すること。
+> [TRACKING] タスクは進捗管理用。Skill chain 開始前に登録すること。既存 plan を継続する場合は、完了済み Phase の [TRACKING] を初期状態から `completed` にしておく。
 
 ## Step 1: Phase 1 - Discovery Council
 
@@ -185,7 +229,8 @@ requirements.md → design.md → tasks → implementation
 
 ## Gotchas
 
-- **plan/ の古いファイルが Council を混乱させる**: Step 0 で必ず `rm -f plan/requirements.md plan/design.md` を実行。前回の成果物が残っていると analyst が既存要件と新規要件を混同する
+- **引数なし実行で盲目的に走らない**: `$ARGUMENTS` が空の時は Step 0A で文脈推測 + AskUserQuestion して対象タスクを確定してから Step 0B に進む。確定しないまま discovery-council を呼ぶと無関係な requirements.md が生まれ、かつ既存 plan/ を破壊する。Headless モードで判断不能ならエラーで停止
+- **plan/ の古いファイルが Council を混乱させる**: 新規タスクで sisyphus を呼ぶ時は `rm -f plan/requirements.md plan/design.md` を実行（Step 0B）。前回の成果物が残っていると analyst が既存要件と新規要件を混同する。ただし「既存 plan の続き」として呼ばれた時は保持
 - **Agent Teams の name 未指定で SendMessage が silent loss**: spawn 時に `name` と `team_name` を必ず指定。未指定だと teammate にならず、SendMessage が `success: true` を返しつつメッセージが消える
 - **Verifier を spawn せずに自分でテストを実行してしまう**: M-L タスクでは必ず別エージェントを spawn。自分でテストすると確認バイアスで問題を見落とす
 - **Headless モードで AskUserQuestion を呼んでハング**: `CLAUDE_NON_INTERACTIVE=1` の確認を忘れずに
@@ -194,4 +239,4 @@ requirements.md → design.md → tasks → implementation
 
 ---
 
-**Step 0 のタスク登録から開始し、Step 1 で discovery-council を Skill chain で呼び出してください。各 CTA で形式チェック + 乖離確認（再実行は最大1回）。全フェーズ止まらない。完了後は Step 7 でタスクを削除。**
+**Step 0A（引数確認、空なら文脈推測 + AskUserQuestion）から開始し、タスクが確定したら 0B（[TRACKING] 登録）→ Step 1 で discovery-council を Skill chain で呼び出してください。各 CTA で形式チェック + 乖離確認（再実行は最大1回）。タスクが明確な限り全フェーズ止まらない。完了後は Step 7 でタスクを削除 + 条件付き PushNotification。**

@@ -1,4 +1,4 @@
-# o-m-cc v0.43.0
+# o-m-cc v0.44.0
 
 [English](README_en.md)
 
@@ -582,6 +582,16 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.44.0
+
+- **`sisyphus` を引数なしで呼んだときの挙動を改善**
+  - Step 0 を 0A（引数確認 + 文脈推測）/ 0B（plan 掃除 + タスク登録）に分割
+  - `$ARGUMENTS` が空の場合、変更統計・最近のコミット・既存 `plan/` ・TaskList から **候補を 2〜5 件推測**して AskUserQuestion で確認してから進む（盲目的に `discovery-council` を呼ばない）
+  - 候補例: 「未コミット変更を feature 化」「既存 plan の続きを実装」「新規タスクを入力」「sisyphus 不要」
+  - 「既存 plan の続き」を選んだ場合は `plan/requirements.md` / `plan/design.md` を **保持**（削除しない）
+  - Headless モードで判断不能なら**エラーで停止**（推測で無理やり走らせない）
+  - 動機: 引数なしで sisyphus が呼ばれると、無関係な requirements.md が生まれて既存 plan を破壊するリスクがあった
 
 ### 0.43.0
 
