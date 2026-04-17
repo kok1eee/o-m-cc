@@ -10,9 +10,7 @@ effort: medium
 
 discovery-council の前段。要件が曖昧なときに使う。
 
-## Headless モード
-
-`CLAUDE_NON_INTERACTIVE=1` または `-p` モードで実行されている場合、AskUserQuestion を使えない。「要件が曖昧です。対話モードで /deep-interview を実行してください」と案内して終了する。
+> **対話前提スキル**: 1 問ずつの掘り下げが本質なので、AskUserQuestion が使えない環境では「要件が曖昧です。対話モードで /deep-interview を実行してください」と案内して終了する。
 
 ## 入力
 

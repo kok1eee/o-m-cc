@@ -1,4 +1,4 @@
-# o-m-cc v0.45.0
+# o-m-cc v0.46.0
 
 [English](README_en.md)
 
@@ -583,6 +583,19 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.46.0
+
+- **スキル側の Headless モード判定を削除**（別ハーネス対応のための汎用化）
+  - `CLAUDE_NON_INTERACTIVE=1` / `-p` 検出に依存していた AskUserQuestion 抑制ロジックを全スキルから削除。モデル（Opus 4.7 はデフォルトで質問抑制・推測優先）の自律判断に委ねる
+  - `## Headless モード` セクションを sisyphus / discovery-council / feature-flow / deep-interview から削除
+  - 「Headless モードでなければ AskUserQuestion」→「**critical なら AskUserQuestion**、それ以外は仮定/記録で進む」に閾値を引き上げ
+  - `feature-flow` / `deep-interview` は対話前提スキルとして明示（AskUserQuestion が使えない環境ではエラー終了）
+  - PushNotification 条件から `EC2 バックグラウンド` 等の固有表現を一般化（「バックグラウンド実行が想定される」）
+  - hooks（`session-resume.sh` / `permission-denied.sh` / `quality-gate-cta.sh` / `lib/common.sh`）は Claude Code 固有のため変更なし
+  - 対象: 9 スキルファイル（+19 / -39 行の純減）
+  - 動機: o-m-cc スキルを Claude Code 以外のハーネスでも動かすため、env var 依存を除去
+  - 副作用: Claude Code の `claude -p` 実行時に AskUserQuestion が呼ばれハングするリスクが理論上復活するが、閾値を critical に引き上げたため発動率は低い
 
 ### 0.45.0
 

@@ -24,12 +24,6 @@ $ARGUMENTS
 ### 最近のコミット
 !`jj log -r 'ancestors(@, 5)' --no-graph 2>/dev/null || git log --oneline -5 2>/dev/null || echo "履歴なし"`
 
-## Headless モード
-
-`CLAUDE_NON_INTERACTIVE=1` または `-p` モードで実行されている場合、AskUserQuestion を使わない。全自動で完了まで止まらない。
-
----
-
 ## Step 0: タスク確認 + 初期化
 
 ### 0A: `$ARGUMENTS` の確認
@@ -45,7 +39,7 @@ $ARGUMENTS
    - Claude の自然文判断で「タスク記述として意味が確定しない」と判定されるもの
 3. **それ以外**（具体的なタスク記述がある）: 0B へ進む（通常フロー）
 
-> **判定の原則**: False negative（「ログイン fix」のような短い正当引数を誤って空扱い）になっても、推測フローに落ちて AskUserQuestion が出るだけで破壊的変更にはならない。**迷ったら推測フローに落とす** 方を選ぶ。Headless モードは推測フローでエラー停止するので、Headless でこの原則は不動作に繋がるが、それこそが意図通り（推測で無理やり走らせない）。
+> **判定の原則**: False negative（「ログイン fix」のような短い正当引数を誤って空扱い）になっても、推測フローに落ちて AskUserQuestion が出るだけで破壊的変更にはならない。**迷ったら推測フローに落とす** 方を選ぶ。AskUserQuestion が使えない環境では推測フローでエラー停止するが、それは意図通り（推測で無理やり走らせない）。
 
 **推測フロー（空、または曖昧と判定された場合）**:
 
@@ -78,7 +72,7 @@ $ARGUMENTS
   D) sisyphus は不要（小修正のみなので普通にコミット）
 ```
 
-**Headless モード (`CLAUDE_NON_INTERACTIVE=1`)**: 候補推測で明らかに有力な 1 つがあれば自動選択。
+**AskUserQuestion が使えない環境**: 候補推測で明らかに有力な 1 つがあれば自動選択。
 判断不能なら **エラーで停止**（`Error: sisyphus requires task context; $ARGUMENTS is empty and project state is ambiguous`）。推測で無理やり走らせない。
 
 ユーザー（or 自動選択）から対象タスクが確定したら、それを以降のフェーズへの入力として扱い 0B へ。
@@ -135,7 +129,7 @@ Skill: discovery-council
    ```
 2. **形式チェック失敗** → 1回だけ discovery-council を再実行 → 再度形式チェック
 3. **形式チェック通過** → requirements.md を Read し、$ARGUMENTS と内容に重大な乖離がないか確認
-4. 2回目も失敗 or 乖離あり → **Headless モードでなければ AskUserQuestion で人間に判断を委ねる**。Headless なら不足点を `## 既知の不足` として追記し先に進む
+4. 2回目も失敗 or 乖離あり → critical なら AskUserQuestion で人間に判断を委ねる。AskUserQuestion が使えない環境や critical でない場合は不足点を `## 既知の不足` として追記し先に進む
 
 ## Step 2: Phase 2 - 設計
 
@@ -152,7 +146,7 @@ Skill: design
    ```
 2. **形式チェック失敗** → 1回だけ design を再実行 → 再度形式チェック
 3. **形式チェック通過** → design.md を Read し、requirements.md との重大な乖離がないか確認
-4. 2回目も失敗 or 乖離あり → **Headless モードでなければ AskUserQuestion で人間に判断を委ねる**。Headless なら不足点を `## 既知の不足` として追記し先に進む
+4. 2回目も失敗 or 乖離あり → critical なら AskUserQuestion で人間に判断を委ねる。AskUserQuestion が使えない環境や critical でない場合は不足点を `## 既知の不足` として追記し先に進む
 
 ## Step 3: Phase 3 - タスク分解
 
@@ -166,7 +160,7 @@ Skill: task-decomposition
 1. TaskList で登録されたタスクを確認
 2. design.md の主要コンポーネントに対応するタスクが存在するか確認
 3. 重大な欠落があれば1回だけ再実行
-4. 2回目でも不完全なら、**Headless モードでなければ AskUserQuestion で人間に判断を委ねる**。Headless なら `[NOTE] 設計で言及あるが未タスク化: ...` を TaskCreate で記録し先に進む
+4. 2回目でも不完全なら、critical なら AskUserQuestion で人間に判断を委ねる。AskUserQuestion が使えない環境や critical でない場合は `[NOTE] 設計で言及あるが未タスク化: ...` を TaskCreate で記録し先に進む
 
 ## Step 4: 実行方式の自動選択
 
@@ -189,7 +183,7 @@ Skill: task-decomposition
 4. Verifier 通過 → 次のタスク
 5. verification or Verifier fail → Debugger spawn → 修正 → 再検証（最大2回）
 6. Debugger 2回失敗 → Experiment ループ（仮説→1変更→検証、最大3回）
-7. 3回失敗 → AskUserQuestion（Headless なら [BLOCKED] 記録して次へ）
+7. 3回失敗 → critical なら AskUserQuestion、それ以外は [BLOCKED] 記録して次へ
 
 **verification と Verifier の役割分担**:
 - **verification** (skill): 実装者自身の自己検証。構造化されたチェックリスト（IDENTIFY → RUN → READ → VERIFY → DECLARE）で証拠を収集。`Skill: verification` で呼び出すと自動実行される
@@ -237,7 +231,7 @@ Skill: quality-gate
 
 1. `/evolve` でスキルの Gotchas を更新（今回の実行で得た学びを反映）
 2. `TaskList` で残っている全タスク（[TRACKING] タスク + 実装タスク）を `TaskUpdate: status → deleted` で削除
-3. **長時間実行（目安: Phase 1 開始から 10 分以上経過、or EC2 バックグラウンド実行が想定される）**だった場合は、`PushNotification` で完了通知を送る。メッセージは行動可能な情報でリード（例: `sisyphus 完了: 12 ファイル変更、quality-gate 通過。jj git push 待ち`）。セッション開始から数分で完了した場合や `CLAUDE_NON_INTERACTIVE=1` でない場合（ユーザーが画面を見ている可能性大）は送らない。
+3. **長時間実行（目安: Phase 1 開始から 10 分以上経過、もしくはバックグラウンド実行が想定される）**だった場合は、`PushNotification` で完了通知を送る。メッセージは行動可能な情報でリード（例: `sisyphus 完了: 12 ファイル変更、quality-gate 通過。jj git push 待ち`）。セッション開始から数分で完了した場合や、ユーザーが画面を見ている可能性が高い場合は送らない。
 
 > **PushNotification のポリシー**: `message <200 文字, status: "proactive"`。送信コスト（ユーザーの注意を奪う）があるので、err toward not sending。quality-gate **失敗** で止まった場合も「ユーザー判断が必要」として通知候補。
 
@@ -255,11 +249,10 @@ requirements.md → design.md → tasks → implementation
 
 ## Gotchas
 
-- **引数なし・曖昧引数で盲目的に走らない**: `$ARGUMENTS` が空、または「A.」「さっきの続き」のような**文脈前提の断片**の時は Step 0A で推測フローに落とし、AskUserQuestion で対象タスクを確定してから Step 0B に進む。確定しないまま discovery-council を呼ぶと無関係な requirements.md が生まれる。Headless モードで判断不能ならエラーで停止。過去に `- A. 5 枚まとめて...` のような別会話参照の断片が「引数あり」扱いされ、COMPANION 案件統合の完成 plan を上書きしかけた事故あり
+- **引数なし・曖昧引数で盲目的に走らない**: `$ARGUMENTS` が空、または「A.」「さっきの続き」のような**文脈前提の断片**の時は Step 0A で推測フローに落とし、AskUserQuestion で対象タスクを確定してから Step 0B に進む。確定しないまま discovery-council を呼ぶと無関係な requirements.md が生まれる。AskUserQuestion が使えない環境で判断不能ならエラーで停止。過去に `- A. 5 枚まとめて...` のような別会話参照の断片が「引数あり」扱いされ、COMPANION 案件統合の完成 plan を上書きしかけた事故あり
 - **plan/ の既存ファイルは削除せず archive へ退避**: Step 0B では `rm` ではなく `mv` で `plan/archive/YYYYMMDD-HHMMSS-<topic-slug>/` に退避する。完了済み機能の plan documentation を喪失しないため。「既存 plan の続き」として呼ばれた時は archive もせず保持する
 - **Agent Teams の name 未指定で SendMessage が silent loss**: spawn 時に `name` と `team_name` を必ず指定。未指定だと teammate にならず、SendMessage が `success: true` を返しつつメッセージが消える
 - **Verifier を spawn せずに自分でテストを実行してしまう**: M-L タスクでは必ず別エージェントを spawn。自分でテストすると確認バイアスで問題を見落とす
-- **Headless モードで AskUserQuestion を呼んでハング**: `CLAUDE_NON_INTERACTIVE=1` の確認を忘れずに
 
 <!-- AUTO-GOTCHAS -->
 

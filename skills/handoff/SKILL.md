@@ -41,7 +41,7 @@ effort: low
 - ファイル名・関数名・コマンド名レベルで具体的に書く
 - 「あれをやる」ではなく「`hooks/foo.sh` の `bar` 関数を X に書き換える」
 - 該当なし（本当に何もない）場合は AskUserQuestion で確認。
-  Headless モードでは `- (未指定)` 1 行で記録して進む
+  AskUserQuestion が使えない環境では `- (未指定)` 1 行で記録して進む
 
 ## Step 2: タイムスタンプとホスト名の取得
 
@@ -156,7 +156,7 @@ hostname -s
 - **Next Actions は具体的に**: 「あれをやる」ではなく「ファイル X の関数 Y を Z に変える」
 - **transcript パースに依存しない**: 自分の会話理解で書く。jq 等は使わない
 - **既存エントリは保持**: マージせず prepend するだけ。上書きしない
-- **0 件 Next での呼び出し**: AskUserQuestion で確認。Headless では `- (未指定)` で記録
+- **0 件 Next での呼び出し**: AskUserQuestion で確認。使えない環境では `- (未指定)` で記録
 - **hostname 取得失敗時**: ホスト識別なしで進む。EC2 識別は EC2 間連携の補助情報
 - **Recap と Next の役割分担**: Recap は過去志向（何をしたか）、Next は未来志向（何をするか）
 

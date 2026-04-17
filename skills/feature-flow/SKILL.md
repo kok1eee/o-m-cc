@@ -30,12 +30,7 @@ Sisyphus フローの **入口**（discovery-council や design の前段）。
 
 **1 つの機能を作るより、作らない判断ができる方が価値が高い場面がある。**
 
-## Headless モード
-
-`CLAUDE_NON_INTERACTIVE=1` または `-p` モードで実行されている場合、AskUserQuestion を使えない。
-「機能定義は対話的な確認が必要です。対話モードで /feature-flow を実行してください」と案内して終了する。
-
----
+> **対話前提スキル**: 機能定義は対話的な確認が必須。AskUserQuestion が使えない環境では「対話モードで /feature-flow を実行してください」と案内して終了する。
 
 ## Phase 0: モード判定
 

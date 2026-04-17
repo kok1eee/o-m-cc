@@ -104,7 +104,7 @@ Agent:
 
     ## 原則
     - requirements.md の完成を待たず、ユーザーの要求とコードベースから直接分析を開始
-    - Critical な曖昧点は AskUserQuestion で確認（Headless モードでは仮定で進む）
+    - Critical な曖昧点は AskUserQuestion で確認（使えない環境や critical でない場合は仮定で進む）
     - 回答がなければ仮定を記録して進む
     - フローをブロックしない
 

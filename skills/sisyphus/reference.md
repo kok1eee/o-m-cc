@@ -40,8 +40,8 @@
 │     仮説を立てる → 1変更 → Verifier 検証             │
 │     → pass なら次のタスク                           │
 │     → fail なら revert して別の仮説（最大3回）        │
-│     → 3回失敗 → AskUserQuestion                    │
-│       （Headless なら [BLOCKED] 記録して次へ）        │
+│     → 3回失敗 → critical なら AskUserQuestion       │
+│       （それ以外は [BLOCKED] 記録して次へ）            │
 └──────────────────────────────────────────────────┘
 ```
 

@@ -24,12 +24,6 @@ $ARGUMENTS
 ### 技術スタック
 !`ls package.json pyproject.toml Cargo.toml go.mod Gemfile setup.py requirements.txt 2>/dev/null`
 
-## Headless モード
-
-`CLAUDE_NON_INTERACTIVE=1` または `-p` モードで実行されている場合、AskUserQuestion を使わない。scout の曖昧点は仮定を記録して進む。
-
----
-
 ## Step 1: チーム作成
 
 ```
@@ -67,7 +61,7 @@ Council の報告を集約した後、**曖昧点が残っていれば AskUserQu
 5. 曖昧点がなければ → そのまま次へ
 ```
 
-**Headless モードでは**: 曖昧点を `## 仮定` セクションに記録して先に進む。
+**AskUserQuestion が使えない環境 or critical でない曖昧点の場合**: 曖昧点を `## 仮定` セクションに記録して先に進む。
 
 ## Step 4: チーム終了
 
