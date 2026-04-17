@@ -1,4 +1,4 @@
-# o-m-cc v0.44.0
+# o-m-cc v0.45.0
 
 [日本語](README.md)
 
@@ -35,7 +35,7 @@ claude plugin install o-m-cc@kok1eee
 → Automatically runs in Sisyphus mode
 ```
 
-## Skills (12 total)
+## Skills (14 total)
 
 ### Setup
 
@@ -73,8 +73,9 @@ claude plugin install o-m-cc@kok1eee
 | Skill | Description | Context | Auto-trigger |
 |-------|-------------|---------|-------------|
 | `/o-m-cc:handoff` | Append Recap (LLM summary) + Next Actions to `.claude/journal.md`. Supports handoff to other machines (e.g., EC2) via VCS sync | - | "handoff", "next actions", "hand off to another machine" |
+| `/o-m-cc:ui-polish <target>` | Lightweight loop for UI polish, multi-screen redesign unification, a11y fixes, CSS consistency (no Council, tsc/lint gate only). New-from-scratch design → external plugin `frontend-design` | - | "UI polish", "unify screens", "a11y fixes", "CSS consistency" |
 
-## Agents (10 specialists + @capabilities meta)
+## Agents (15 specialists + @capabilities meta)
 
 ### Planning
 

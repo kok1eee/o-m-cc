@@ -2,7 +2,7 @@
 name: sisyphus
 description: "計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー。Agent Teams で要件→設計→タスク分解→実装→quality-gate を一括実行。新機能開発や設計判断が必要な変更に使う。「計画して」「この機能を実装したい」「新機能を作りたい」「要件から実装まで」で発動。"
 argument-hint: "<feature description>"
-allowed-tools: [Read, Write, Edit, Glob, Grep, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
+allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
 effort: high
 context: fork
@@ -34,9 +34,20 @@ $ARGUMENTS
 
 ### 0A: `$ARGUMENTS` の確認
 
-**`$ARGUMENTS` に具体的なタスク記述がある場合**: 0B へ進む（通常フロー）。
+まず `$ARGUMENTS` を trim し、以下の判定をこの順序で行う:
 
-**`$ARGUMENTS` が空、または `" "` / 抽象的すぎて何をすべきか判別不能な場合**:
+1. **trim 後が完全に空文字列** → 下の推測フローへ
+2. **「文脈前提の断片」と見られる** → 下の推測フローへ fallthrough:
+   - ASCII 記号のみ / 制御文字で始まる（`-`, `/`, `#`, `<` 等の単独）
+   - 単一選択肢文字のみ（`A`, `B`, `C` 等）
+   - 30 文字未満 かつ 主語・動詞・目的語のうち 2 つ以上欠けている
+   - 「A. 前の提案を採用」「さっきの続き」のような、別の会話を参照するだけの断片
+   - Claude の自然文判断で「タスク記述として意味が確定しない」と判定されるもの
+3. **それ以外**（具体的なタスク記述がある）: 0B へ進む（通常フロー）
+
+> **判定の原則**: False negative（「ログイン fix」のような短い正当引数を誤って空扱い）になっても、推測フローに落ちて AskUserQuestion が出るだけで破壊的変更にはならない。**迷ったら推測フローに落とす** 方を選ぶ。Headless モードは推測フローでエラー停止するので、Headless でこの原則は不動作に繋がるが、それこそが意図通り（推測で無理やり走らせない）。
+
+**推測フロー（空、または曖昧と判定された場合）**:
 
 プロジェクトの文脈から **候補を 2〜5 件推測** して AskUserQuestion で確認する。
 盲目的に `discovery-council` を呼ばない（ゴミ requirements.md が生まれる上に既存 plan/ を破壊するため）。
@@ -72,15 +83,30 @@ $ARGUMENTS
 
 ユーザー（or 自動選択）から対象タスクが確定したら、それを以降のフェーズへの入力として扱い 0B へ。
 
-### 0B: plan/ 掃除 + タスク登録
+### 0B: plan/ 退避 + タスク登録
 
-**plan/ の掃除**:
-- 0A で「**既存 plan の続きを実装**」が選ばれた場合は `plan/requirements.md` / `plan/design.md` を **保持**（削除しない）。Phase 1〜2 もスキップ可能なら判断する
-- それ以外の場合は前回の残骸を削除:
+**plan/ の退避（破壊的削除はしない）**:
+
+- 0A で「**既存 plan の続きを実装**」が選ばれた場合は `plan/requirements.md` / `plan/design.md` を **保持**（archive しない）。Phase 1〜2 もスキップ可能なら判断する
+- それ以外の場合は、既存 plan を `plan/archive/` に **退避**（`rm` ではなく `mv`。完了済み plan の履歴を失わないため）:
 
 ```bash
-rm -f plan/requirements.md plan/design.md
+# 既存 plan のどちらかが存在する時だけ退避
+if [ -f plan/requirements.md ] || [ -f plan/design.md ]; then
+  # 先頭行「# Requirements: <topic>」から topic を抽出（失敗時は空文字）
+  TOPIC=$(head -1 plan/requirements.md 2>/dev/null | sed -E 's/^#[[:space:]]*Requirements:[[:space:]]*//;t;d')
+  # slug 化: 空白・スラッシュ類を - に、記号除去、日本語は保持、最大 40 文字
+  SLUG=$(printf '%s' "$TOPIC" | tr ' 　/\\:' '-' | tr -cd 'A-Za-z0-9ぁ-んァ-ヶ一-龯-' | cut -c1-40)
+  TS=$(date +%Y%m%d-%H%M%S)
+  ARCHIVE_DIR="plan/archive/${TS}${SLUG:+-$SLUG}"
+  mkdir -p "$ARCHIVE_DIR"
+  mv -n plan/requirements.md plan/design.md "$ARCHIVE_DIR/" 2>/dev/null || true
+  echo "Archived existing plan/ to $ARCHIVE_DIR"
+fi
 ```
+
+- `plan/` は `.gitignore` 済みなので `plan/archive/` も自動的に非追跡（VCS ノイズなし）
+- 衝突回避: timestamp 必須 + `mv -n`（同名なら上書きしない）で秒内連続実行でも安全
 
 **[TRACKING] タスク登録**:
 
@@ -229,8 +255,8 @@ requirements.md → design.md → tasks → implementation
 
 ## Gotchas
 
-- **引数なし実行で盲目的に走らない**: `$ARGUMENTS` が空の時は Step 0A で文脈推測 + AskUserQuestion して対象タスクを確定してから Step 0B に進む。確定しないまま discovery-council を呼ぶと無関係な requirements.md が生まれ、かつ既存 plan/ を破壊する。Headless モードで判断不能ならエラーで停止
-- **plan/ の古いファイルが Council を混乱させる**: 新規タスクで sisyphus を呼ぶ時は `rm -f plan/requirements.md plan/design.md` を実行（Step 0B）。前回の成果物が残っていると analyst が既存要件と新規要件を混同する。ただし「既存 plan の続き」として呼ばれた時は保持
+- **引数なし・曖昧引数で盲目的に走らない**: `$ARGUMENTS` が空、または「A.」「さっきの続き」のような**文脈前提の断片**の時は Step 0A で推測フローに落とし、AskUserQuestion で対象タスクを確定してから Step 0B に進む。確定しないまま discovery-council を呼ぶと無関係な requirements.md が生まれる。Headless モードで判断不能ならエラーで停止。過去に `- A. 5 枚まとめて...` のような別会話参照の断片が「引数あり」扱いされ、COMPANION 案件統合の完成 plan を上書きしかけた事故あり
+- **plan/ の既存ファイルは削除せず archive へ退避**: Step 0B では `rm` ではなく `mv` で `plan/archive/YYYYMMDD-HHMMSS-<topic-slug>/` に退避する。完了済み機能の plan documentation を喪失しないため。「既存 plan の続き」として呼ばれた時は archive もせず保持する
 - **Agent Teams の name 未指定で SendMessage が silent loss**: spawn 時に `name` と `team_name` を必ず指定。未指定だと teammate にならず、SendMessage が `success: true` を返しつつメッセージが消える
 - **Verifier を spawn せずに自分でテストを実行してしまう**: M-L タスクでは必ず別エージェントを spawn。自分でテストすると確認バイアスで問題を見落とす
 - **Headless モードで AskUserQuestion を呼んでハング**: `CLAUDE_NON_INTERACTIVE=1` の確認を忘れずに

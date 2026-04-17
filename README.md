@@ -1,4 +1,4 @@
-# o-m-cc v0.44.0
+# o-m-cc v0.45.0
 
 [English](README_en.md)
 
@@ -9,7 +9,7 @@
 o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追加するプラグインです。
 
 - **Skill Chain**: 要件分析 → 設計 → タスク分解 → 実装 → 品質ゲートを独立スキルとして chain 実行。各フェーズのコンテキストが分離される
-- **Agent Teams**: peer-to-peer マルチエージェント協調。10の専門エージェントが SendMessage で相互検証
+- **Agent Teams**: peer-to-peer マルチエージェント協調。15 の専門エージェントが SendMessage で相互検証
 - **Monitor 統合**: experiment/quality-gate/sisyphus で Monitor ツールを活用し、長時間処理を非同期化
 - **二段階検証**: verification（自己エビデンス収集）+ Verifier agent（独立 adversarial 検証）で実装者バイアスを排除
 - **Progressive Disclosure**: エージェント定義を3層に分離し、常時ロードは全体の約10%に抑制
@@ -109,6 +109,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
 | `/o-m-cc:handoff` | Recap（現セッションの LLM 要約）と Next Actions を `.claude/journal.md` に追記。EC2 など別マシンへの引き継ぎにも対応（VCS 同期前提） | - | 「ハンドオーバー」「引き継ぎ」「別マシンに渡したい」「handoff」で発動 |
+| `/o-m-cc:ui-polish <target>` | 既存画面の UI polish / 複数画面の redesign 統一 / a11y 対応 / CSS 一貫性修正を軽量ループで実装（Council なし、tsc/lint のみゲート）。新規デザイン生成は外部プラグイン `frontend-design` | - | 「UI polish」「画面統一」「a11y 対応」「CSS 統一」で発動 |
 
 > **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
@@ -436,7 +437,7 @@ o-m-cc/
 ├── bin/                       # CLI ユーティリティ（Bash tool から直接実行可能）
 │   ├── validate-plan          # plan ドキュメントの形式検証
 │   └── lint                   # 言語別 lint 一括実行
-├── skills/                    # 12 スキル定義
+├── skills/                    # 14 スキル定義
 │   ├── install/SKILL.md
 │   ├── deep-interview/SKILL.md
 │   ├── sisyphus/SKILL.md
@@ -582,6 +583,26 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.45.0
+
+- **sisyphus の安全性強化**
+  - **P0: 既存 plan/ を `rm` ではなく `mv` で退避**（Step 0B）
+    - `plan/archive/YYYYMMDD-HHMMSS-<topic-slug>/` に既存 `plan/requirements.md` / `plan/design.md` を退避
+    - `# Requirements: <topic>` から topic 抽出、slug 化（日本語保持）して archive ディレクトリ名に
+    - 完了済み機能の plan documentation を喪失するリスクを根本解消（事故事例: COMPANION 案件統合の完成 plan を別セッションで上書きしかけた）
+  - **P1: 曖昧引数の再検出**（Step 0A 冒頭）
+    - `- A. 前の提案で` / `A` / `#` のような**文脈前提の断片**は空文字同等として扱い、推測フローに fallthrough
+    - 判定は Claude の自然文判断（Bash 正規表現は空文字チェックのみ）。False negative でも 0A の推測 AskUserQuestion が出るだけで破壊的変更にならない
+- **新スキル `/ui-polish` を追加**
+  - 既存画面の UI polish / 複数画面の redesign 統一 / a11y 対応 / CSS 一貫性修正用の軽量実装ループ
+  - Council を使わず `bin/lint` → `npm run lint` → `npx tsc --noEmit` の順でゲート。1 対象ずつ Read → Edit → 静的チェック
+  - `effort: low`、`context: fork` なし、PushNotification なし
+  - 外部プラグイン `frontend-design` との棲み分け: ui-polish は**既存 UI の統一・修正**、frontend-design は**新規デザイン生成**。description と本文の使い分け表で明示
+  - 動機: sisyphus の Council が UI polish 5 画面のような定型作業に対してオーバーヘッド大で不向きだった（今回の事故原因の一つ）
+- **ドキュメント数値不整合の是正**
+  - CLAUDE.md の「10 の専門エージェント + 12 スキル」が feature-flow 追加以降ずれていたのを実数（15 エージェント + 14 スキル）に更新
+  - README.md / README_en.md の Skills 総数・Agents 総数・skills/ ディレクトリコメントを合わせる
 
 ### 0.44.0
 
