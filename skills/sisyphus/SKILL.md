@@ -37,7 +37,42 @@ $ARGUMENTS
    - 30 文字未満 かつ 主語・動詞・目的語のうち 2 つ以上欠けている
    - 「A. 前の提案を採用」「さっきの続き」のような、別の会話を参照するだけの断片
    - Claude の自然文判断で「タスク記述として意味が確定しない」と判定されるもの
-3. **それ以外**（具体的なタスク記述がある）: 0B へ進む（通常フロー）
+3. **具体的なタスク記述がある** → **下の 0A-lite チェック** に進む
+4. 0A-lite で誘導せず sisyphus 続行となったら → 0B へ進む
+
+#### 0A-lite: 軽量タスク誘導チェック（Council オーバーヘッド防止）
+
+$ARGUMENTS と動的注入された変更統計を突き合わせ、**sisyphus の重量級 Council が
+過剰**になるケースを検出して軽量スキルへ誘導する。過去に「5 画面 UI polish を
+sisyphus で走らせて Council の成果がほとんど使われず、結果として誤実装を招いた」
+事故が発生したため。
+
+**判定**（次のすべてに該当する場合、誘導を提示）:
+
+- $ARGUMENTS に以下のような**軽量タスクキーワード**が含まれる:
+  - UI polish / a11y / アクセシビリティ / CSS 統一 / デザイン統一 / 画面統一 / redesign 統一 / focus / keyboard nav
+  - リファクタ / typo / コメント整理 / 変数名リネーム
+- かつ既存の変更統計が **2 ファイル以下かつ 50 行未満**、または新規タスクでも
+  規模感から判断して同等と見込まれる
+
+**該当時のアクション**: `AskUserQuestion` で以下を提示:
+
+```
+質問: このタスクは軽量ですが sisyphus の重量級 Council で進めますか？
+選択肢:
+  A) `/o-m-cc:ui-polish <target>` に切り替え（UI polish / a11y / CSS 統一向け、
+     Council なし・tsc/lint のみゲート）
+  B) 普通の Edit で十分（1 ファイル修正なら sisyphus もスキップ）
+  C) それでも sisyphus で進める（要件拡大の見込みがある等）
+```
+
+**選択結果**:
+- A → スキル呼び出しを終了し、ユーザーに `/o-m-cc:ui-polish` を使うよう案内
+- B → スキル呼び出しを終了し、普通の Edit で進めるよう案内
+- C → 0B へ進み通常の sisyphus フロー
+
+該当しない or 判断に迷う場合は誘導せず 0B へ進む（False positive で大規模タスクを
+軽量扱いするリスクを避ける）。AskUserQuestion が使えない環境では誘導スキップ。
 
 > **判定の原則**: False negative（「ログイン fix」のような短い正当引数を誤って空扱い）になっても、推測フローに落ちて AskUserQuestion が出るだけで破壊的変更にはならない。**迷ったら推測フローに落とす** 方を選ぶ。AskUserQuestion が使えない環境では推測フローでエラー停止するが、それは意図通り（推測で無理やり走らせない）。
 
@@ -251,6 +286,7 @@ requirements.md → design.md → tasks → implementation
 
 - **引数なし・曖昧引数で盲目的に走らない**: `$ARGUMENTS` が空、または「A.」「さっきの続き」のような**文脈前提の断片**の時は Step 0A で推測フローに落とし、AskUserQuestion で対象タスクを確定してから Step 0B に進む。確定しないまま discovery-council を呼ぶと無関係な requirements.md が生まれる。AskUserQuestion が使えない環境で判断不能ならエラーで停止。過去に `- A. 5 枚まとめて...` のような別会話参照の断片が「引数あり」扱いされ、COMPANION 案件統合の完成 plan を上書きしかけた事故あり
 - **plan/ の既存ファイルは削除せず archive へ退避**: Step 0B では `rm` ではなく `mv` で `plan/archive/YYYYMMDD-HHMMSS-<topic-slug>/` に退避する。完了済み機能の plan documentation を喪失しないため。「既存 plan の続き」として呼ばれた時は archive もせず保持する
+- **軽量タスクで sisyphus を使わない**: UI polish / a11y / CSS 統一 / 1-2 ファイルリファクタのような軽量タスクは Step 0A-lite で検出して `/o-m-cc:ui-polish` や普通の Edit に誘導する。Council の重量が価値に見合わず、過去には Council が Phase 4 で誤った完了報告（「実装済み」と嘘をつく）を出した事故もある。quality-gate Step 1.1 の実装範囲検証でも検出されるが、sisyphus 側で事前に軽量ルートに逸らす方が効率的
 - **Agent Teams の name 未指定で SendMessage が silent loss**: spawn 時に `name` と `team_name` を必ず指定。未指定だと teammate にならず、SendMessage が `success: true` を返しつつメッセージが消える
 - **Verifier を spawn せずに自分でテストを実行してしまう**: M-L タスクでは必ず別エージェントを spawn。自分でテストすると確認バイアスで問題を見落とす
 

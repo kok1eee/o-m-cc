@@ -56,6 +56,42 @@ $ARGUMENTS
 jj diff  # または git diff
 ```
 
+### Step 1.1: 実装範囲の整合性検証（requirements.md がある場合）
+
+**`plan/requirements.md` が存在する場合のみ実行**。quality-gate を sisyphus 外で
+単独呼び出しした場合（requirements.md なし）はスキップ。
+
+目的: sisyphus で生成された requirements.md が「A / B / C ファイルを変更する」
+と宣言しているのに、実装者が**実際には D / E だけ触っていた**、というズレを
+Review Council 前に検出する。過去に「5 画面 redesign を要求しているのに
+2 ファイルしか触っていないのに『完了』と報告」する事故が発生したため。
+
+**手順**:
+
+1. `plan/requirements.md` を Read し、以下のヒントから**実装対象ファイル/範囲**
+   を抽出（完全自動化は困難なので Claude の自然文判断）:
+   - `## 対象ファイル` / `## Scope` / `## スコープ` セクション
+   - 本文中の `src/components/foo.tsx` 等のファイルパス言及
+   - 「5 画面」「全エンドポイント」等の範囲記述
+
+2. `jj diff --stat`（または `git diff --stat HEAD`）で実際の変更ファイルを取得
+
+3. 照合:
+
+| 照合結果 | アクション |
+|---|---|
+| 対象ファイルが **1 つも変更されていない** | **致命エラーで停止**。`PushNotification` で通知。「requirements.md は X を要求しているが実装が存在しない」と明示し AskUserQuestion で判断を仰ぐ |
+| 対象ファイルの**一部**が未変更 | **警告のみ**（[NOTE] として記録）して先に進む。部分実装は意図的なこともあるため |
+| 対象ファイルが全て変更されている | 通常通り Step 1.5 へ |
+| requirements.md に対象範囲が書かれていない | スキップ（抽出不能な場合は検証できない） |
+
+**設計判断**:
+- `jj diff --stat` の出力はパースしやすい（`path | +N -M` 形式）
+- 「致命エラー」は sisyphus から呼ばれた時に Phase 5 を止めるので重大。
+  だからこそ「1 つも変更なし」のような**明確な乖離**のみを致命扱いする
+- False positive を避けるため、requirements.md の書き方がブレている場合は
+  迷わずスキップ（警告すらしない）
+
 ### Step 1.5: /simplify（自動修正）
 
 Review Council の前に、再利用性・品質・効率の自動レビュー+修正を実行する。
@@ -166,6 +202,7 @@ lint
 
 ## Gotchas
 
+- **実装範囲の整合性**: Step 1.1 で requirements.md と実際の変更差分が乖離していたら致命エラーで停止する。「実装者が Phase 4 で嘘の完了報告をした」パターンを Phase 5 で検出する仕組み。requirements.md がない or 対象範囲が抽出不能ならスキップ
 - **diff が大きすぎて reviewer がコンテキスト溢れ**: 変更が数千行ある場合、reviewer に渡す diff を要約するか、ファイル単位で分割してレビューする
 - **静的解析ツールが未インストールで失敗**: `ruff`, `shellcheck`, `tsc` 等が PATH にない場合がある。`compgen -G` のファイル検出だけでなく、コマンドの存在確認も行う
 - **前回の TeamCreate の残骸でエラー**: Step 2 で既存チームの TeamDelete を先に実行する。前セッションのチームが残っているとチーム名が衝突する

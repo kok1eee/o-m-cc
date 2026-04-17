@@ -1,4 +1,4 @@
-# o-m-cc v0.47.0
+# o-m-cc v0.48.0
 
 [English](README_en.md)
 
@@ -583,6 +583,20 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.48.0
+
+- **quality-gate に「実装範囲の整合性検証」を追加（P2）**
+  - Step 1.1 新設: `plan/requirements.md` が存在する場合、記述された対象ファイル/範囲と `jj diff --stat` の実変更を照合
+  - **対象ファイルが 1 つも変更されていない**（完全乖離）→ 致命エラー + `PushNotification`、AskUserQuestion で判断委ね
+  - 一部未変更（部分実装）→ 警告のみ（[NOTE] 記録）で先に進む
+  - requirements.md がない / 対象範囲抽出不能 → スキップ
+  - 動機: 過去に sisyphus が「5 画面 Refined Editorial は前コミットで適用済み」と**嘘の完了報告**をした事故を Phase 5 で検出できるようにする
+- **sisyphus に「軽量タスク誘導チェック」を追加（P3）**
+  - Step 0A-lite 新設: $ARGUMENTS に「UI polish」「a11y」「CSS 統一」「redesign」等の軽量キーワードがあり、かつ変更規模が 2 ファイル以下 / 50 行未満程度なら、`AskUserQuestion` で `/ui-polish` / 普通の Edit / sisyphus 続行 の 3 択を提示
+  - 動機: UI polish のような軽量タスクに重量級 Council を呼ぶと、オーバーヘッド大 & 実装との乖離リスク増大（今日の事故の一因）
+  - Council オーバーヘッドを避けつつ、sisyphus を使いたい場合は C 選択でこれまで通り進める
+- 双方ともガードは保守的（False positive を最小化）: quality-gate は「完全乖離」のみ致命エラー、sisyphus は「ユーザーが C 選べば続行」
 
 ### 0.47.0
 
