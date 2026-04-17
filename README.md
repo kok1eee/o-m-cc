@@ -1,4 +1,4 @@
-# o-m-cc v0.46.0
+# o-m-cc v0.47.0
 
 [English](README_en.md)
 
@@ -108,7 +108,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:handoff` | Recap（現セッションの LLM 要約）と Next Actions を `.claude/journal.md` に追記。EC2 など別マシンへの引き継ぎにも対応（VCS 同期前提） | - | 「ハンドオーバー」「引き継ぎ」「別マシンに渡したい」「handoff」で発動 |
+| `/o-m-cc:handoff` | **EC2 など別マシンへの引き継ぎの中核**。Recap（LLM 要約）+ Next Actions を `.claude/journal.md`（VCS 共有）に追記。built-in `/recap` はローカル端末固有で補えない跨マシン引き継ぎの役割を担う。同一マシンのセッション区切りにも使える | - | 「EC2 に引き継ぎ」「別マシンに渡したい」「handoff」「引き継ぎ」で発動 |
 | `/o-m-cc:ui-polish <target>` | 既存画面の UI polish / 複数画面の redesign 統一 / a11y 対応 / CSS 一貫性修正を軽量ループで実装（Council なし、tsc/lint のみゲート）。新規デザイン生成は外部プラグイン `frontend-design` | - | 「UI polish」「画面統一」「a11y 対応」「CSS 統一」で発動 |
 
 > **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
@@ -583,6 +583,18 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.47.0
+
+- **`/o-m-cc:handoff` を EC2 / 跨マシン引き継ぎの中核として再定義**
+  - Description を EC2 引き継ぎ第一用途にリフレーム。同一マシンのセッション区切りは副次用途扱い
+  - SKILL.md 本文に「**なぜ handoff が必要か**」を明記: built-in `/recap` はローカル端末固有で別マシンから参照できない。そのギャップを埋めるのが handoff の役割
+  - README / CLAUDE.md の説明文・導線を EC2 中心に書き換え
+- **`.claude/chronicle.md` / `.claude/context.md` / `.claude/context-archive.md` を `.gitignore` に再追加**
+  - これらは v0.42.0 で廃止済みだが、古い hook を持つ他マシン環境で resume 時に書き戻される事例があり、VCS で競合を起こしていた
+  - VCS 共有は `.claude/journal.md`（`/handoff` で更新）のみに一本化
+  - 残骸として残っていたファイルも削除
+- 動機: 個人で EC2 A ↔ B を行き来して作業再開するユースケースを正式サポートするため、handoff を中核として位置づけ、chronicle / context の VCS 競合ノイズを遮断する
 
 ### 0.46.0
 

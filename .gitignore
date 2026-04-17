@@ -17,3 +17,9 @@
 .claude/hooks-error.log
 .claude/idle-counts/
 /plan/
+
+# Legacy context files (v0.42.0 で廃止済だが古い hook が書き戻す可能性があるため ignore)
+# VCS 共有は .claude/journal.md（/handoff で更新）だけで行う
+.claude/chronicle.md
+.claude/context.md
+.claude/context-archive.md
