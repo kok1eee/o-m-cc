@@ -1,4 +1,4 @@
-# o-m-cc v0.48.0
+# o-m-cc v0.49.0
 
 [日本語](README.md)
 
@@ -35,7 +35,7 @@ claude plugin install o-m-cc@kok1eee
 → Automatically runs in Sisyphus mode
 ```
 
-## Skills (14 total)
+## Skills (15 total)
 
 ### Setup
 
@@ -74,6 +74,7 @@ claude plugin install o-m-cc@kok1eee
 |-------|-------------|---------|-------------|
 | `/o-m-cc:handoff` | **Core tool for cross-machine handoff (e.g., EC2 A → EC2 B)**. Appends Recap (LLM summary) + Next Actions to `.claude/journal.md` (VCS-shared). Fills the gap that built-in `/recap` cannot cover because it is local-only. Also usable for same-machine session breaks | - | "handoff to EC2", "cross-machine handoff", "hand off to another machine", "handoff" |
 | `/o-m-cc:ui-polish <target>` | Lightweight loop for UI polish, multi-screen redesign unification, a11y fixes, CSS consistency (no Council, tsc/lint gate only). New-from-scratch design → external plugin `frontend-design` | - | "UI polish", "unify screens", "a11y fixes", "CSS consistency" |
+| `/o-m-cc:editorial-swarm <article>` | Parallel 4-reviewer editorial Council for technical articles (anti-ai-slop / fact-checker / narrative-critic / reader-advocate). Severity-tagged findings → auto-apply low + batch-approve medium/high → up to 3 rounds | fork | "review article", "editorial swarm", "edit article", "polish draft" |
 
 ## Agents (15 specialists + @capabilities meta)
 

@@ -4,7 +4,7 @@
 > 詳細なディレクトリ構造・Hooks 一覧・スキル一覧は [README.md](README.md) を参照。
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。15 の専門エージェント + 14 スキル + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。15 の専門エージェント + 15 スキル + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
@@ -62,6 +62,7 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | permission prompts が頻繁に出る・allowlist を育てたい | `/less-permission-prompts`（built-in）で直近 transcripts から read-only bash/MCP の allowlist を提案させ `.claude/settings.json` に追加 |
 | PR レビューが欲しい | `/ultrareview <PR#>`（built-in, クラウド並列多エージェント）。ローカル＋静的解析込みなら `/quality-gate`（o-m-cc）|
 | UI polish・複数画面 redesign・a11y 対応・CSS 統一 | `/ui-polish` で軽量ループ（Council なし、tsc/lint のみゲート）。新規デザインをゼロから生成するなら外部プラグイン `frontend-design` |
+| 技術記事の最終推敲・Zenn 記事レビュー・AI 定型句除去・fact-check・読者視点チェック | `/editorial-swarm` で 4 並列レビュー Council（anti-ai-slop / fact-checker / narrative-critic / reader-advocate）。severity 付き findings を一括承認して最大 3 ラウンドで収束 |
 
 **実装完了時のフロー:**
 1. `/simplify` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等）

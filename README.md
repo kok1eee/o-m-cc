@@ -1,4 +1,4 @@
-# o-m-cc v0.48.0
+# o-m-cc v0.49.0
 
 [English](README_en.md)
 
@@ -66,7 +66,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Skills
 
-合計 13 スキル（セットアップ 1 + 計画 6 + 検証 2 + 実験・学習 3 + 運用 1）。
+合計 15 スキル（セットアップ 1 + 計画 6 + 検証 2 + 実験・学習 3 + 運用 3）。
 
 ### セットアップ
 
@@ -110,6 +110,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 |--------|------|---------|----------|
 | `/o-m-cc:handoff` | **EC2 など別マシンへの引き継ぎの中核**。Recap（LLM 要約）+ Next Actions を `.claude/journal.md`（VCS 共有）に追記。built-in `/recap` はローカル端末固有で補えない跨マシン引き継ぎの役割を担う。同一マシンのセッション区切りにも使える | - | 「EC2 に引き継ぎ」「別マシンに渡したい」「handoff」「引き継ぎ」で発動 |
 | `/o-m-cc:ui-polish <target>` | 既存画面の UI polish / 複数画面の redesign 統一 / a11y 対応 / CSS 一貫性修正を軽量ループで実装（Council なし、tsc/lint のみゲート）。新規デザイン生成は外部プラグイン `frontend-design` | - | 「UI polish」「画面統一」「a11y 対応」「CSS 統一」で発動 |
+| `/o-m-cc:editorial-swarm <article>` | 4 エージェント並列による記事推敲 Council（anti-ai-slop / fact-checker / narrative-critic / reader-advocate）。severity 付き findings → low 自動 apply、medium/high は一括承認 → 最大 3 ラウンドで収束 | fork | 「記事レビュー」「editorial swarm」「編集会議」「記事推敲」「記事添削」で発動 |
 
 > **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
@@ -583,6 +584,17 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.49.0
+
+- **`/o-m-cc:editorial-swarm` 新設** — 技術記事の並列推敲 Council（4 エージェント並列 + severity 付き findings 集約 + 一括承認 + 最大 3 ラウンド）
+  - anti-ai-slop（AI 定型句 / 過剰箇条書き / 曖昧な「など」検出）
+  - fact-checker（API 名 / version / コマンド構文を WebFetch で公式照合）
+  - narrative-critic（導入→結論の糸 / buried leads / weak transitions）
+  - reader-advocate（対象読者視点の jargon / 前提知識ギャップ）
+  - discovery-council の「文章版」という位置付け（同じ Agent Teams + fork context 構造）
+  - 動機: 記事執筆で繰り返すレビューサイクル（anti-ai-slop → fact-check → narrative → 読者視点）を並列化。Zenn 等のドラフト完成後の最終推敲で使用
+  - 既存 global の `writing-skills` / `doc-coauthoring` とは棲み分け: o-m-cc 側は「並列オーケストレーション」、global 側は「個別の文章ガイドライン」
 
 ### 0.48.0
 
