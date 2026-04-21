@@ -110,6 +110,51 @@ o-m-cc のランタイムファイルを追加（重複しない場合のみ）�
 
 ---
 
+## Step 7.5: R12 スタイル保護 deny ルール（opt-in）
+
+危険な破壊的操作に対する二層目の防御を追加するか、**AskUserQuestion で必ず確認**する（デフォルトは「追加しない」）:
+
+**選択肢（説明付き）**:
+- **追加する（推奨: チーム開発 / 共有リポジトリ）**: 下記の deny ルールを settings.json にマージする
+- **追加しない（デフォルト: 個人開発 / 学習プロジェクト）**: 利便性優先、Claude Code 2.1.98+ の built-in 防御に依存
+- **詳細を見たい**: 下記のルール内容と動機を表示してから再確認
+
+**「追加する」が選ばれた場合**に settings.json にマージする内容:
+
+```json
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Bash(git push -f)",
+      "Bash(git commit --no-verify*)",
+      "Bash(git commit -n *)",
+      "Bash(git reset --hard origin/main*)",
+      "Bash(git reset --hard origin/master*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/)",
+      "Bash(jj git push --force*)"
+    ]
+  }
+}
+```
+
+**ルールの意図**:
+- **force push 系** (`git/jj push --force`, `-f`): 保護ブランチへの破壊的上書きを防ぐ
+- **hook bypass 系** (`git commit --no-verify`, `-n`): pre-commit hook を迂回する事故を防ぐ
+- **reset --hard origin**: リモート追従による未 push 変更の消失を防ぐ
+- **rm -rf /** 系: ファイルシステム破壊を防ぐ
+
+**出典と補足**:
+- Claude Harness "Hokage" の R12 deny ルールから必要最小限を抽出（ブランチ保護 / 履歴改変 / FS 破壊の 3 カテゴリ）
+- Claude Code 2.1.98+ で built-in Bash bypass は大半修正済み。これは **defense-in-depth の二層目**
+- `permissions.deny` を追加してもユーザーが一時的に承認すれば実行可能（完全ブロックではなく、明示承認を強制）
+
+---
+
 ## 完了時の出力
 
 ```
@@ -121,6 +166,7 @@ o-m-cc のランタイムファイルを追加（重複しない場合のみ）�
 📁 plan/: 計画ファイル用ディレクトリ準備済み
 🤖 Agent: .claude/agents/sisyphus.md に配置
 🔓 Permissions: 推奨パーミッション追加済み
+🛡️ Deny Rules: R12 保護ルール（opt-in の選択結果を表示）
 📝 Handoff: /o-m-cc:handoff で .claude/journal.md に Next Actions を記録（詳細要約は /recap）
 
 💡 デフォルトエージェント有効化:

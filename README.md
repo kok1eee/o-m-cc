@@ -1,4 +1,4 @@
-# o-m-cc v0.49.0
+# o-m-cc v0.50.0
 
 [English](README_en.md)
 
@@ -615,6 +615,21 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 
 ## Changelog
 
+### 0.50.0
+
+- **`/o-m-cc:install` Step 7.5 新設** — R12 スタイル保護 deny ルールを opt-in で追加
+  - force push / hook bypass (--no-verify) / reset --hard origin / rm -rf 系を `.claude/settings.json` の `permissions.deny` に追加
+  - デフォルトは「追加しない」（個人開発・利便性優先）
+  - チーム開発・共有リポジトリ向けに AskUserQuestion で明示選択
+  - 出典: Claude Harness "Hokage" R12 deny ルールから必要最小限を抽出（ブランチ保護 / 履歴改変 / FS 破壊）
+  - 動機: Claude Code 2.1.98+ で Bash bypass は大半修正済みだが、defense-in-depth の二層目として
+- **Similar Projects に Claude Harness "Hokage" を追加** — 重装甲ガードレール + Go バイナリ + `harness.toml` SSOT という別戦略のプラグイン。o-m-cc（Lightweight + マルチエージェント Council）との棲み分けを明記
+- **Architecture に「データレイヤー」表を追加** — スキル間で共有される plan/ / journal.md / TaskCreate / auto-memory / Gotchas / .editorial/ 等 10 種を一覧化
+- **Architecture に Guides × Sensors の 2 軸フレーミングを導入** — Harness Engineering の前方制御/後方検知を明示
+- **`editorial-swarm` anti-ai-slop に曖昧語ブラックリストを具体化** — 「正しく」「適切に」「することができます」等の具体フレーズを列挙（tokium_dev QA ハーネス記事の style-guide パターンを参考）
+- **Progressive Disclosure 原則を強化** — 「ツールを増やさず機能を拡張」という Anthropic 公式ツール設計哲学を明記
+- **`/o-m-cc:retro` に「モデル進化時のガード再評価」項目を追加** — sisyphus Step 0 系などの特定事故対応防御がモデル世代交代で過剰化していないか定期チェック
+
 ### 0.49.0
 
 - **`/o-m-cc:editorial-swarm` 新設** — 技術記事の並列推敲 Council（4 エージェント並列 + severity 付き findings 集約 + 一括承認 + 最大 3 ラウンド）
@@ -1087,14 +1102,25 @@ Claude Code のマルチエージェント協調領域には他にも選択肢�
 - HUD statusline、通知統合（Telegram/Discord/Slack）、Rate limit auto-resume
 - **向いている人**: 多機能・多モデルが欲しい、TypeScript runtime 許容、Discord コミュニティ
 
+### [Claude Harness "Hokage"](https://github.com/Chachamaru127/claude-code-harness)
+- **Go ネイティブバイナリ / Node.js 依存ゼロ / `harness.toml` SSOT**
+- ガードレール最重視の重装甲型：R12 deny ルール（git push --force / rm -rf / 保護ブランチ直 push / --no-verify bypass）
+- Bash permission bypass 二層目防御（Claude Code 2.1.98 脆弱性対応）
+- Plan → Work → Review 自律運用を専用エージェントで実装
+- フック実行 ~10ms（Go バイナリ化で 30 倍高速化）
+- **向いている人**: AI の危険操作ブロックを重装甲で固めたい、`harness.toml` 1 本で設定を一元管理したい、Go バイナリ許容
+
 ### o-m-cc（このプロジェクト）
 - **Markdown + Shell のみ / Claude Code ネイティブ**
 - Lightweight 原則：ビルド不要、ランタイム依存最小
 - Claude Code ネイティブ活用：TaskCreate / Agent Teams / auto-memory をそのまま
+- マルチエージェント Council 型：discovery-council / Review Council / editorial-swarm の並列協調
 - 設計思想明文化：アンチパターン警告を含めて CLAUDE.md に明記
-- **向いている人**: 軽量さを重視、Claude Code 専用で十分、設計原則を大切にしたい
+- **向いている人**: 軽量さを重視、Claude Code 専用で十分、マルチエージェント協調を中心に据えたい、設計原則を大切にしたい
 
-> **参考にしている部分**: OMC の `/learner` quality gates（3 questions + 4 criteria）を v0.39.0 で `/evolve` に取り込み。Skill auto-learning の品質基準として相互に学び合える関係。
+> **参考にしている部分**:
+> - OMC の `/learner` quality gates（3 questions + 4 criteria）を v0.39.0 で `/evolve` に取り込み
+> - Claude Harness の Bash permission bypass 二層目防御は今後調査対象（Claude Code 脆弱性情報の追跡）
 
 ---
 

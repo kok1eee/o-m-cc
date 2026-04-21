@@ -1,4 +1,4 @@
-# o-m-cc v0.49.0
+# o-m-cc v0.50.0
 
 [日本語](README.md)
 
