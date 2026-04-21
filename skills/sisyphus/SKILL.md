@@ -289,6 +289,7 @@ requirements.md → design.md → tasks → implementation
 - **軽量タスクで sisyphus を使わない**: UI polish / a11y / CSS 統一 / 1-2 ファイルリファクタのような軽量タスクは Step 0A-lite で検出して `/o-m-cc:ui-polish` や普通の Edit に誘導する。Council の重量が価値に見合わず、過去には Council が Phase 4 で誤った完了報告（「実装済み」と嘘をつく）を出した事故もある。quality-gate Step 1.1 の実装範囲検証でも検出されるが、sisyphus 側で事前に軽量ルートに逸らす方が効率的
 - **Agent Teams の name 未指定で SendMessage が silent loss**: spawn 時に `name` と `team_name` を必ず指定。未指定だと teammate にならず、SendMessage が `success: true` を返しつつメッセージが消える
 - **Verifier を spawn せずに自分でテストを実行してしまう**: M-L タスクでは必ず別エージェントを spawn。自分でテストすると確認バイアスで問題を見落とす
+- **Sonnet/Haiku executor なら Sisyphus 開始前に `/advisor` 有効化を推奨**: sisyphus は長ループで詰まりやすいので、executor が Sonnet/Haiku の場合はセッション開始時に一度だけ `/advisor`（built-in beta）を実行して Opus advisor を有効化する価値がある。一度有効化すれば同一リクエスト内で自動 sub-inference（毎回プロンプトなし、Sisyphus の「止まらない」原則と両立）。SWE-bench +2.7pt / コスト -11.9%。既に Opus executor なら advisor は効果薄（Review Council で代替）
 
 <!-- AUTO-GOTCHAS -->
 

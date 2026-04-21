@@ -124,7 +124,7 @@ disallowedTools: [Bash]
 
 **クロスリード（タスク開始時に参照）:**
 - `code-reviewer` の memory → 頻出指摘を把握し、設計段階で回避
-- `advisor` の memory → 過去の意思決定を把握し、設計の一貫性を維持
+- `critic` の memory → 過去に却下された計画の理由を把握し、同じ落とし穴を避ける
 
 ## 重要
 

@@ -33,9 +33,11 @@ stop-guard が diff の変更量を検知し、閾値以上なら `/quality-gate
 ```
 explore subagent でコードベースを検索
 researcher subagent で公式ドキュメントを調査
-advisor subagent に相談
+debugger subagent で体系的デバッグ
 code-reviewer subagent でレビュー
 ```
+
+上位モデルへの戦略相談は Claude Code built-in の `/advisor`（beta）を使う（セッション開始時に一度だけ有効化すれば以後は自動 sub-inference）。
 
 ### 利用可能なエージェント
 
@@ -45,11 +47,9 @@ code-reviewer subagent でレビュー
 | designer | アーキテクチャ設計 |
 | planner | タスク分解 |
 | critic | 計画レビュー |
-| advisor | デバッグ・戦略相談 |
+| debugger | 体系的デバッグ・根本原因特定 |
 | researcher | ドキュメント調査 |
 | explore | 高速コード探索 |
-| vision | PDF/画像分析 |
-| frontend | UI/UX実装 |
 | code-reviewer | コードレビュー |
 
 ---

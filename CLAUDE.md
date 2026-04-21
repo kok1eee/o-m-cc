@@ -93,6 +93,8 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | PR レビューが欲しい | `/ultrareview <PR#>`（built-in, クラウド並列多エージェント）。ローカル＋静的解析込みなら `/quality-gate`（o-m-cc）|
 | UI polish・複数画面 redesign・a11y 対応・CSS 統一 | `/ui-polish` で軽量ループ（Council なし、tsc/lint のみゲート）。新規デザインをゼロから生成するなら外部プラグイン `frontend-design` |
 | 技術記事の最終推敲・Zenn 記事レビュー・AI 定型句除去・fact-check・読者視点チェック | `/editorial-swarm` で 4 並列レビュー Council（anti-ai-slop / fact-checker / narrative-critic / reader-advocate）。severity 付き findings を一括承認して最大 3 ラウンドで収束 |
+| Sonnet/Haiku 実行時に自動で上位モデル相談を入れたい（Sisyphus 長ループで詰まり予防） | **セッション開始時に一度だけ `/advisor`（built-in beta）を実行**して有効化すれば、以後は同一リクエスト内で Opus advisor が自動 sub-inference（毎回手動プロンプトなし、Sisyphus の「止まらない」原則と両立）。SWE-bench +2.7pt / コスト -11.9%。Opus executor には効果薄。Vertex / Bedrock 非対応 |
+| クロスモデルレビューで別視点が欲しい・Claude の盲点を別モデルに突かせたい | `/codex:review` or `/codex:adversarial-review`（[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)）。Node.js + Codex CLI + ChatGPT アカウント（無料可）必要。o-m-cc Review Council と補完関係（同モデル複数視点 vs 別モデル）|
 
 **実装完了時のフロー:**
 1. `/simplify` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等）

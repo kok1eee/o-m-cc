@@ -37,7 +37,7 @@
 | よくある曖昧性パターン | セッション固有のスコープ判定 |
 | 見落としやすいエッジケース | 一時的な仮定 |
 
-### 設計・計画系（designer, planner, critic, advisor）
+### 設計・計画系（designer, planner, critic）
 
 | 蓄積する | 蓄積しない |
 |---------|-----------|
@@ -109,7 +109,7 @@ Claude Code 2.1.63+ では、**同一リポジトリの git worktree 間で proj
 | エージェント | 参照先 | 活用方法 |
 |-------------|--------|---------|
 | planner | debugger, code-reviewer | バグ傾向→テスト優先度、品質問題→タスク設計 |
-| designer | code-reviewer, advisor | 頻出指摘→設計で回避、過去の意思決定→一貫性 |
+| designer | code-reviewer, critic | 頻出指摘→設計で回避、却下された計画→同じ落とし穴回避 |
 | scout | critic | レビュー落とし穴→ギャップ分析精度向上 |
 | code-reviewer | security-reviewer | セキュリティコンテキスト→品質判定に活用 |
 | security-reviewer | code-reviewer | 品質コンテキスト→セキュリティ判定に活用 |
