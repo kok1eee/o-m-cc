@@ -19,6 +19,17 @@ Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCre
 - **Faceted Prompting**: `facets/policies/`（横断ポリシー）と `facets/references/`（段階的開示リファレンス）で共通基準を一元管理
 - **Progressive Disclosure**: frontmatter → 本文 → 参照ファイルの3段階でトークン消費を最小化
 
+### Guides × Sensors（Harness Engineering の 2 軸）
+
+o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設計されている:
+
+| 軸 | 役割 | o-m-cc での実装 |
+|---|---|---|
+| **Guides**（前方制御） | 行動を事前に方向づける | CLAUDE.md（設計思想・判断ルール）、skill 定義、agent description、TaskCreate |
+| **Sensors**（後方制御） | 結果を事後に検知して軌道修正 | `quality-gate-cta.sh`（push 前 CTA）、`subagent-verify.sh`、`bin/validate-plan`（Layer 1 形式チェック）、`evolve`（Gotchas 自動反映） |
+
+新機能追加時は「Guides で誘導するか、Sensors で検知するか」を意識する。Guides で誘導できないものは Sensors で検知する（例: sisyphus の Step 0A 曖昧引数検出は Guides、quality-gate の実装範囲整合性検証は Sensors）。
+
 ## エージェント実行ヒント
 - `background: true` — I/O集約的な調査エージェント（researcher）にバックグラウンド実行ヒント
 - `isolation: worktree` — ファイル変更を行うエージェント（designer, planner, debugger）に worktree 分離

@@ -167,6 +167,17 @@ Agent Teams (Council + Pipeline ハイブリッド):
 
 ## Architecture
 
+### Guides × Sensors（Harness Engineering の 2 軸）
+
+o-m-cc は Harness Engineering の「事前制御 / 事後検知」2 軸で設計されている:
+
+| 軸 | 役割 | o-m-cc の実装 |
+|---|---|---|
+| **Guides**（前方制御） | 行動を事前に方向づける | CLAUDE.md / skill 定義 / agent description / TaskCreate |
+| **Sensors**（後方制御） | 結果を事後に検知して軌道修正 | `quality-gate-cta.sh`（push 前 CTA） / `subagent-verify.sh` / `bin/validate-plan`（Layer 1 形式チェック） / `evolve`（Gotchas 自動反映） |
+
+Guides だけでは「誘導したつもり」になりがちなので、重要な判断ポイントには必ず Sensors を配置する（例: sisyphus Step 0A は Guides、quality-gate の実装範囲検証は Sensors）。
+
 ### Skill Chain（コンテキスト分離）
 
 `/o-m-cc:sisyphus` は各フェーズを独立スキルとして chain 実行する:
