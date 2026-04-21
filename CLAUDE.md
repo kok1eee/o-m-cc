@@ -30,6 +30,25 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 
 新機能追加時は「Guides で誘導するか、Sensors で検知するか」を意識する。Guides で誘導できないものは Sensors で検知する（例: sisyphus の Step 0A 曖昧引数検出は Guides、quality-gate の実装範囲整合性検証は Sensors）。
 
+### データレイヤー（スキル間で共有される状態）
+
+スキルはコンテキストではなくファイル/ネイティブ状態を介して連携する:
+
+| 場所 | Writer | Reader | 用途 |
+|---|---|---|---|
+| `plan/requirements.md` | discovery-council, deep-interview | designer, critic, quality-gate | 要件定義（FR-X 形式）|
+| `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
+| `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（rm しない）|
+| `plan/progress.md` | experiment | experiment (次 iteration) | 試行履歴（keep/revert 判断）|
+| TaskCreate / TaskUpdate | planner, sisyphus | 全 teammate | ネイティブタスクリスト（Claude Code 機能）|
+| `.claude/journal.md` | handoff | session-resume.sh, 別マシン | EC2 跨ぎ引き継ぎ（Recap + Next Actions）|
+| `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（ユーザープロファイル・フィードバック・プロジェクト知見）|
+| Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
+| `.editorial/round-N/` | editorial-swarm | editorial-swarm (次 round) | 記事レビューの findings / diff 履歴 |
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.log` | skill-usage-log.sh hook | retro, evolve | スキル使用履歴 |
+
+**原則**: コンテキスト（会話履歴）に依存しない。別スキル/別セッション/別マシンから再開できる状態を必ずファイルに書く。
+
 ## エージェント実行ヒント
 - `background: true` — I/O集約的な調査エージェント（researcher）にバックグラウンド実行ヒント
 - `isolation: worktree` — ファイル変更を行うエージェント（designer, planner, debugger）に worktree 分離
