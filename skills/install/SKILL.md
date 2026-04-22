@@ -48,6 +48,19 @@ CLAUDE.md がなければ公式 /init を先に実行するよう案内して終
 | 最適化・試行錯誤 | `/o-m-cc:experiment`（action skill）|
 
 迷ったら `/plan` で方針を固め、実装が見えたら上記 skill に即移行。**auto mode でも上記 skill は抑制せず、状況マッチで積極発動**（Opus 4.7 は指示を文字通り解釈するので、トリガー条件への合致を重視）。
+
+### Subagent / Agent Teams の発動（auto mode でも必須）
+
+**subagent spawn / Agent Teams は「並列 action」であり planning ではない。auto mode でも必ず使うこと**:
+
+- 3 ファイル以上の Read が見込まれる → `Explore` or `general-purpose` subagent に delegate
+- コード品質レビュー → `code-reviewer` subagent を spawn
+- セキュリティレビュー → `security-reviewer` subagent を spawn
+- バグ調査 → `debugger` subagent を spawn
+- 実装後の独立検証 → 別 subagent を spawn（自分でテストすると確認バイアス）
+- 要件の並列分析 → `/o-m-cc:discovery-council`
+
+auto mode で「main agent だけで処理する」のは anti-pattern。並列 subagent で context 節約 + 速度向上せよ。
 ```
 
 ---

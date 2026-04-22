@@ -104,6 +104,50 @@ Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode �
 3. **状況がテーブルの行にマッチする → 発動**（Opus 4.7 で効きにくくなっているので特に意識）
 4. auto mode でも 3 は有効。「action である」と明示されている skill は抑制しない
 
+## Subagent / Agent Teams の発動（auto mode でも必須）
+
+**subagent spawn と Agent Teams は「並列 action」であり、planning ではない。auto mode でも必ず使うこと。**
+
+Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがちだが、これは誤り。subagent は:
+- **メイン context の汚染を避けるための並列実行**（Read 大量 / Grep / WebSearch 等）
+- **独立視点でのレビュー**（code-reviewer / security-reviewer / critic）
+- **バイアスなしの検証**（Verifier パターン）
+- **情報の事前整備**（architecture-mapper / code-explorer / convention-scout）
+
+いずれも**手動でやるより速い action**。planning ではない。
+
+### Subagent を積極発動すべき場面
+
+| 状況 | 発動する subagent |
+|---|---|
+| コード全体を把握したい（3 ファイル以上の Read が見込まれる） | `Explore` or `general-purpose` |
+| 類似機能を辿りたい | `code-explorer` |
+| アーキテクチャ / 抽象境界を把握したい | `architecture-mapper` |
+| 命名規則 / テストパターン調査 | `convention-scout` |
+| コード品質レビュー | `code-reviewer` |
+| セキュリティレビュー | `security-reviewer` |
+| 計画の妥当性検証 | `critic` |
+| 曖昧な部分の調査 | `researcher` |
+| バグ / テスト失敗の根本原因特定 | `debugger` |
+| 実装後の独立検証 | 別 subagent を spawn（自分でテストすると確認バイアスで見落とす） |
+
+### Agent Teams（peer-to-peer 協調）を使うべき場面
+
+| 状況 | チーム構成 |
+|---|---|
+| 要件を並列分析したい | discovery-council（researcher + analyst + scout）|
+| 品質を多角レビューしたい | Review Council（code-reviewer + security-reviewer + critic）|
+| 記事を多視点で推敲したい | editorial-swarm（anti-ai-slop + fact-checker + narrative-critic + reader-advocate）|
+
+**これらは sisyphus / quality-gate / editorial-swarm skill 内で自動構築されるが、手動でも積極使用可**。
+
+### auto mode での anti-pattern
+
+- ❌ 3 ファイル以上の Read を main agent が自分でやる（subagent に delegate すべき）
+- ❌ 大きな実装を main agent だけで完結させる（Verifier subagent を spawn しない）
+- ❌ レビューを「後でやる」と先送り（code-reviewer subagent を即 spawn すべき）
+- ✅ 並列 agent spawn で context 節約 + 速度向上
+
 ## ワークフロー判断
 
 | 状況 | アクション |
