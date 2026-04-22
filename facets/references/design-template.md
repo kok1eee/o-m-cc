@@ -37,6 +37,27 @@ graph TD
 - **依存**: [他のコンポーネント]
 - **対応要件**: FR-X
 
+## File Structure Plan
+
+この設計で**触るファイル / 新規作成ファイル**を一覧化する。タスク分解時の Boundary（触らない領域）判定に使う。
+
+```markdown
+### 新規作成
+- `src/components/ExampleComponent.tsx` — [責務]
+- `src/services/ExampleService.ts` — [責務]
+- `tests/services/ExampleService.test.ts` — [対応テスト]
+
+### 変更（既存ファイル）
+- `src/App.tsx` — [変更内容、例: ExampleComponent の配置]
+- `src/routes.ts` — [変更内容]
+
+### 触らない（意図的な Boundary）
+- `src/legacy/` — 別 PR でリファクタ予定
+- `src/analytics/` — スコープ外、既存動作を維持
+```
+
+cc-sdd の `_Boundary:_` 概念に倣い、**触らない領域を明示**することでスコープクリープを防ぐ。
+
 ## データ設計
 
 ### [エンティティ/型名]

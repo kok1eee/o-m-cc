@@ -1,4 +1,4 @@
-# o-m-cc v0.50.0
+# o-m-cc v0.51.0
 
 [English](README_en.md)
 
@@ -615,6 +615,13 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 
 ## Changelog
 
+### 0.51.0
+
+- **design.md template に「File Structure Plan」セクション追加** — 新規作成 / 変更 / **触らない（Boundary）** の 3 カテゴリでファイル一覧を明示
+- **task description に `Boundary` フィールド追加** — タスクが触らない領域を明示してスコープクリープを防ぐ
+- **Similar Projects に cc-sdd を追加** — クロスプラットフォーム SDD（Claude Code / Codex / Cursor / Copilot / Windsurf / OpenCode / Gemini CLI / Antigravity 8 対応）、Kiro 互換
+- **出典**: [gotalab/cc-sdd](https://github.com/gotalab/cc-sdd)（3.1k⭐）の `_Boundary:_` / `_Depends:_` アノテーション概念を o-m-cc に翻訳
+
 ### 0.50.0
 
 - **`/o-m-cc:install` Step 7.5 新設** — R12 スタイル保護 deny ルールを opt-in で追加
@@ -1101,6 +1108,17 @@ Claude Code のマルチエージェント協調領域には他にも選択肢�
 - マルチモデル対応：tmux 経由で Claude + Codex + Gemini を並列起動
 - HUD statusline、通知統合（Telegram/Discord/Slack）、Rate limit auto-resume
 - **向いている人**: 多機能・多モデルが欲しい、TypeScript runtime 許容、Discord コミュニティ
+
+### [cc-sdd](https://github.com/gotalab/cc-sdd)
+- **3.1k⭐ / TypeScript / npm パッケージ（`npx cc-sdd@latest`）**
+- **8 プラットフォーム対応**: Claude Code / Codex / Cursor / Copilot / Windsurf / OpenCode / Gemini CLI / Antigravity
+- Kiro IDE の仕様駆動方法論と互換（`kiro` 命名規約）
+- 17 の Agent Skills（`/kiro-discovery`, `/kiro-spec-init/requirements/design/tasks`, `/kiro-impl` 等）
+- タスク境界 `_Boundary:_` / `_Depends:_` アノテーションで依存とスコープを明示
+- TDD を `/kiro-impl` で RED→GREEN 明示
+- **向いている人**: 複数エージェント（Claude + Codex + Cursor 等）を跨いで同じ spec を使いたい、Kiro IDE ユーザー、TypeScript 許容、npm 配布でよい
+
+> **o-m-cc で取り込んだ要素**: cc-sdd の `_Boundary:_` 概念を参考に、design.md template に「File Structure Plan（新規作成 / 変更 / 触らない）」セクションと、task description に `Boundary` フィールドを追加（v0.51.0）。スコープクリープ防止が狙い。
 
 ### [Claude Harness "Hokage"](https://github.com/Chachamaru127/claude-code-harness)
 - **Go ネイティブバイナリ / Node.js 依存ゼロ / `harness.toml` SSOT**
