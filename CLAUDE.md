@@ -78,6 +78,32 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | **Plugin ネイティブ** | Claude Code のプラグインシステムに準拠。settings.json で自動設定 | プラグイン外でのグローバル設定変更を前提とする設計 |
 | **エージェント自律性** | 各エージェントは専門家として自律的に判断・行動する | エージェントの行動を細かくスクリプト化して自由度を奪う |
 
+## Skill 発動ガイドライン（Opus 4.7 + auto mode 対応）
+
+**重要: o-m-cc の skill は「action の加速装置」であって「planning の遅延装置」ではない。**
+
+Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode の「prefer action over planning」を過剰解釈して o-m-cc skill の発動を抑制しがち。これは誤り:
+
+- `/sisyphus` = 新機能を **実装まで一気通貫で走らせる** action skill（内部に planning phase はあるが成果物は動作するコード）
+- `/quality-gate` = コミット前に品質検証する action skill（CI 代わり）
+- `/discovery-council` = 要件を即座に確定する action skill（analyst/researcher/scout を並列実行）
+- `/ui-polish` = UI を複数画面連続で修正する action skill
+- `/editorial-swarm` = 記事を並列レビュー＋修正する action skill
+- `/deep-interview` = 曖昧要件を即座に解像度上げる action skill
+- `/experiment` = 試行錯誤を自動ループで回す action skill
+- `/handoff` = journal.md に action の引き継ぎ記録を書く action skill
+
+**auto mode でもこれらは抑制せず、該当状況にマッチしたら積極発動すること**。
+
+唯一の例外: 「planning」的なもの（built-in `/plan` や自前の計画立案）は auto mode で抑制される。これは正しい挙動。
+
+### 発動判定の優先順
+
+1. ユーザーが明示指定（`/o-m-cc:sisyphus` 等） → 必ず発動
+2. skill description のトリガーフレーズが含まれる → 発動
+3. **状況がテーブルの行にマッチする → 発動**（Opus 4.7 で効きにくくなっているので特に意識）
+4. auto mode でも 3 は有効。「action である」と明示されている skill は抑制しない
+
 ## ワークフロー判断
 
 | 状況 | アクション |

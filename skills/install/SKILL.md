@@ -33,14 +33,21 @@ CLAUDE.md がなければ公式 /init を先に実行するよう案内して終
 ```markdown
 ## o-m-cc ワークフロー
 
+**重要: o-m-cc skill は「action の加速装置」。auto mode でも積極発動せよ（planning 遅延ではない）。**
+
 | 状況 | アクション |
 |------|-----------|
-| ピンポイントな修正 | そのまま実行 |
+| ピンポイントな修正（typo, 1 ファイル） | そのまま実行 |
 | 複数ファイルにまたがる変更 | `/plan` で計画してから実行 |
-| 新機能・設計判断が必要な変更 | `/sisyphus` で要件→設計→タスク分解→実装 |
-| 完了を宣言する前 | `/verification` で証拠確認 |
+| 新機能・設計判断が必要な変更 | `/o-m-cc:sisyphus` で要件→設計→タスク分解→実装まで一気通貫（action skill）|
+| 要件が曖昧・何を作るか不明確 | `/o-m-cc:deep-interview` で要件を解像度上げる（action skill）|
+| 完了を宣言する前 | `/o-m-cc:verification` で証拠確認（action skill）|
+| push/コミット前の最終チェック | `/o-m-cc:quality-gate` で Review Council + 静的解析（action skill）|
+| UI polish・a11y・複数画面 redesign | `/o-m-cc:ui-polish`（action skill）|
+| 技術記事レビュー・推敲 | `/o-m-cc:editorial-swarm`（action skill）|
+| 最適化・試行錯誤 | `/o-m-cc:experiment`（action skill）|
 
-迷ったら `/plan` に入る。
+迷ったら `/plan` で方針を固め、実装が見えたら上記 skill に即移行。**auto mode でも上記 skill は抑制せず、状況マッチで積極発動**（Opus 4.7 は指示を文字通り解釈するので、トリガー条件への合致を重視）。
 ```
 
 ---
