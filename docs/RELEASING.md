@@ -28,7 +28,17 @@ bin/validate-plan design
    jj bookmark set main -r @
    jj git push
    ```
-3. **プラグイン更新**（ローカル環境で反映）:
+3. **Git tag を作成**（Claude Code 2.1.118+、version 整合性を自動検証）:
+   ```bash
+   # dry-run で tag 名と push 先を確認
+   claude plugin tag --dry-run
+   # 問題なければ tag 作成 + origin へ push
+   claude plugin tag --push
+   ```
+   - tag 形式: `o-m-cc--v0.X.Y`（plugin name + `--v` + version）
+   - `plugin.json` と `marketplace.json` の version 一致を自動検証（不一致ならエラー）
+   - `agents/*.md` の frontmatter 欠落も警告（例: `capabilities.md` は frontmatter 必須）
+4. **プラグイン更新**（ローカル環境で反映）:
    ```bash
    claude plugin update o-m-cc@kok1eee
    # → "Restart to apply changes" が出るので Claude Code を再起動

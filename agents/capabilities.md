@@ -1,3 +1,8 @@
+---
+name: capabilities
+description: エージェント能力サマリーのリファレンスドキュメント。planner 等の他エージェントから Read で参照される。自動起動せず、選択材料としてのみ使用する。
+---
+
 # Agent Capabilities
 
 エージェント能力のサマリー。planner によるエージェント選択、および小タスクでのキーワードマッチに使用。
