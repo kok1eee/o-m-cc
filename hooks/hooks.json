@@ -70,6 +70,16 @@
             "timeout": 3000
           }
         ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/skill-duration-log.sh",
+            "timeout": 2000
+          }
+        ]
       }
     ],
     "SubagentStop": [

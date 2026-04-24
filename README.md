@@ -1,4 +1,4 @@
-# o-m-cc v0.51.0
+# o-m-cc v0.52.0
 
 [English](README_en.md)
 
@@ -614,6 +614,14 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.52.0
+
+- **skill 実行時間の記録機能を新設** — Claude Code 2.1.119 の PostToolUse hook `duration_ms` 追加を活用
+  - `hooks/skill-duration-log.sh` 新規: PostToolUse:Skill で `skill-duration.log` に `timestamp TAB skill_name TAB duration_ms` を記録
+  - `/retro` スキルに実行時間分析セクション追加: 平均 / 最大 / 合計実行時間を skill 別に集計
+  - 「遅いスキル → context: fork 導入 / Progressive Disclosure 強化 / reference 分離」の改善判断材料を提供
+  - Claude Code 2.1.118 以下では duration_ms が無いので 0 が記録される（実害なし）
 
 ### 0.51.0
 
