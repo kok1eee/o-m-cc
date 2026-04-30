@@ -12,6 +12,8 @@ context: fork
 
 4 人のレビュアー（anti-ai-slop, fact-checker, narrative-critic, reader-advocate）が peer-to-peer でドラフトをレビューし、severity 付きの提案を集約する。discovery-council の「文章版」。
 
+> **共通プロトコル**: ハンドオフの 4 原則（path 渡し優先 / 長文上・指示下 / coverage-first / quote-first）は `facets/policies/plan-handoff.md` を参照。各 reviewer prompt は閾値カットなしで全件返し、自動 apply は集約側 (Step 4) のみが判断する。
+
 ## 対象記事
 
 $ARGUMENTS
@@ -118,6 +120,10 @@ severity 基準:
 - high: 明らかな事実誤認（存在しない API、誤った version、壊れたコマンド）
 - medium: 出典なし主張 / 古い情報の可能性
 - low: 表記ゆれ（"Claude code" vs "Claude Code" 等）
+
+quote-first: 各 finding には記事本文から問題箇所を quote（30 文字程度）で添えて、どの記述に対する指摘か明示すること。
+
+coverage-first: 検出した issue は severity を付けて全件返す。「low は省略」のような閾値カットは行わない（集約側で扱う）。
 
 出力: 厳密な JSON 配列のみ。
 ```

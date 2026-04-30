@@ -8,7 +8,7 @@ effort: medium
 
 # Evolve - スキル自己進化
 
-auto-memory + skill-usage.log から学びを抽出し、スキルの Gotchas を更新する。
+auto-memory + skill-usage.csv から学びを抽出し、スキルの Gotchas を更新する。
 
 ## 対象
 
@@ -18,13 +18,13 @@ $ARGUMENTS（省略時は最近使われたスキル全て）
 
 ### Step 1: 情報収集
 
-1. **skill-usage.log** を Read して最近使われたスキルを特定
+1. **skill-usage.csv** を Read して最近使われたスキルを特定
 2. **auto-memory**（`.claude/memory/`）を Read して、スキル実行に関する学び・失敗・注意点を抽出
 3. **agent-memory**（`.claude/agent-memory/`）からエージェント固有の学びを抽出
 
 ```bash
-# 最近使われたスキル
-cat "${CLAUDE_PLUGIN_DATA}/skill-usage.log" | tail -20
+# 最近使われたスキル（CSV: timestamp,skill。header行をスキップ）
+tail -20 "${CLAUDE_PLUGIN_DATA}/skill-usage.csv" | awk -F, 'NR>0 || $1 != "timestamp" {print $1, $2}'
 ```
 
 ### Step 2: 既存 Gotchas との照合
@@ -66,6 +66,31 @@ Gotchas として追記する前に、**以下の3つの質問すべてに YES �
 - ❌ 悪い例（mimicking）: "ConnectionResetError を見たらこの try/except を追加"
 - ✅ 良い例（reusable）: "async ネットワークコードでは I/O 操作は client/server ライフサイクルのズレで独立に失敗する。各 I/O を個別に wrap する"
 
+### Step 2.6: Gotcha vs Atom 分類（escalation 判定）
+
+Quality Gate を通った学びの行き先を判定する。詳細は `facets/policies/agent-memory-guidance.md` の「Gotcha vs Atom 分類」セクションを参照。
+
+| 学びの種類 | 行き先 | 例 |
+|---|---|---|
+| **行動修正系**（現存 skill / agent を動かす時の再発防止メモ） | Step 3 へ進み Gotchas に追記 | SendMessage name 未指定で silent loss |
+| **改善案系**（skill / agent を変える、試す、新規追加するアイデア） | **atom に escalate** → Step 3 をスキップ | discovery-council 5 並列実験 / editorial prompt XML 化 |
+
+#### Atom escalation の手順
+
+改善案系と判定したら以下を実行:
+
+```bash
+bin/atoms add "evolve" "<学びの内容（1 行で）>" "<次アクション（promote / 試行 / 議論など）>"
+```
+
+その学びは Step 3 の Gotchas には書かない（atom と Gotchas に二重登録すると着手判断がぶれる）。Step 5 の報告では `### atom escalate` セクションに分類し、`A00X` の id を含めて明示する。
+
+#### 判定に迷う場合
+
+1. 「明日 skill を呼び出すユーザーがこの注意を読んで動作を修正できるか？」→ YES なら gotcha
+2. 「これは『そのうちやる』タスクとして backlog 管理すべきか？」→ YES なら atom
+3. 両方該当する稀なケースは gotcha 優先（再発防止が即効性高い）+ atom にも残す（着手判断のため）
+
 ### Step 3: Gotchas 追記
 
 `<!-- AUTO-GOTCHAS -->` マーカーの後に追記する。マーカーがなければ Gotchas セクション末尾に追加する。
@@ -102,6 +127,9 @@ mkdir -p .claude && touch .claude/evolve-done
 - skill-name: +N件の Gotchas 追加
   - [要約1]
   - [要約2]
+
+### atom escalate（atoms.csv に追加）
+- A00X: [改善案の要約] (next: [次アクション])
 
 ### スキップしたスキル
 - skill-name: 新しい学びなし

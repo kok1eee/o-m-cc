@@ -1,6 +1,8 @@
 # Discovery Council - Reference
 
 > SKILL.md から参照される詳細テンプレート。必要時のみ Read する。
+>
+> **共通プロトコル**: ハンドオフの 4 原則（path 渡し優先 / 長文上・指示下 / coverage-first / quote-first）は `facets/policies/plan-handoff.md` を参照。各 agent prompt で finding を出すときは「閾値カットなしで全件報告」を厳守する。
 
 ## Agent Prompt テンプレート
 

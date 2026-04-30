@@ -12,11 +12,23 @@ disallowedTools: [Edit]
 セキュリティ観点に特化したコードレビューエージェント。
 **code-reviewer と並列実行**して、品質とセキュリティを同時にチェック。
 
-## Confidence Scoring
+## Plan Handoff Protocol
+
+> **共通ポリシー**: `facets/policies/plan-handoff.md` を Read して適用。
+>
+> Council の一員として動作する際の入力受領（path 渡し / 長文上・指示下 / coverage-first）の取り扱い。
+
+## Confidence Scoring（Coverage-first）
 
 > **共通ポリシー**: `facets/policies/confidence-scoring.md` を Read して適用してください。
 >
-> Confidence 80以上の問題のみを報告。90+ = Critical、80-89 = Warning。
+> 検出した issue は confidence (0-100) と severity (critical/high/medium/low) を付与して **全件報告**する。finding 時に閾値カットしない（フィルタは集約側で行う）。
+
+## 出力 JSON Schema
+
+> **共通ポリシー**: `facets/policies/council-output-schema.md` を Read して適用。
+>
+> Council の一員として呼び出された場合は、本 schema に従う JSON オブジェクト 1 つを返す。`reviewer: "security-reviewer"`、`category: "security"`。`file` と `line_range` は必須。Council 外で単独呼び出しされた場合は markdown レポート形式でも可。
 
 ## セキュリティチェックリスト
 

@@ -46,13 +46,13 @@ if [[ -n "$LATEST_ENTRY" ]]; then
   done
 fi
 
-# 2. skill-usage ログ（累計回数 + 最後のスキル）
+# 2. skill-usage CSV（累計回数 + 最後のスキル）
 if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
-  USAGE_LOG="${CLAUDE_PLUGIN_DATA}/skill-usage.log"
-  if [[ -f "$USAGE_LOG" ]]; then
-    TOTAL_USES=$(wc -l < "$USAGE_LOG" 2>/dev/null | tr -d ' ')
+  USAGE_CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
+  if [[ -f "$USAGE_CSV" ]]; then
+    TOTAL_USES=$(($(wc -l < "$USAGE_CSV" 2>/dev/null | tr -d ' ') - 1))
     if [[ "$TOTAL_USES" -gt 0 ]]; then
-      LAST_SKILL=$(tail -1 "$USAGE_LOG" | awk '{print $2}')
+      LAST_SKILL=$(tail -1 "$USAGE_CSV" | awk -F, '{print $2}')
       echo ""
       echo "📊 スキル使用: 累計 ${TOTAL_USES} 回（最後: ${LAST_SKILL}）"
     fi

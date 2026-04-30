@@ -114,6 +114,32 @@ Claude Code 2.1.63+ では、**同一リポジトリの git worktree 間で proj
 | code-reviewer | security-reviewer | セキュリティコンテキスト→品質判定に活用 |
 | security-reviewer | code-reviewer | 品質コンテキスト→セキュリティ判定に活用 |
 
+## Gotcha vs Atom 分類（書き分け）
+
+学び・気付きの行き先を 3 つに整理する。境界が曖昧だと evolve / bin/atoms add の判断がぶれて重複や取りこぼしが起きるため、書く前に必ず分類する。
+
+| 種類 | 場所 | 内容 | 例 |
+|---|---|---|---|
+| **gotcha** | 各 SKILL.md / agent .md の Gotchas セクション | **既存 skill / agent を動かす時の再発防止メモ**（行動修正） | SendMessage の name 未指定で silent loss / Edit 前にメインエージェントで Read 必須 |
+| **atom** | `.claude/atoms.csv`（`bin/atoms add` で追加） | **未着手のアイデア・改善案・実験提案**（着手判断の対象） | discovery-council を 5 並列にする実験 / editorial-swarm の prompt を XML 化 / 新スキル新設 |
+| **memory** | `.claude/agent-memory/<agent>/MEMORY.md` | **agent が学習する傾向パターン**（このファイルの主題） | 過剰検知の傾向 / プロジェクト固有の制約・前提 |
+
+### 判定フロー（迷ったらこの順で考える）
+
+1. **「現存する skill / agent をそのまま動かす時に守るべき注意か？」** → YES なら **gotcha**
+2. **「skill / agent を変える / 別パターンを試す / 新規追加するアイデアか？」** → YES なら **atom**（`bin/atoms add` で escalate）
+3. **「agent が次回以降に活かす traits / pattern か？」** → YES なら **memory**
+
+### よくある誤分類
+
+| 誤って書きがち | 正しい行き先 | 理由 |
+|---|---|---|
+| 「discovery-council を 5 並列にすると速いかもしれない」を gotcha に書く | **atom** | これは現存 skill の動作注意ではなく、変更案 |
+| 「Council の prompt を XML 化したい」を agent memory に書く | **atom** | プロジェクト改善 backlog なので atom-suggest で俯瞰すべき |
+| 「Sonnet では effort=high を必ず付ける」を atom に書く | **gotcha**（CLAUDE.md / SKILL.md） | 既存 skill 動作の再発防止メモ |
+
+evolve スキルが学びを抽出するときは、この判定を必ず実施する（evolve SKILL.md Step 2.6 を参照）。
+
 ## Calibration Loop（自己校正）
 
 reviewer 系（code-reviewer, security-reviewer, critic）が判定精度を振り返る。

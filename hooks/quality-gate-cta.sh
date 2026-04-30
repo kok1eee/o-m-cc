@@ -33,14 +33,15 @@ if ! echo "$COMMAND" | grep -qE '(jj[[:space:]]+git[[:space:]]+push|^[[:space:]]
   exit 0
 fi
 
-# CLAUDE_PLUGIN_DATA / skill-usage.log の存在確認
+# CLAUDE_PLUGIN_DATA / skill-usage.csv の存在確認
 PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-}"
-LOG_FILE="${PLUGIN_DATA}/skill-usage.log"
+LOG_FILE="${PLUGIN_DATA}/skill-usage.csv"
 
 # 最終 quality-gate 実行時刻を取得（なければ空）
+# CSV format: timestamp,skill
 LAST_QG_ISO=""
 if [[ -f "$LOG_FILE" ]]; then
-  LAST_QG_ISO=$(grep -E '(o-m-cc:)?quality-gate' "$LOG_FILE" 2>/dev/null | tail -1 | awk '{print $1}' || true)
+  LAST_QG_ISO=$(awk -F, 'NR>1 && $2 ~ /(^|:)quality-gate$/ {ts=$1} END {print ts}' "$LOG_FILE" 2>/dev/null || true)
 fi
 
 # 直近コミット時刻を取得（jj 優先 → git fallback）

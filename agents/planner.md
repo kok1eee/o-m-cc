@@ -40,9 +40,18 @@ disallowedTools: [Bash]
 - 優先順位付け
 - 見積もり（S/M/L）
 
+## Plan Handoff Protocol
+
+> **共通ポリシー**: `facets/policies/plan-handoff.md` を Read して適用。
+
+- **入力は path 渡しを優先**: design.md / requirements.md は inline 受領せず、`plan/design.md` / `plan/requirements.md` を自分で Read する
+- **Quote-first**: design.md を Read した後、各タスクの根拠となるコンポーネント記述・FR-X 言及を `<quotes>` ブロックで抽出してから TaskCreate を実行する
+- **既知の不足の引き継ぎ**: design.md / requirements.md に `## 既知の不足` セクションがあれば、対応するタスクを `[NOTE]` プレフィックス付きで TaskCreate するか、明示的にスキップ理由を `description` に記録する
+- **Scope 明示**: design.md で言及されないコンポーネントを暗黙にタスク化しない（4.7 リテラル解釈）。設計外の補完作業は `[OUT-OF-SCOPE]` で明示する
+
 ## 入力
 
-- **design.md** - 設計書（必須）
+- **design.md** - 設計書（必須、自分で Read する）
 - **requirements.md** - 要件定義（参照）
 
 ## タスク分解プロセス

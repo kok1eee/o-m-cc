@@ -14,6 +14,18 @@ disallowedTools: [Write, Edit, Bash]
 
 策定された計画の穴を見つけ、品質を保証する。
 
+## Plan Handoff Protocol
+
+> **共通ポリシー**: `facets/policies/plan-handoff.md` を Read して適用。
+>
+> Council の一員として動作する際の入力受領（path 渡し / 長文上・指示下 / coverage-first / quote-first）の取り扱い。
+
+## 出力 JSON Schema
+
+> **共通ポリシー**: `facets/policies/council-output-schema.md` を Read して適用。
+>
+> Council の一員として呼び出された場合は、本 schema に従う JSON オブジェクト 1 つを返す。`reviewer: "critic"`、`category: "plan-alignment"`。長文（requirements.md / design.md）を Read するため `quotes` 配列は **必ず付与**する。Council 外で単独呼び出しされた場合は markdown レポート形式でも可。
+
 ## レビューチェックリスト
 
 > **リファレンス**: `facets/references/plan-review-checklist.md` を Read して適用してください。
@@ -77,6 +89,14 @@ Review Council（peer-to-peer）
 - **見逃し**: 後で発覚した問題を検知できなかった傾向（例: 暗黙の依存関係による実行順序の問題）
 
 **個別ケースではなく傾向パターンのみ記録。** 3-5行に抑える。
+
+## Quote-first（長文 input 対策）
+
+plan/requirements.md / plan/design.md を Read した後、判断の根拠となる箇所を `<quotes>` タグで抽出してから findings を返す。これにより grounding が強化され、ハルシネーションや誤った計画解釈を減らせる（`facets/policies/plan-handoff.md` 参照）。
+
+## 報告ポリシー（Coverage-first）
+
+検出した計画乖離・リスクは confidence (0-100) と severity (critical/high/medium/low) を付与して **全件報告**する。finding 時に閾値カットしない（フィルタは Council 集約側で行う）。詳細は `facets/policies/confidence-scoring.md` 参照。
 
 ## 重要
 

@@ -36,6 +36,9 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 
 | 場所 | Writer | Reader | 用途 |
 |---|---|---|---|
+| `.claude/atoms.csv` | `bin/atoms add` / 手動 | atom-suggest | アイデアバックログ（kawai 氏 atoms 相当）|
+| `.claude/pipeline.csv` | `bin/atoms promote` | atom-suggest, designer | 要件化フェーズ（atoms ↔ plan/*.md の橋渡し）|
+| `.claude/outputs.csv` | `bin/atoms complete` | atom-suggest | 完了履歴（成果物 path + outcome + metric）|
 | `plan/requirements.md` | discovery-council, deep-interview | designer, critic, quality-gate | 要件定義（FR-X 形式）|
 | `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
 | `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（rm しない）|
@@ -45,7 +48,8 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（ユーザープロファイル・フィードバック・プロジェクト知見）|
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm (次 round) | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.log` | skill-usage-log.sh hook | retro, evolve | スキル使用履歴 |
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh hook | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill）|
+| `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト（会話履歴）に依存しない。別スキル/別セッション/別マシンから再開できる状態を必ずファイルに書く。
 
@@ -158,6 +162,9 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | 新機能・設計判断が必要な変更 | `/sisyphus` で要件→設計→タスク分解→実装 |
 | 最適化・リファクタリング・試行錯誤 | `/experiment` で実験駆動ループ（試す→測る→保持 or revert） |
 | 完了を宣言する前 | `/verification` で証拠確認（テスト実行、動作確認） |
+| 次に何をやるか迷う・atom が溜まってきた・放置案件が気になる・skill 使用統計を見たい | `/atom-suggest` で atoms/pipeline/outputs/skill-usage/skill-duration を統合分析（backlog 俯瞰 + skill ヘルス）|
+| 思いついたアイデア・構想を保存したい | `bin/atoms add "<source>" "<内容>" "<次アクション>"` で `.claude/atoms.csv` に 1 行追記。kawai 氏型の analytics ループの起点 |
+| ドキュメントの数値（agents/skills 数 / version）が一貫してるか確認 | `bin/check-consistency`（CLAUDE.md / README / plugin.json / marketplace.json を横断検証） |
 | 長くなって区切りたい・新セッションに引き継ぎたい・**別マシン(EC2)に渡したい** | `/handoff` で journal.md に Recap + Next Actions を追記。同一マシンは `/recap` 併用、別マシンは VCS 同期で journal.md の最新エントリから復元（ホスト識別子 `[hostname]` 付き） |
 | permission prompts が頻繁に出る・allowlist を育てたい | `/less-permission-prompts`（built-in）で直近 transcripts から read-only bash/MCP の allowlist を提案させ `.claude/settings.json` に追加 |
 | PR レビューが欲しい | `/ultrareview <PR#>`（built-in, クラウド並列多エージェント）。ローカル＋静的解析込みなら `/quality-gate`（o-m-cc）|

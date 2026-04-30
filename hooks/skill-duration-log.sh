@@ -1,7 +1,7 @@
 #!/bin/bash
 # PostToolUse: Skill ツール完了時に実行時間を記録
 # Claude Code 2.1.119+ が PostToolUse hook input に duration_ms を含める
-# ${CLAUDE_PLUGIN_DATA}/skill-duration.log に追記
+# ${CLAUDE_PLUGIN_DATA}/skill-duration.csv に追記（header: timestamp,skill,duration_ms）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -20,11 +20,14 @@ fi
 # duration_ms を取得（2.1.119 未満の環境では存在しない → 0 扱い）
 DURATION_MS=$(echo "$HOOK_INPUT" | jq -r '.duration_ms // 0' 2>/dev/null || echo "0")
 
-# ログディレクトリ作成
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 
-# 追記（タイムスタンプ TAB スキル名 TAB duration_ms）
-printf '%s\t%s\t%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$SKILL_NAME" "$DURATION_MS" \
-  >> "${CLAUDE_PLUGIN_DATA}/skill-duration.log"
+CSV="${CLAUDE_PLUGIN_DATA}/skill-duration.csv"
+if [[ ! -f "$CSV" ]]; then
+  echo "timestamp,skill,duration_ms" > "$CSV"
+fi
+
+# 追記（CSV: timestamp,skill,duration_ms）
+printf '%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$SKILL_NAME" "$DURATION_MS" >> "$CSV"
 
 exit 0

@@ -126,12 +126,37 @@ TeamCreate:
 **重要**: 3つの teammate を同時に spawn してレビュー時間を短縮。
 SendMessage で互いの発見を共有・議論し、相互検証する。
 
-### Step 4: 結果の集約
+### Step 4: 結果の集約（JSON 入力 + 降格マトリクス自動適用）
 
-3つの teammate からの報告を集約（→ フォーマットは reference.md 参照）:
+3 つの teammate は `facets/policies/council-output-schema.md` に従う JSON オブジェクトを返す。集約側で機械的に降格・分類する。
 
-- `all("Critical なし")` → 品質ゲート通過
-- `any("Critical あり")` → 修正必須。Step 5 へ
+#### 手順
+
+1. 各 reviewer の JSON を取得（SendMessage の戻り値、または出力ファイル）
+2. JSON をパース。schema_version が `"1"` であることを確認
+3. `findings` 配列の各要素に対して降格マトリクスを適用:
+
+| confidence | severity | 分類 |
+|---|---|---|
+| 90+ | critical / high | 🔴 Critical |
+| 80-89 | high / medium | 🟡 Warning |
+| 60-79 | medium / low | ℹ️ Note |
+| < 60 | - | 📦 Archive |
+
+4. バケット別に集計し、reference.md の集約テンプレートに沿ってレポートを生成
+
+#### 判定
+
+- `len(🔴 Critical) == 0` → 品質ゲート通過
+- `len(🔴 Critical) > 0` → 修正必須。Step 5 へ
+- 🟡 Warning / ℹ️ Note / 📦 Archive は通過判定の対象外（レポートには記載）
+
+#### JSON パース失敗時のフォールバック
+
+- reviewer が schema 違反の出力を返した場合は、JSON パースを再実行依頼（最大 1 回）。それでも失敗なら markdown レポートとして処理し、`[NOTE] schema 違反: <reviewer>` を集約レポートに記録
+- 集約は他 reviewer 分のみ進める（1 つの reviewer 失敗で全体停止しない）
+
+→ 集約擬似コード・レポートテンプレートは reference.md 参照
 
 ### Step 4.5: チーム解散
 
@@ -206,6 +231,7 @@ lint
 - **diff が大きすぎて reviewer がコンテキスト溢れ**: 変更が数千行ある場合、reviewer に渡す diff を要約するか、ファイル単位で分割してレビューする
 - **静的解析ツールが未インストールで失敗**: `ruff`, `shellcheck`, `tsc` 等が PATH にない場合がある。`compgen -G` のファイル検出だけでなく、コマンドの存在確認も行う
 - **前回の TeamCreate の残骸でエラー**: Step 2 で既存チームの TeamDelete を先に実行する。前セッションのチームが残っているとチーム名が衝突する
+- **agent 側に閾値カットを書かない（4.7 リテラル解釈トラップ）**: `"Confidence 80+ のみ報告"` のような閾値指示を agent に書くと、Opus 4.7 は文字通り守ってバグを発見しても silent drop する。agent は coverage-first（全件 + confidence/severity 付与）、フィルタは Step 4 の集約側で行う
 
 <!-- AUTO-GOTCHAS -->
 

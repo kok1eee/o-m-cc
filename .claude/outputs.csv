@@ -1,0 +1,6 @@
+id,pipeline_id,completed_at,artifact_type,artifact_path,outcome,metric
+O001,P001,2026-04-30,skill,".claude/atoms.csv,.claude/pipeline.csv,.claude/outputs.csv,bin/atoms,bin/atom-suggest,skills/atom-suggest/SKILL.md",success,CSV 統一: skill-usage/duration を CSV 化、atoms 3 層を新設、bin/atoms ヘルパー実装
+O002,P002,2026-04-30,skill,"skills/atom-suggest/SKILL.md,bin/atom-suggest",success,6 カテゴリで初回 16 件の改善候補を検出
+O003,P003,2026-04-30,hook,~/dotfiles claude/.claude/hooks/,success,feat(claude-hooks) として split commit、main 上に積み込み完了。push は別途
+O004,P004,2026-04-30,data,"bin/check-consistency,CLAUDE.md,README.md,.claude-plugin/plugin.json,.claude-plugin/marketplace.json",success,実装 + 初回検出 6 件の数値乖離を修正、テスト用 dummy repo で exit 1 検証 OK
+O005,P005,2026-04-30,doc,"hooks/session-resume.sh,CLAUDE.md",verified-no-change,session-resume.sh コメント L4 で既に役割分担明示。CLAUDE.md L165 でワークフロー全体も文書化済み。重複なし、補完関係（軽量 statusline vs LLM 要約）。コード変更不要。

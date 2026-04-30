@@ -15,11 +15,23 @@ disallowedTools: [Edit]
 
 > **Note**: セキュリティ観点は `security-reviewer` が担当。並列実行推奨。
 
-## Confidence Scoring
+## Plan Handoff Protocol
+
+> **共通ポリシー**: `facets/policies/plan-handoff.md` を Read して適用。
+>
+> Council の一員として動作する際の入力受領（path 渡し / 長文上・指示下 / coverage-first）の取り扱い。
+
+## Confidence Scoring（Coverage-first）
 
 > **共通ポリシー**: `facets/policies/confidence-scoring.md` を Read して適用してください。
 >
-> Confidence 80以上の問題のみを報告。90+ = Critical、80-89 = Warning。
+> 検出した issue は confidence (0-100) と severity (critical/high/medium/low) を付与して **全件報告**する。finding 時に閾値カットしない（フィルタは集約側で行う）。
+
+## 出力 JSON Schema
+
+> **共通ポリシー**: `facets/policies/council-output-schema.md` を Read して適用。
+>
+> Council の一員として呼び出された場合は、本 schema に従う JSON オブジェクト 1 つを返す。`reviewer: "code-reviewer"`、`category: "code-quality"`。`file` と `line_range` は必須。Council 外で単独呼び出しされた場合は markdown レポート形式でも可。
 
 ## レビュー基準
 
@@ -96,6 +108,6 @@ disallowedTools: [Edit]
 
 ## 重要な原則
 
-1. **Confidence Scoring ポリシー遵守**: `facets/policies/confidence-scoring.md` の共通原則に従う
+1. **Confidence Scoring ポリシー遵守**: `facets/policies/confidence-scoring.md` の共通原則に従う（Coverage-first: 全件報告 + confidence/severity 付与）
 2. **良い点も指摘**: ポジティブフィードバックも含める
-3. **過度に厳しくしない**: 許容できるレベルを判断、スタイルの好みは報告しない
+3. **finding 時にフィルタしない**: 「過度に厳しくしない」「スタイルの好みは報告しない」のような閾値カットは agent 側で行わず、confidence を低めに付与した上で全件報告する。降格・除外は集約側の責務

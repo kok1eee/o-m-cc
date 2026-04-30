@@ -1,6 +1,6 @@
 #!/bin/bash
 # PreToolUse: Skill ツールの使用をログ
-# ${CLAUDE_PLUGIN_DATA}/skill-usage.log に追記
+# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記（header: timestamp,skill）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -16,10 +16,15 @@ if [[ -z "$SKILL_NAME" ]]; then
   exit 0
 fi
 
-# ログディレクトリ作成
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 
-# 追記（タイムスタンプ + スキル名）
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ${SKILL_NAME}" >> "${CLAUDE_PLUGIN_DATA}/skill-usage.log"
+CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
+# header を初回だけ書く
+if [[ ! -f "$CSV" ]]; then
+  echo "timestamp,skill" > "$CSV"
+fi
+
+# 追記（CSV: timestamp,skill）
+printf '%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SKILL_NAME}" >> "$CSV"
 
 exit 0

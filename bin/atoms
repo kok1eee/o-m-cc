@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+"""atoms — atoms.csv / pipeline.csv / outputs.csv 操作ヘルパー.
+
+Usage:
+    atoms list [status]                       一覧表示（status: atom|pipeline|output|archive|all）
+    atoms add <source> <content> [next]       atoms に追加（id 自動採番）
+    atoms promote <atom_id> <plan_path>       atom → pipeline に昇格
+    atoms complete <pipeline_id> <artifact_path> [outcome] [metric]
+                                              pipeline → outputs に完了登録
+    atoms archive <atom_id> [reason]          却下/陳腐化
+    atoms show <id>                           ID 詳細表示
+    atoms stats                               各 csv の件数集計
+"""
+
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ATOMS_HEADER = ["id", "created_at", "source", "content", "status", "next"]
+PIPELINE_HEADER = ["id", "atom_id", "promoted_at", "plan_path", "status", "owner", "target_date"]
+OUTPUTS_HEADER = ["id", "pipeline_id", "completed_at", "artifact_type", "artifact_path", "outcome", "metric"]
+
+
+def detect_root() -> Path:
+    for cmd, args in [("jj", ["root"]), ("git", ["rev-parse", "--show-toplevel"])]:
+        try:
+            r = subprocess.run([cmd, *args], capture_output=True, text=True, check=True)
+            return Path(r.stdout.strip())
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            continue
+    return Path.cwd()
+
+
+ROOT = detect_root()
+ATOMS = ROOT / ".claude" / "atoms.csv"
+PIPELINE = ROOT / ".claude" / "pipeline.csv"
+OUTPUTS = ROOT / ".claude" / "outputs.csv"
+
+
+def ensure_files() -> None:
+    (ROOT / ".claude").mkdir(parents=True, exist_ok=True)
+    for path, header in [(ATOMS, ATOMS_HEADER), (PIPELINE, PIPELINE_HEADER), (OUTPUTS, OUTPUTS_HEADER)]:
+        if not path.exists():
+            with path.open("w", newline="", encoding="utf-8") as f:
+                csv.writer(f).writerow(header)
+
+
+def read_rows(path: Path) -> tuple[list[str], list[dict[str, str]]]:
+    with path.open(newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        return list(reader.fieldnames or []), list(reader)
+
+
+def write_rows(path: Path, header: list[str], rows: list[dict[str, str]]) -> None:
+    with path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=header)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def append_row(path: Path, header: list[str], row: dict[str, str]) -> None:
+    with path.open("a", newline="", encoding="utf-8") as f:
+        csv.DictWriter(f, fieldnames=header).writerow(row)
+
+
+def next_id(path: Path, prefix: str) -> str:
+    if not path.exists():
+        return f"{prefix}001"
+    _, rows = read_rows(path)
+    nums = [int(re.sub(r"^\D+", "", r["id"]) or 0) for r in rows if r.get("id")]
+    return f"{prefix}{max(nums, default=0) + 1:03d}"
+
+
+def today() -> str:
+    return dt.datetime.now(dt.UTC).strftime("%Y-%m-%d")
+
+
+def render_table(rows: list[dict[str, str]], header: list[str]) -> str:
+    if not rows:
+        return "(empty)"
+    widths = {col: max(len(col), max((len(r.get(col, "") or "") for r in rows), default=0)) for col in header}
+    lines = [" | ".join(col.ljust(widths[col]) for col in header)]
+    lines.append("-+-".join("-" * widths[col] for col in header))
+    for r in rows:
+        lines.append(" | ".join((r.get(col, "") or "").ljust(widths[col]) for col in header))
+    return "\n".join(lines)
+
+
+def cmd_list(args: list[str]) -> None:
+    ensure_files()
+    status_filter = args[0] if args else "all"
+    for path, header in [(ATOMS, ATOMS_HEADER), (PIPELINE, PIPELINE_HEADER), (OUTPUTS, OUTPUTS_HEADER)]:
+        _, rows = read_rows(path)
+        if status_filter != "all" and "status" in header:
+            rows = [r for r in rows if r.get("status") == status_filter]
+        print(f"\n=== {path.name} ({len(rows)}) ===")
+        print(render_table(rows, header))
+
+
+def cmd_add(args: list[str]) -> None:
+    ensure_files()
+    if len(args) < 2:
+        sys.exit("Usage: atoms add <source> <content> [next]")
+    source, content = args[0], args[1]
+    next_val = args[2] if len(args) >= 3 else ""
+    new_id = next_id(ATOMS, "A")
+    append_row(ATOMS, ATOMS_HEADER, {
+        "id": new_id, "created_at": today(), "source": source,
+        "content": content, "status": "atom", "next": next_val,
+    })
+    print(f"added: {new_id}")
+
+
+def cmd_promote(args: list[str]) -> None:
+    ensure_files()
+    if len(args) < 2:
+        sys.exit("Usage: atoms promote <atom_id> <plan_path>")
+    atom_id, plan_path = args[0], args[1]
+    pid = next_id(PIPELINE, "P")
+    append_row(PIPELINE, PIPELINE_HEADER, {
+        "id": pid, "atom_id": atom_id, "promoted_at": today(), "plan_path": plan_path,
+        "status": "planning", "owner": "self", "target_date": "",
+    })
+    _, atoms = read_rows(ATOMS)
+    for r in atoms:
+        if r["id"] == atom_id:
+            r["status"] = "pipeline"
+    write_rows(ATOMS, ATOMS_HEADER, atoms)
+    print(f"promoted: {atom_id} → {pid}")
+
+
+def infer_artifact_type(path: str) -> str:
+    if "SKILL.md" in path:
+        return "skill"
+    if "/hooks/" in path:
+        return "hook"
+    suffix = Path(path).suffix
+    return {
+        ".md": "doc", ".txt": "doc",
+        ".sh": "code", ".py": "code", ".js": "code", ".ts": "code", ".go": "code", ".rs": "code",
+        ".csv": "data", ".json": "data", ".yaml": "data", ".yml": "data",
+    }.get(suffix, "other")
+
+
+def cmd_complete(args: list[str]) -> None:
+    ensure_files()
+    if len(args) < 2:
+        sys.exit("Usage: atoms complete <pipeline_id> <artifact_path> [outcome] [metric]")
+    pipe_id, artifact_path = args[0], args[1]
+    outcome = args[2] if len(args) >= 3 else "success"
+    metric = args[3] if len(args) >= 4 else ""
+    oid = next_id(OUTPUTS, "O")
+    append_row(OUTPUTS, OUTPUTS_HEADER, {
+        "id": oid, "pipeline_id": pipe_id, "completed_at": today(),
+        "artifact_type": infer_artifact_type(artifact_path), "artifact_path": artifact_path,
+        "outcome": outcome, "metric": metric,
+    })
+    _, pipe_rows = read_rows(PIPELINE)
+    atom_id = ""
+    for r in pipe_rows:
+        if r["id"] == pipe_id:
+            r["status"] = "done"
+            atom_id = r["atom_id"]
+    write_rows(PIPELINE, PIPELINE_HEADER, pipe_rows)
+    if atom_id:
+        _, atoms = read_rows(ATOMS)
+        for r in atoms:
+            if r["id"] == atom_id:
+                r["status"] = "output"
+        write_rows(ATOMS, ATOMS_HEADER, atoms)
+    print(f"completed: {pipe_id} → {oid}")
+
+
+def cmd_archive(args: list[str]) -> None:
+    ensure_files()
+    if not args:
+        sys.exit("Usage: atoms archive <atom_id> [reason]")
+    atom_id = args[0]
+    reason = args[1] if len(args) >= 2 else ""
+    _, atoms = read_rows(ATOMS)
+    for r in atoms:
+        if r["id"] == atom_id:
+            r["status"] = "archive"
+            if reason:
+                r["next"] = reason
+    write_rows(ATOMS, ATOMS_HEADER, atoms)
+    print(f"archived: {atom_id}")
+
+
+def cmd_show(args: list[str]) -> None:
+    ensure_files()
+    if not args:
+        sys.exit("Usage: atoms show <id>")
+    target_id = args[0]
+    found = False
+    for path, header in [(ATOMS, ATOMS_HEADER), (PIPELINE, PIPELINE_HEADER), (OUTPUTS, OUTPUTS_HEADER)]:
+        _, rows = read_rows(path)
+        matches = [r for r in rows if r["id"] == target_id]
+        if matches:
+            found = True
+            print(f"\n=== {path.name} ===")
+            for r in matches:
+                for col in header:
+                    print(f"  {col}: {r.get(col, '')}")
+    if not found:
+        sys.exit(f"not found: {target_id}")
+
+
+def cmd_stats(_args: list[str]) -> None:
+    ensure_files()
+    for path, header in [(ATOMS, ATOMS_HEADER), (PIPELINE, PIPELINE_HEADER), (OUTPUTS, OUTPUTS_HEADER)]:
+        _, rows = read_rows(path)
+        print(f"{path.name:15} : {len(rows)} entries")
+        if "status" in header:
+            counts: dict[str, int] = {}
+            for r in rows:
+                counts[r.get("status", "")] = counts.get(r.get("status", ""), 0) + 1
+            for status, n in sorted(counts.items()):
+                print(f"  {status:10} {n}")
+
+
+COMMANDS = {
+    "list": cmd_list, "add": cmd_add, "promote": cmd_promote, "complete": cmd_complete,
+    "archive": cmd_archive, "show": cmd_show, "stats": cmd_stats,
+}
+
+
+def main() -> None:
+    if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+        print(__doc__)
+        return
+    cmd = sys.argv[1]
+    if cmd not in COMMANDS:
+        sys.exit(f"unknown command: {cmd}")
+    COMMANDS[cmd](sys.argv[2:])
+
+
+if __name__ == "__main__":
+    main()

@@ -1,4 +1,4 @@
-# o-m-cc v0.52.0
+# o-m-cc v0.53.0
 
 [English](README_en.md)
 
@@ -66,7 +66,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Skills
 
-合計 15 スキル（セットアップ 1 + 計画 6 + 検証 2 + 実験・学習 3 + 運用 3）。
+合計 15 スキル（セットアップ 1 + 計画 6 + 検証 2 + 実験・学習 2 + 運用 4）。
 
 ### セットアップ
 
@@ -101,7 +101,6 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
 | `/o-m-cc:experiment <goal>` | autoresearch 方式の反復改善ループ（試す→測る→保持 or revert） | - | 「最適化して」「試行錯誤して」で発動 |
-| `/o-m-cc:retro` | スキル使用状況の振り返り・分析 | - | 「振り返り」「棚卸し」で発動 |
 | `/o-m-cc:evolve` | スキルの自己進化（auto-memory から学びを抽出し各スキルの Gotchas に反映） | - | PreCompact hook が CTA、手動でも呼び出し可 |
 
 ### 運用
@@ -111,6 +110,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | `/o-m-cc:handoff` | **EC2 など別マシンへの引き継ぎの中核**。Recap（LLM 要約）+ Next Actions を `.claude/journal.md`（VCS 共有）に追記。built-in `/recap` はローカル端末固有で補えない跨マシン引き継ぎの役割を担う。同一マシンのセッション区切りにも使える | - | 「EC2 に引き継ぎ」「別マシンに渡したい」「handoff」「引き継ぎ」で発動 |
 | `/o-m-cc:ui-polish <target>` | 既存画面の UI polish / 複数画面の redesign 統一 / a11y 対応 / CSS 一貫性修正を軽量ループで実装（Council なし、tsc/lint のみゲート）。新規デザイン生成は外部プラグイン `frontend-design` | - | 「UI polish」「画面統一」「a11y 対応」「CSS 統一」で発動 |
 | `/o-m-cc:editorial-swarm <article>` | 4 エージェント並列による記事推敲 Council（anti-ai-slop / fact-checker / narrative-critic / reader-advocate）。severity 付き findings → low 自動 apply、medium/high は一括承認 → 最大 3 ラウンドで収束 | fork | 「記事レビュー」「editorial swarm」「編集会議」「記事推敲」「記事添削」で発動 |
+| `/o-m-cc:atom-suggest` | atoms.csv / pipeline.csv / outputs.csv / skill-usage.csv / skill-duration.csv / context.md を統合分析。Backlog issues（stale / promote-ready / stuck / orphan）+ Skill health（top / duration-stats / unused）+ Activity pulse（直近 7 日）を 1 レポートで提示 | - | 「次に何やる？」「atom 整理」「放置案件」「振り返り」「retro」「skill 使用統計」「unused skill」「atom-suggest」で発動 |
 
 > **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
@@ -184,6 +184,9 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 
 | 場所 | Writer | Reader | 用途 |
 |---|---|---|---|
+| `.claude/atoms.csv` | `bin/atoms add` / 手動 | atom-suggest | アイデア・構想バックログ（kawai 氏 atoms 相当）|
+| `.claude/pipeline.csv` | `bin/atoms promote` | atom-suggest, designer | 要件化フェーズ（atoms ↔ plan/*.md の橋渡し）|
+| `.claude/outputs.csv` | `bin/atoms complete` | atom-suggest | 完了履歴（成果物 path + outcome + metric）|
 | `plan/requirements.md` | discovery-council, deep-interview | designer, critic, quality-gate | 要件定義（FR-X 形式） |
 | `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
 | `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（v0.45.0 以降、rm しない） |
@@ -193,7 +196,8 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（プロファイル・フィードバック・プロジェクト知見） |
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm（次 round） | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.log` | skill-usage-log.sh hook | retro, evolve | スキル使用履歴 |
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh hook | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill）|
+| `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト再構築コストをゼロにする。A スキルの出力を B スキルが読むとき、A の文脈を知る必要はなく、成果物ファイルだけで完結する。
 
@@ -266,7 +270,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ## Agents
 
-合計 16 エージェント（計画 5 + 分析 3 + 品質 2 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。
+合計 15 エージェント（計画 5 + 分析 2 + 品質 2 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。
 
 ### Planning Agents（計画系）
 
@@ -390,11 +394,11 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | - | `memory-digest.sh` | サブエージェント Memory ダイジェスト |
 | SessionStart | - | `plugin-data-init.sh` | `CLAUDE_PLUGIN_DATA` 初期化 |
 | SessionStart | - | `dotfiles-pull.sh` | dotfiles repo を24h throttle で自動 pull（bg 実行） |
-| PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/retro で集計可能） |
+| PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/atom-suggest で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
-| TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/retro で集計可能） |
+| TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/atom-suggest で集計可能） |
 | TaskCompleted | - | `task-completed.sh` | タスク完了通知・依存タスクアンブロック |
 | PermissionDenied | - | `permission-denied.sh` | 拒否ログ + 代替提案 |
 
@@ -454,7 +458,7 @@ o-m-cc/
 │       ├── research-depth.md          # 調査深度レベル・回答フォーマット
 │       ├── security-checklist.md      # OWASP Top 10・Rationalizations・Insecure Defaults
 │       └── task-quality.md            # タスクテンプレート・見積もり基準・品質基準
-├── agents/                    # 10 エージェント定義
+├── agents/                    # 15 エージェント定義 + capabilities (meta)
 │   ├── capabilities.md        # エージェント能力サマリー + キーワード
 │   ├── analyst.md             # 要件定義
 │   ├── scout.md               # ギャップ分析（Prometheus式）
@@ -467,10 +471,14 @@ o-m-cc/
 │   └── security-reviewer.md   # セキュリティレビュー
 ├── bin/                       # CLI ユーティリティ（Bash tool から直接実行可能）
 │   ├── validate-plan          # plan ドキュメントの形式検証
-│   └── lint                   # 言語別 lint 一括実行
-├── skills/                    # 14 スキル定義
+│   ├── lint                   # 言語別 lint 一括実行
+│   ├── check-consistency      # agents/skills 数 + version 表記の一貫性検証
+│   ├── atoms                  # atoms.csv / pipeline.csv / outputs.csv 操作（add/promote/complete/archive）
+│   └── atom-suggest           # backlog 分析と次アクション提案（macro 視点）
+├── skills/                    # 15 スキル定義
 │   ├── install/SKILL.md
 │   ├── deep-interview/SKILL.md
+│   ├── feature-flow/SKILL.md
 │   ├── sisyphus/SKILL.md
 │   ├── discovery-council/SKILL.md
 │   ├── design/SKILL.md
@@ -478,9 +486,11 @@ o-m-cc/
 │   ├── quality-gate/SKILL.md
 │   ├── verification/SKILL.md
 │   ├── experiment/SKILL.md
-│   ├── retro/SKILL.md
 │   ├── evolve/SKILL.md
-│   └── handoff/SKILL.md
+│   ├── handoff/SKILL.md
+│   ├── ui-polish/SKILL.md
+│   ├── editorial-swarm/SKILL.md
+│   └── atom-suggest/SKILL.md
 ├── hooks/                     # 11 フック + hooks.json
 │   ├── hooks.json             # フックイベントマッピング
 │   ├── lib/                   # 共通ライブラリ
@@ -614,6 +624,27 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.53.0
+
+- **kawai 氏型 analytics ループ導入: atoms/pipeline/outputs CSV 3 層**
+  - `.claude/atoms.csv`（アイデア backlog）/ `.claude/pipeline.csv`（要件化）/ `.claude/outputs.csv`（完了履歴 + outcome + metric）の 3 層を新設
+  - kawai 氏のマーケ部門事例（@kawai_design）を OSS dev 文脈に翻案。データの永続化と「次にやるべき」の判断支援を仕組み化
+- **`/o-m-cc:atom-suggest` 新規 skill 追加（`/o-m-cc:retro` を吸収して合計 15 スキル）**
+  - Backlog issues: stale-atoms（30 日以上放置）/ promote-ready（next が具体的）/ stuck-pipeline（14 日進捗なし）/ orphan-next（context.md にあるが atoms に未登録）
+  - Skill health: top-skills / duration-stats（count / avg_ms / max_ms / sum_ms）/ unused-skills（累計 ≤ 1 回）
+  - Activity pulse: 直近 7 日の atoms 追加と top skills
+  - 旧 `/o-m-cc:retro` の機能は本 skill に統合（atoms 体系があれば retro と分ける必要がなく、1 レポートで backlog + skill ヘルスを俯瞰できる）
+- **`bin/` ヘルパー 3 種追加**
+  - `bin/atoms`: atoms.csv / pipeline.csv / outputs.csv の add / promote / complete / archive / list / show / stats（Python + csv module で正しい quoting）
+  - `bin/atom-suggest`: 上記 4 カテゴリの分析エンジン
+  - `bin/check-consistency`: agents/skills 数 + version 表記の一貫性検証（CLAUDE.md / README / plugin.json / marketplace.json 横断）
+- **既存ログを CSV に統一**
+  - `skill-usage.log` → `skill-usage.csv`（header: timestamp,skill）
+  - `skill-duration.log` → `skill-duration.csv`（header: timestamp,skill,duration_ms）
+  - 旧 .log は .log.bak で保持。reader（retro / evolve / session-resume / quality-gate-cta）も CSV 対応
+- **ドキュメント数値乖離 6 件を fix（`bin/check-consistency` の初回実行で検出）**
+  - CLAUDE.md / README.md / plugin.json / marketplace.json の agents/skills 数を実数（15 specialized + 16 skills）に揃える
 
 ### 0.52.0
 

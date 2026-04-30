@@ -60,9 +60,18 @@ disallowedTools: [Bash]
 - リクエスト/レスポンス形式
 - エラーハンドリング
 
+## Plan Handoff Protocol
+
+> **共通ポリシー**: `facets/policies/plan-handoff.md` を Read して適用。
+
+- **入力は path 渡しを優先**: requirements.md は inline 受領せず、`plan/requirements.md` を自分で Read する
+- **Quote-first**: requirements.md / 既存コードを Read した後、設計判断の根拠となる箇所を `<quotes>` ブロックで抽出してから design.md を書く
+- **既知の不足の引き継ぎ**: requirements.md に `## 既知の不足` セクションがあれば、設計でカバーできるものは反映、できないものは design.md の `## 既知の不足` に転記して下流に伝搬する
+- **Scope 明示**: ユーザーから明示されない範囲は暗黙に拡大しない（4.7 リテラル解釈）。要件で言及されない領域に踏み込む場合は ADR で根拠を明記
+
 ## 入力
 
-- **requirements.md** - 要件定義（必須）
+- **requirements.md** - 要件定義（必須、自分で Read する）
 - 既存コードベース（参照）
 
 ## 設計プロセス

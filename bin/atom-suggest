@@ -1,0 +1,342 @@
+#!/usr/bin/env python3
+"""atom-suggest — analytics 駆動の提案エンジン.
+
+atoms.csv / pipeline.csv / outputs.csv / skill-usage.csv / skill-duration.csv /
+context.md を統合分析し、backlog 俯瞰と skill ヘルスを 1 レポートで提示する。
+
+セクション:
+    [Backlog issues]
+        - stale-atoms       : 30 日以上 atom 状態のまま放置
+        - promote-ready     : next が具体的な atom（=要件化準備完了）
+        - stuck-pipeline    : 14 日以上 implementing / planning のまま
+        - orphan-next       : context.md の Next 欄にあるが atoms に無い項目
+    [Skill health]
+        - top-skills        : 累計使用回数ランキング（top 10）
+        - duration-stats    : 実行時間統計（count / avg_ms / max_ms / sum_ms）
+        - unused-skills     : 累計使用 ≤ 1 回（description 改善 / 削除候補）
+        - gotcha-ranking    : AUTO-GOTCHAS 累計（直近 30 日 / 累計、累計多 = atom 化候補）
+    [Activity pulse]
+        - recent-atoms      : 直近 7 日に追加された atom
+        - recent-skills     : 直近 7 日のトップ skill
+
+Usage:
+    atom-suggest                      全セクション
+    atom-suggest --json               JSON 出力
+"""
+
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+STALE_DAYS = 30
+STUCK_DAYS = 14
+RECENT_DAYS = 7
+RECENT_GOTCHA_DAYS = 30  # 直近 N 日の AUTO-GOTCHAS 追加を監視
+UNUSED_THRESHOLD = 1  # 累計使用 1 回以下は unused 候補
+TOP_N = 10            # ランキング表示件数
+
+
+def detect_root() -> Path:
+    for cmd, args in [("jj", ["root"]), ("git", ["rev-parse", "--show-toplevel"])]:
+        try:
+            r = subprocess.run([cmd, *args], capture_output=True, text=True, check=True)
+            return Path(r.stdout.strip())
+        except (FileNotFoundError, subprocess.CalledProcessError):
+            continue
+    return Path.cwd()
+
+
+ROOT = detect_root()
+ATOMS = ROOT / ".claude" / "atoms.csv"
+PIPELINE = ROOT / ".claude" / "pipeline.csv"
+OUTPUTS = ROOT / ".claude" / "outputs.csv"
+CONTEXT = ROOT / ".claude" / "context.md"
+PLUGIN_DATA = os.environ.get("CLAUDE_PLUGIN_DATA", "")
+USAGE_CSV = Path(PLUGIN_DATA) / "skill-usage.csv" if PLUGIN_DATA else None
+DURATION_CSV = Path(PLUGIN_DATA) / "skill-duration.csv" if PLUGIN_DATA else None
+
+
+def read_csv(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
+
+
+def days_ago(iso_date: str) -> int:
+    if not iso_date:
+        return 0
+    try:
+        d = dt.datetime.fromisoformat(iso_date.replace("Z", "+00:00"))
+        if d.tzinfo is None:
+            d = d.replace(tzinfo=dt.UTC)
+        return (dt.datetime.now(dt.UTC) - d).days
+    except ValueError:
+        return 0
+
+
+def find_stale_atoms(atoms: list[dict[str, str]]) -> list[dict]:
+    return [
+        {"id": a["id"], "days": days_ago(a["created_at"]), "content": a["content"], "next": a.get("next", "")}
+        for a in atoms
+        if a.get("status") == "atom" and days_ago(a["created_at"]) >= STALE_DAYS
+    ]
+
+
+def find_promote_ready(atoms: list[dict[str, str]]) -> list[dict]:
+    """next に具体的な action verb が書かれている atom（promotion 候補）"""
+    action_keywords = ["実装", "作る", "追加", "やる", "ためす", "試す", "書く", "create", "implement", "add"]
+    out = []
+    for a in atoms:
+        if a.get("status") != "atom":
+            continue
+        next_val = (a.get("next") or "").lower()
+        if any(k in next_val for k in action_keywords):
+            out.append({"id": a["id"], "next": a["next"], "content": a["content"]})
+    return out
+
+
+def find_stuck_pipeline(pipeline: list[dict[str, str]]) -> list[dict]:
+    return [
+        {"id": p["id"], "atom_id": p["atom_id"], "days": days_ago(p["promoted_at"]),
+         "status": p["status"], "plan_path": p.get("plan_path", "")}
+        for p in pipeline
+        if p.get("status") in ("planning", "implementing", "reviewing")
+        and days_ago(p["promoted_at"]) >= STUCK_DAYS
+    ]
+
+
+def find_top_skills() -> list[tuple[str, int]]:
+    """累計使用回数のランキング（top N）"""
+    if not USAGE_CSV or not USAGE_CSV.exists():
+        return []
+    counts: dict[str, int] = {}
+    for u in read_csv(USAGE_CSV):
+        s = u.get("skill", "")
+        counts[s] = counts.get(s, 0) + 1
+    return sorted(counts.items(), key=lambda x: -x[1])[:TOP_N]
+
+
+def find_duration_stats() -> list[dict]:
+    """skill 別の実行時間統計（count / avg_ms / max_ms / sum_ms）"""
+    if not DURATION_CSV or not DURATION_CSV.exists():
+        return []
+    stats: dict[str, dict] = {}
+    for r in read_csv(DURATION_CSV):
+        d = int(r.get("duration_ms", 0) or 0)
+        if d <= 0:
+            continue
+        s = r.get("skill", "")
+        if s not in stats:
+            stats[s] = {"count": 0, "sum": 0, "max": 0}
+        stats[s]["count"] += 1
+        stats[s]["sum"] += d
+        stats[s]["max"] = max(stats[s]["max"], d)
+    out = []
+    for s, v in stats.items():
+        out.append({
+            "skill": s,
+            "count": v["count"],
+            "avg_ms": v["sum"] // v["count"],
+            "max_ms": v["max"],
+            "sum_ms": v["sum"],
+        })
+    return sorted(out, key=lambda x: -x["sum_ms"])[:TOP_N]
+
+
+def find_unused_skills() -> list[dict]:
+    """登録されている skill のうち、累計使用 ≤ 1 回のもの（description 改善 / 削除候補）"""
+    if not USAGE_CSV or not USAGE_CSV.exists():
+        return []
+    counts: dict[str, int] = {}
+    for u in read_csv(USAGE_CSV):
+        s = u.get("skill", "")
+        counts[s] = counts.get(s, 0) + 1
+    skills_dir = ROOT / "skills"
+    if not skills_dir.exists():
+        return []
+    out = []
+    for skill_md in skills_dir.glob("*/SKILL.md"):
+        name = skill_md.parent.name
+        full = f"o-m-cc:{name}"
+        c = counts.get(full, 0) + counts.get(name, 0)
+        if c <= UNUSED_THRESHOLD:
+            out.append({"skill": name, "count": c})
+    return sorted(out, key=lambda x: x["count"])
+
+
+def find_gotcha_ranking() -> list[dict]:
+    """各 SKILL.md の AUTO-GOTCHAS を集計（直近 N 日 / 累計）。
+
+    累計が多い skill は改善余地あり = atom 化候補。
+    `- **[YYYY-MM-DD]` 形式の日付プレフィックスを recent 判定に使う。
+    """
+    skills_dir = ROOT / "skills"
+    if not skills_dir.exists():
+        return []
+    cutoff = dt.datetime.now(dt.UTC) - dt.timedelta(days=RECENT_GOTCHA_DAYS)
+    results = []
+    for skill_md in skills_dir.glob("*/SKILL.md"):
+        name = skill_md.parent.name
+        try:
+            text = skill_md.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if "<!-- AUTO-GOTCHAS -->" not in text:
+            continue
+        auto_section = text.split("<!-- AUTO-GOTCHAS -->", 1)[1]
+        bullet_lines = [ln for ln in auto_section.splitlines() if ln.startswith("- ")]
+        total = len(bullet_lines)
+        if total == 0:
+            continue
+        recent = 0
+        for line in bullet_lines:
+            m = re.search(r"\[(\d{4}-\d{2}-\d{2})\]", line)
+            if not m:
+                continue
+            try:
+                d = dt.datetime.fromisoformat(m.group(1)).replace(tzinfo=dt.UTC)
+                if d >= cutoff:
+                    recent += 1
+            except ValueError:
+                pass
+        results.append({"skill": name, "recent": recent, "total": total})
+    return sorted(results, key=lambda x: (-x["recent"], -x["total"]))[:TOP_N]
+
+
+def find_orphan_next() -> list[str]:
+    """context.md の Next 欄にある項目のうち、atoms にも pipeline にも無いもの"""
+    if not CONTEXT.exists():
+        return []
+    text = CONTEXT.read_text(encoding="utf-8")
+    next_section = re.search(r"\*\*Next:\*\*(.*?)(?=\*\*\w+:\*\*|\Z)", text, re.DOTALL)
+    if not next_section:
+        return []
+    items = []
+    for line in next_section.group(1).splitlines():
+        line = line.strip()
+        if line.startswith("- ") and len(line) > 3:
+            items.append(line[2:])
+    if not items:
+        return []
+    atoms = read_csv(ATOMS)
+    pipeline = read_csv(PIPELINE)
+    known_keywords = set()
+    for r in atoms + pipeline:
+        for word in re.findall(r"[\w\-]{3,}", r.get("content", "")):
+            known_keywords.add(word.lower())
+    orphans = []
+    for item in items:
+        item_words = re.findall(r"[\w\-]{3,}", item.lower())
+        # 1 つも known_keywords にマッチしないなら orphan
+        if not any(w in known_keywords for w in item_words):
+            orphans.append(item)
+    return orphans
+
+
+def find_recent_activity(atoms: list[dict[str, str]]) -> dict:
+    recent = [a for a in atoms if days_ago(a["created_at"]) <= RECENT_DAYS]
+    skill_counts: dict[str, int] = {}
+    if USAGE_CSV and USAGE_CSV.exists():
+        usage = read_csv(USAGE_CSV)
+        for u in usage:
+            if days_ago(u.get("timestamp", "")) <= RECENT_DAYS:
+                skill_counts[u["skill"]] = skill_counts.get(u["skill"], 0) + 1
+    return {
+        "atoms": [{"id": a["id"], "days": days_ago(a["created_at"]), "content": a["content"]} for a in recent],
+        "top_skills": sorted(skill_counts.items(), key=lambda x: -x[1])[:5],
+    }
+
+
+def collect_all() -> dict:
+    atoms = read_csv(ATOMS)
+    pipeline = read_csv(PIPELINE)
+    return {
+        "stale_atoms": find_stale_atoms(atoms),
+        "promote_ready": find_promote_ready(atoms),
+        "stuck_pipeline": find_stuck_pipeline(pipeline),
+        "orphan_next": find_orphan_next(),
+        "top_skills": find_top_skills(),
+        "duration_stats": find_duration_stats(),
+        "unused_skills": find_unused_skills(),
+        "gotcha_ranking": find_gotcha_ranking(),
+        "recent_activity": find_recent_activity(atoms),
+    }
+
+
+def print_section(title: str, items: list, formatter) -> None:
+    print(f"\n## {title} ({len(items)})")
+    if not items:
+        print("  (なし)")
+        return
+    for item in items:
+        print(f"  - {formatter(item)}")
+
+
+def main() -> None:
+    if "--json" in sys.argv:
+        print(json.dumps(collect_all(), ensure_ascii=False, indent=2, default=str))
+        return
+
+    if len(sys.argv) >= 2 and sys.argv[1] in ("-h", "--help"):
+        print(__doc__)
+        return
+
+    data = collect_all()
+
+    print(f"# atom-suggest report")
+    print(f"# generated: {dt.datetime.now(dt.UTC).strftime('%Y-%m-%d %H:%M UTC')}")
+    print(f"# thresholds: stale={STALE_DAYS}d, stuck={STUCK_DAYS}d, recent={RECENT_DAYS}d, gotcha={RECENT_GOTCHA_DAYS}d, unused≤{UNUSED_THRESHOLD}")
+
+    print(f"\n# === Backlog issues ===")
+    print_section(f"Stale atoms (>{STALE_DAYS}日放置)", data["stale_atoms"],
+                  lambda x: f"{x['id']} ({x['days']}日): {x['content'][:60]}")
+    print_section("Promote-ready (next が具体的)", data["promote_ready"],
+                  lambda x: f"{x['id']}: next='{x['next'][:50]}' / {x['content'][:50]}")
+    print_section(f"Stuck pipeline (>{STUCK_DAYS}日進捗なし)", data["stuck_pipeline"],
+                  lambda x: f"{x['id']} ({x['days']}日, {x['status']}): atom={x['atom_id']} plan={x['plan_path']}")
+    print_section("Orphan next (context.md にあるが atoms に無い)", data["orphan_next"],
+                  lambda x: x[:80])
+
+    print(f"\n# === Skill health ===")
+    if data["top_skills"]:
+        print(f"\n## Top skills (累計使用回数 top {TOP_N})")
+        for s, c in data["top_skills"]:
+            print(f"  - {s}: {c}回")
+    else:
+        print(f"\n## Top skills (なし)")
+
+    if data["duration_stats"]:
+        print(f"\n## Duration stats (sum_ms 降順 top {TOP_N})")
+        print(f"  {'skill':<30} {'count':>6} {'avg_ms':>8} {'max_ms':>8} {'sum_ms':>8}")
+        for s in data["duration_stats"]:
+            print(f"  {s['skill']:<30} {s['count']:>6} {s['avg_ms']:>8} {s['max_ms']:>8} {s['sum_ms']:>8}")
+    else:
+        print(f"\n## Duration stats (なし、Claude Code 2.1.119+ で記録開始)")
+
+    print_section(f"Unused skills (累計 ≤{UNUSED_THRESHOLD}回)", data["unused_skills"],
+                  lambda x: f"{x['skill']} ({x['count']}回)")
+
+    print_section(f"Gotcha ranking (直近 {RECENT_GOTCHA_DAYS}日 / 累計、累計多 = atom 化候補)",
+                  data["gotcha_ranking"],
+                  lambda x: f"{x['skill']}: 直近 {x['recent']} 件 / 累計 {x['total']} 件")
+
+    print(f"\n# === Activity pulse (直近 {RECENT_DAYS}日) ===")
+    print(f"  recent atoms: {len(data['recent_activity']['atoms'])}")
+    for a in data["recent_activity"]["atoms"]:
+        print(f"    - {a['id']} ({a['days']}日): {a['content'][:60]}")
+    if data["recent_activity"]["top_skills"]:
+        print(f"  recent top skills:")
+        for skill, count in data["recent_activity"]["top_skills"]:
+            print(f"    - {skill}: {count}回")
+
+
+if __name__ == "__main__":
+    main()

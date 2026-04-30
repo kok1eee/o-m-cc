@@ -1,0 +1,7 @@
+id,created_at,source,content,status,next
+A001,2026-03-15,MEMORY/project_consistency_check_idea,bin/check-consistency: CLAUDE.md/README.md/plugin.json の数値・version 乖離を Layer 1 で自動検出,output,次に数値ズレ事故が起きたら実装
+A002,2026-04-30,本セッション(kawai氏記事),analytics CSV 化（skill-usage.log → 集計可能形式へ）,output,本タスクで実装中
+A003,2026-04-30,本セッション,atoms→pipeline→outputs ループの自動化 (/atom-suggest skill),output,本タスクで実装中
+A004,2026-04-17,context.md Next,/recap と session-resume.sh の重複/補完判断,output,実動作確認待ち
+A005,2026-04-30,本セッション,"dotfiles の hook 群（jj-bash-guard, dangerous-cmd-guard 等）を git に commit",output,dotfiles repo で git add hooks/*.sh して commit
+A006,2026-04-30,本セッション,Claude Code v2.1.92+ で 1M context が 400k に capped される regression（#43989）の追跡,atom,Issue に +1 済み・修正リリース監視

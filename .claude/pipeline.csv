@@ -1,0 +1,6 @@
+id,atom_id,promoted_at,plan_path,status,owner,target_date
+P001,A002,2026-04-30,plan/csv-unification.md,done,self,2026-04-30
+P002,A003,2026-04-30,plan/csv-unification.md,done,self,2026-04-30
+P003,A005,2026-04-30,~/dotfiles claude/.claude/hooks/,done,self,
+P004,A001,2026-04-30,bin/check-consistency,done,self,
+P005,A004,2026-04-30,hooks/session-resume.sh,done,self,

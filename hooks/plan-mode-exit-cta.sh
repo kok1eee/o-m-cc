@@ -29,8 +29,10 @@ fi
 
 echo "" >&2
 echo "📋 Plan が作成されました (${PLAN_LINES} 行)。" >&2
+echo "   Plan ファイル: $PLAN_FILE" >&2
 echo "   実装は Skill ツールで /o-m-cc:sisyphus を起動すると、" >&2
 echo "   要件→設計→タスク分解→実装→品質ゲートまで自動で進みます。" >&2
+echo "   sisyphus 起動時に上記 Plan ファイルを Read して引き継ぐこと。" >&2
 echo "" >&2
 
 exit 0
