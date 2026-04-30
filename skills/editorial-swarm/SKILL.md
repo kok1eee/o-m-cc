@@ -54,18 +54,31 @@ TeamCreate:
   description: "Editorial Swarm: 記事の並列レビュー"
 ```
 
-4 つのレビュアーを同時 spawn。各エージェントは **必ず JSON 配列を返す**:
+4 つのレビュアーを同時 spawn。各エージェントは `facets/policies/council-output-schema.md` の **共通 Council JSON schema** に従う JSON オブジェクト 1 つを返す:
 
 ```json
-[
-  {
-    "line_range": "12-15",
-    "severity": "high|medium|low",
-    "issue": "問題の要約",
-    "suggested_fix": "具体的な修正案（diff 風でなくテキスト置換可能な形）"
-  }
-]
+{
+  "reviewer": "anti-ai-slop",
+  "schema_version": "1",
+  "summary": "1-2 文の総評",
+  "findings": [
+    {
+      "id": "F001",
+      "category": "ai-slop",
+      "line_range": "12-15",
+      "issue": "問題の要約",
+      "fix": "具体的な修正案（diff 風でなくテキスト置換可能な形）",
+      "confidence": 85,
+      "severity": "high",
+      "quotes": ["問題箇所の引用 30 文字程度"]
+    }
+  ],
+  "memo": "free-form notes（任意）"
+}
 ```
+
+**reviewer 別の `category` 値**: `ai-slop` / `fact` / `narrative` / `reader-fit`。
+**`file` フィールド**: 記事ファイルが 1 つなので各 finding では省略可（reviewer ごとに `memo` で記事 path を記録）。
 
 ### レビュアー別の prompt テンプレート
 
@@ -98,7 +111,7 @@ severity 基準:
 - medium: 読みづらさはあるが部分的
 - low: 単発の表現ゆれ
 
-出力: 厳密な JSON 配列のみ。前置き・後書き禁止。
+出力: `facets/policies/council-output-schema.md` の JSON schema に従う 1 つの JSON オブジェクト。`reviewer: "anti-ai-slop"`、`category: "ai-slop"`。各 finding には `confidence` (0-100) と `severity` 必須。前置き・後書き・コードフェンス禁止。
 ```
 
 #### reviewer-B: fact-checker
@@ -121,11 +134,11 @@ severity 基準:
 - medium: 出典なし主張 / 古い情報の可能性
 - low: 表記ゆれ（"Claude code" vs "Claude Code" 等）
 
-quote-first: 各 finding には記事本文から問題箇所を quote（30 文字程度）で添えて、どの記述に対する指摘か明示すること。
+quote-first: 各 finding の `quotes` 配列に記事本文から問題箇所を 30 文字程度で抽出。どの記述に対する指摘か明示すること（fact-checker は長文 Read するため必須）。
 
-coverage-first: 検出した issue は severity を付けて全件返す。「low は省略」のような閾値カットは行わない（集約側で扱う）。
+coverage-first: 検出した issue は confidence + severity を付けて全件返す。「low は省略」のような閾値カットは行わない（集約側で扱う）。
 
-出力: 厳密な JSON 配列のみ。
+出力: `facets/policies/council-output-schema.md` の JSON schema に従う 1 つの JSON オブジェクト。`reviewer: "fact-checker"`、`category: "fact"`。各 finding に `confidence` (0-100), `severity`, `quotes` 必須。前置き・後書き・コードフェンス禁止。
 ```
 
 #### reviewer-C: narrative-critic
@@ -147,7 +160,7 @@ severity 基準:
 - medium: 流れが重い・冗長
 - low: 小さな接続詞の置き換えで済む
 
-出力: 厳密な JSON 配列のみ。
+出力: `facets/policies/council-output-schema.md` の JSON schema に従う 1 つの JSON オブジェクト。`reviewer: "narrative-critic"`、`category: "narrative"`。各 finding に `confidence` (0-100) と `severity` 必須。前置き・後書き・コードフェンス禁止。
 ```
 
 #### reviewer-D: reader-advocate
@@ -169,36 +182,47 @@ severity 基準:
 - medium: 理解はできるが不親切
 - low: 親切なら追加したい
 
-出力: 厳密な JSON 配列のみ。
+出力: `facets/policies/council-output-schema.md` の JSON schema に従う 1 つの JSON オブジェクト。`reviewer: "reader-advocate"`、`category: "reader-fit"`。各 finding に `confidence` (0-100) と `severity` 必須。前置き・後書き・コードフェンス禁止。
 ```
 
 ### 並列 spawn
 
-4 エージェントを **1 メッセージ内で同時** spawn。Agent tool の `subagent_type: general-purpose` でよい。各 agent の output は `.editorial/round-N/reviewer-X.json` に保存する。
+4 エージェントを **1 メッセージ内で同時** spawn。Agent tool の `subagent_type: general-purpose` でよい。各 agent の output (Council JSON schema 準拠の 1 オブジェクト) は `.editorial/round-N/reviewer-X.json` に保存する。
 
-## Step 3: Findings 集約
+## Step 3: Findings 集約（Council JSON schema 入力）
 
-各 reviewer の JSON を読み込み、**統合テーブル** を作成:
+各 reviewer の JSON を読み込み、`schema_version == "1"` を確認した上で `findings[]` 配列を flatten し、**統合テーブル** を作成:
 
-| # | reviewer | line | severity | issue | fix |
-|---|----------|------|----------|-------|-----|
-| 1 | anti-ai-slop | 12-15 | high | ... | ... |
+| # | reviewer | category | line | severity | confidence | issue | fix | quotes |
+|---|----------|----------|------|----------|-----------|-------|-----|--------|
+| 1 | anti-ai-slop | ai-slop | 12-15 | high | 88 | ... | ... | ... |
 
-**衝突検出**: 同じ line_range を複数 reviewer が指摘している場合は「conflict」フラグを立てる（自動 apply しない）。
+**衝突検出**: 同じ `line_range` を複数 reviewer が指摘している場合は「conflict」フラグを立てる（自動 apply しない）。
 
-集約結果を `.editorial/round-N/findings.md` に保存する。
+集約結果を `.editorial/round-N/findings.md` に保存する（`good_points` と `memo` も併記）。
 
-## Step 4: Low severity を自動 apply（非競合のみ）
+#### schema 違反時のフォールバック
+
+reviewer が schema 違反の出力を返した場合は、JSON パースを再実行依頼（最大 1 回）。それでも失敗なら **その reviewer のラウンドはスキップ** し、`.editorial/round-N/skipped.md` に `[NOTE] schema 違反: <reviewer>` を記録。他 reviewer 分の findings はそのまま処理する（1 reviewer 失敗で全体停止しない）。
+
+## Step 4: Low severity を自動 apply（confidence 重み付け）
 
 Step 1 で「自動 apply: low + 非競合のみ」が選ばれた場合:
 
-1. severity=low かつ conflict フラグなしの findings を抽出
-2. Edit ツールで順次 apply（line_range の大きいほうから apply して位置ずれを回避）
-3. apply できなかったものは `.editorial/round-N/skipped.md` に記録
+1. `severity == "low"` かつ `conflict` フラグなしの findings を抽出
+2. **`confidence >= 70` のもののみ自動 apply** 対象（confidence 低い low はノイズの可能性が高いので保留）
+3. Edit ツールで順次 apply（`line_range` の大きいほうから apply して位置ずれを回避）
+4. apply できなかったもの・confidence 不足で保留したものは `.editorial/round-N/skipped.md` に記録
 
-## Step 5: Medium/High を AskUserQuestion で一括承認
+## Step 5: Medium/High + 保留 low を AskUserQuestion で一括承認
 
-Medium/High + conflict ありの findings を AskUserQuestion で提示。1 件ずつではなく **一度に最大 20 件を checkboxes で** 提示（API 制約に応じて分割）。
+以下を AskUserQuestion で提示:
+
+- `severity in ("medium", "high")` の findings
+- conflict ありの findings
+- Step 4 で保留された low (confidence < 70)
+
+1 件ずつではなく **一度に最大 20 件を checkboxes で** 提示（API 制約に応じて分割）。各選択肢には `[severity/confidence] reviewer: issue` の形で表示し、ユーザーが優先度判断しやすくする。
 
 ユーザーが承認したものだけ Edit で apply。却下したものは `.editorial/round-N/rejected.md` に理由ごと記録（次ラウンドで重複提案を回避する材料）。
 
@@ -248,6 +272,7 @@ jj diff "$ARTICLE_PATH" > .editorial/round-N/applied.diff 2>/dev/null || \
 - **Zenn の front matter（title / emoji / tags）は触らない**: line 1-10 あたりは reviewer から除外対象と明記する
 - **記事全体書き換えが必要な指摘が出たら収束させない**: editorial-swarm は「推敲」が責務。構造書き換えは手で戻して再度呼ぶ
 - **conflict 処理**: 同一行に複数 reviewer の異なる fix が来たら AskUserQuestion で必ず人間判断。自動マージ禁止
+- **schema 違反 reviewer のスキップ**: Council JSON schema 違反 (旧形式の配列直返し / 前置き混入) は再実行 1 回 → それでも違反ならその reviewer をラウンドからスキップ。1 reviewer 失敗で全体停止しない
 
 ---
 

@@ -1,4 +1,4 @@
-# o-m-cc v0.53.0
+# o-m-cc v0.53.1
 
 [English](README_en.md)
 
@@ -624,6 +624,14 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.53.1
+
+- **editorial-swarm を Council JSON schema 準拠に統一**
+  - 4 reviewer (anti-ai-slop / fact-checker / narrative-critic / reader-advocate) が `facets/policies/council-output-schema.md` 準拠の JSON オブジェクトを返すよう書き換え
+  - `confidence` (0-100) を追加し、Step 4 の自動 apply を「low かつ confidence ≥ 70」に厳格化（ノイズ流入抑制）
+  - Step 5 の AskUserQuestion で `severity / confidence / category` を表示して優先度判断を補助
+  - schema 違反 reviewer は再実行 1 回 → スキップ（1 reviewer 失敗で全体停止しない）
 
 ### 0.53.0
 
