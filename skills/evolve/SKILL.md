@@ -24,7 +24,7 @@ $ARGUMENTS（省略時は最近使われたスキル全て）
 
 ```bash
 # 最近使われたスキル（CSV: timestamp,skill。header行をスキップ）
-tail -20 "${CLAUDE_PLUGIN_DATA}/skill-usage.csv" | awk -F, 'NR>0 || $1 != "timestamp" {print $1, $2}'
+tail -n +2 "${CLAUDE_PLUGIN_DATA}/skill-usage.csv" | tail -20 | awk -F, '{print $1, $2}'
 ```
 
 ### Step 2: 既存 Gotchas との照合

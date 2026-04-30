@@ -11,14 +11,14 @@ if [[ -z "${CLAUDE_PLUGIN_DATA:-}" ]]; then
   exit 0
 fi
 
-# スキル名を取得
-SKILL_NAME=$(echo "$HOOK_INPUT" | jq -r '.tool_input.skill // empty' 2>/dev/null || echo "")
+# スキル名と duration_ms を 1 回の jq invocation で取得（hot path 軽量化）
+# 出力: "<skill>\t<duration_ms>"。skill が空ならスキップ
+IFS=$'\t' read -r SKILL_NAME DURATION_MS < <(
+  echo "$HOOK_INPUT" | jq -r '[.tool_input.skill // "", (.duration_ms // 0) | tostring] | @tsv' 2>/dev/null || echo $'\t0'
+)
 if [[ -z "$SKILL_NAME" ]]; then
   exit 0
 fi
-
-# duration_ms を取得（2.1.119 未満の環境では存在しない → 0 扱い）
-DURATION_MS=$(echo "$HOOK_INPUT" | jq -r '.duration_ms // 0' 2>/dev/null || echo "0")
 
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 

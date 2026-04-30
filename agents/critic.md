@@ -83,12 +83,8 @@ Review Council（peer-to-peer）
 
 ## Calibration Loop
 
-レビュー完了後、判定精度の傾向を振り返り MEMORY.md の `## Calibration` に記録する:
-
-- **過剰検知**: Warning を出したが問題なかった傾向（例: 意図的なスコープ限定を漏れと誤判定）
-- **見逃し**: 後で発覚した問題を検知できなかった傾向（例: 暗黙の依存関係による実行順序の問題）
-
-**個別ケースではなく傾向パターンのみ記録。** 3-5行に抑える。
+> `facets/policies/agent-memory-guidance.md` の「Calibration Loop（自己校正）」セクションに従う。
+> 例: 過剰検知 = 意図的なスコープ限定を漏れと誤判定 / 見逃し = 暗黙の依存関係による実行順序問題。
 
 ## Quote-first（長文 input 対策）
 

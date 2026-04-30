@@ -5,3 +5,5 @@ A003,2026-04-30,本セッション,atoms→pipeline→outputs ループの自動
 A004,2026-04-17,context.md Next,/recap と session-resume.sh の重複/補完判断,output,実動作確認待ち
 A005,2026-04-30,本セッション,"dotfiles の hook 群（jj-bash-guard, dangerous-cmd-guard 等）を git に commit",output,dotfiles repo で git add hooks/*.sh して commit
 A006,2026-04-30,本セッション,Claude Code v2.1.92+ で 1M context が 400k に capped される regression（#43989）の追跡,atom,Issue に +1 済み・修正リリース監視
+A007,2026-04-30,simplify,detect_root() (jj root → git rev-parse) が bin/atoms / bin/atom-suggest / bin/check-consistency / hooks/quality-gate-cta.sh の 4 箇所でコピペ,archive,完了: bin/lib/repo_root.py + hooks/lib/common.sh detect_repo_root() で共通化済
+A008,2026-04-30,simplify,bin/check-consistency の content スキャンが echo|grep を 1 行ごとに 4-6 fork する。README/CLAUDE.md で千〜数千 fork 発生,archive,完了: bin/check-consistency check_authoritative_counts を awk 1 invocation 化済

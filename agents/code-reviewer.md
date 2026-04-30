@@ -99,12 +99,8 @@ disallowedTools: [Edit]
 
 ## Calibration Loop
 
-レビュー完了後、判定精度の傾向を振り返り MEMORY.md の `## Calibration` に記録する:
-
-- **過剰検知**: Warning を出したが問題なかった傾向（例: 許容されるパターンを指摘してしまう）
-- **見逃し**: 後で発覚した問題を検知できなかった傾向（例: 複数ファイルにまたがるバグ）
-
-**個別ケースではなく傾向パターンのみ記録。** 3-5行に抑える。
+> `facets/policies/agent-memory-guidance.md` の「Calibration Loop（自己校正）」セクションに従う。
+> 例: 過剰検知 = 許容パターンを指摘した傾向 / 見逃し = 複数ファイルにまたがるバグ。
 
 ## 重要な原則
 

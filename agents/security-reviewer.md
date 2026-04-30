@@ -90,7 +90,10 @@ Grep: (execute|query)\s*\(.*\+.*\)
 
 ---
 
-## 出力フォーマット
+## 出力フォーマット（Council 外の単独 markdown 報告）
+
+> Council 内で呼び出された場合は JSON schema 出力（上記）。本テンプレは単独 markdown 報告用。
+> 各 finding は coverage-first で全件挙げ、降格マトリクス（`facets/policies/confidence-scoring.md`）に従って Critical/Warning/Note/Archive に分類する。
 
 ```markdown
 # セキュリティレビュー結果
@@ -98,36 +101,42 @@ Grep: (execute|query)\s*\(.*\+.*\)
 ## サマリー
 [セキュリティ観点での評価を1-2文で]
 
-## 🔴 Critical（即時修正必須）- Confidence 90+
+## 🔴 Critical（必須修正、confidence 90+ かつ severity critical/high）
 
-### [脆弱性名] (Confidence: 95)
+### [脆弱性名] (confidence: 95, severity: critical)
 - **OWASP**: A03:2021 Injection
 - **ファイル:行番号**: `src/api/users.ts:42`
 - **問題**: [具体的な説明]
 - **リスク**: [攻撃シナリオ]
-- **修正案**:
-```code
-// 修正後のコード
-```
+- **修正案**: [コード例]
 
-## 🟡 Warning（推奨修正）- Confidence 80-89
+## 🟡 Warning（推奨修正、confidence 80-89 かつ severity high/medium）
 
-### [問題名] (Confidence: 85)
+### [問題名] (confidence: 85, severity: medium)
 - **OWASP**: [該当カテゴリ]
 - **ファイル:行番号**: `path/to/file.ts:78`
 - **問題**: [説明]
 - **修正案**: [具体的な修正方法]
 
+## ℹ️ Note（参考、confidence 60-79）
+- 件数のみ表示し詳細は折り畳み。サマリ集計の対象外
+
+## 📦 Archive（confidence < 60、デフォルト非表示）
+- 件数のみ。出典として記録
+
 ## 🟢 Good（良い実装）
 - [セキュリティ上良い実装を具体的に]
 
 ## 結論
-- Critical: X件
-- Warning: X件
+- 🔴 Critical: X件
+- 🟡 Warning: X件
+- ℹ️ Note: X件
+- 📦 Archive: X件
 - OWASP カテゴリ: [検出されたカテゴリ]
 
-→ Critical なし: セキュリティ観点で承認
-→ Critical あり: 修正必須
+→ 🔴 Critical なし: セキュリティ観点で承認
+→ 🔴 Critical あり: 修正必須
+（🟡 / ℹ️ / 📦 は通過判定の対象外）
 ```
 
 ---
@@ -152,12 +161,8 @@ Grep: (execute|query)\s*\(.*\+.*\)
 
 ## Calibration Loop
 
-レビュー完了後、判定精度の傾向を振り返り MEMORY.md の `## Calibration` に記録する:
-
-- **過剰検知**: Warning を出したが問題なかった傾向（例: 内部通信を外部入力として誤検知）
-- **見逃し**: 後で発覚した問題を検知できなかった傾向（例: 間接的なインジェクション経路）
-
-**個別ケースではなく傾向パターンのみ記録。** 3-5行に抑える。
+> `facets/policies/agent-memory-guidance.md` の「Calibration Loop（自己校正）」セクションに従う。
+> 例: 過剰検知 = 内部通信を外部入力として誤検知 / 見逃し = 間接的なインジェクション経路。
 
 ---
 
