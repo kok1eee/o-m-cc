@@ -1,4 +1,4 @@
-# o-m-cc v0.54.0
+# o-m-cc v0.54.1
 
 [English](README_en.md)
 
@@ -626,6 +626,11 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.54.1
+
+- **`bin/atoms complete` のステータス更新バグ修正** — `atom_id` を直接渡したとき atoms.csv の `status` が `atom` のまま残り、atom-suggest の promote-ready に出続けていた。`A` プレフィックスで判別して atoms.csv を `output` に直接更新するよう修正（pipeline 経由は従来通り）
+- **`bin/atom-suggest find_gotcha_ranking` の誤検出修正** — `<!-- AUTO-GOTCHAS -->` を SKILL.md のドキュメント例（コードブロック内）で言及している skill（evolve など）が「累計 N 件」と誤判定されていた。`rfind` で最後のマーカー以降を真のセクションとして扱い、かつ `[YYYY-MM-DD]` プレフィックスを持つ bullet のみカウントするよう修正
 
 ### 0.54.0
 

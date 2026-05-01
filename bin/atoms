@@ -140,32 +140,42 @@ def infer_artifact_type(path: str) -> str:
 
 
 def cmd_complete(args: list[str]) -> None:
+    """pipeline_id (P00X) または atom_id (A00X) を受け付けて outputs に登録する。
+
+    atom_id 直接 complete は pipeline をスキップした軽量フロー。outputs.csv の
+    pipeline_id 列には atom_id を入れる（後方互換、参照は atom_id プレフィックスで判別）。
+    """
     ensure_files()
     if len(args) < 2:
-        sys.exit("Usage: atoms complete <pipeline_id> <artifact_path> [outcome] [metric]")
-    pipe_id, artifact_path = args[0], args[1]
+        sys.exit("Usage: atoms complete <pipeline_id_or_atom_id> <artifact_path> [outcome] [metric]")
+    target_id, artifact_path = args[0], args[1]
     outcome = args[2] if len(args) >= 3 else "success"
     metric = args[3] if len(args) >= 4 else ""
     oid = next_id(OUTPUTS, "O")
     append_row(OUTPUTS, OUTPUTS_HEADER, {
-        "id": oid, "pipeline_id": pipe_id, "completed_at": today(),
+        "id": oid, "pipeline_id": target_id, "completed_at": today(),
         "artifact_type": infer_artifact_type(artifact_path), "artifact_path": artifact_path,
         "outcome": outcome, "metric": metric,
     })
-    _, pipe_rows = read_rows(PIPELINE)
+
     atom_id = ""
-    for r in pipe_rows:
-        if r["id"] == pipe_id:
-            r["status"] = "done"
-            atom_id = r["atom_id"]
-    write_rows(PIPELINE, PIPELINE_HEADER, pipe_rows)
+    if target_id.startswith("P"):
+        _, pipe_rows = read_rows(PIPELINE)
+        for r in pipe_rows:
+            if r["id"] == target_id:
+                r["status"] = "done"
+                atom_id = r["atom_id"]
+        write_rows(PIPELINE, PIPELINE_HEADER, pipe_rows)
+    elif target_id.startswith("A"):
+        atom_id = target_id
+
     if atom_id:
         _, atoms = read_rows(ATOMS)
         for r in atoms:
             if r["id"] == atom_id:
                 r["status"] = "output"
         write_rows(ATOMS, ATOMS_HEADER, atoms)
-    print(f"completed: {pipe_id} → {oid}")
+    print(f"completed: {target_id} → {oid}")
 
 
 def cmd_archive(args: list[str]) -> None:

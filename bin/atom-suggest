@@ -190,18 +190,26 @@ def find_gotcha_ranking() -> list[dict]:
             continue
         if "<!-- AUTO-GOTCHAS -->" not in text:
             continue
-        auto_section = text.split("<!-- AUTO-GOTCHAS -->", 1)[1]
-        bullet_lines = [ln for ln in auto_section.splitlines() if ln.startswith("- ")]
-        total = len(bullet_lines)
+        # SKILL.md 自体がマーカーをドキュメント例として言及することがある（evolve など）。
+        # 最後のマーカー以降を真のセクションとして扱い、かつ日付プレフィックス
+        # [YYYY-MM-DD] を持つ bullet のみカウントする（フォーマット例 `[日付]` を除外）。
+        last_marker = text.rfind("<!-- AUTO-GOTCHAS -->")
+        auto_section = text[last_marker:]
+        date_re = re.compile(r"\[(\d{4}-\d{2}-\d{2})\]")
+        dated_lines = []
+        for ln in auto_section.splitlines():
+            if not ln.startswith("- "):
+                continue
+            m = date_re.search(ln)
+            if m:
+                dated_lines.append((ln, m.group(1)))
+        total = len(dated_lines)
         if total == 0:
             continue
         recent = 0
-        for line in bullet_lines:
-            m = re.search(r"\[(\d{4}-\d{2}-\d{2})\]", line)
-            if not m:
-                continue
+        for _ln, date_str in dated_lines:
             try:
-                d = dt.datetime.fromisoformat(m.group(1)).replace(tzinfo=dt.UTC)
+                d = dt.datetime.fromisoformat(date_str).replace(tzinfo=dt.UTC)
                 if d >= cutoff:
                     recent += 1
             except ValueError:
