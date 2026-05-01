@@ -4,3 +4,6 @@ O002,P002,2026-04-30,skill,"skills/atom-suggest/SKILL.md,bin/atom-suggest",succe
 O003,P003,2026-04-30,hook,~/dotfiles claude/.claude/hooks/,success,feat(claude-hooks) として split commit、main 上に積み込み完了。push は別途
 O004,P004,2026-04-30,data,"bin/check-consistency,CLAUDE.md,README.md,.claude-plugin/plugin.json,.claude-plugin/marketplace.json",success,実装 + 初回検出 6 件の数値乖離を修正、テスト用 dummy repo で exit 1 検証 OK
 O005,P005,2026-04-30,doc,"hooks/session-resume.sh,CLAUDE.md",verified-no-change,session-resume.sh コメント L4 で既に役割分担明示。CLAUDE.md L165 でワークフロー全体も文書化済み。重複なし、補完関係（軽量 statusline vs LLM 要約）。コード変更不要。
+O006,A011,2026-05-01,other,README.md:202 (データレイヤー警告) で claude project purge の破壊的挙動と jj op log / git reflog による復旧手段を明記,purge 警告 1 段落追加,
+O007,A010,2026-05-01,other,監査結果: 削除候補ゼロ。context: fork を使う 4 skill (quality-gate/discovery-council/editorial-swarm/sisyphus) は frontmatter allowed-tools で deferred tools を直接許可しており、本文に retry/初回 workaround の誘導が無い。v2.1.126 のバグ修正は暗黙に恩恵を受けるだけ,削除候補 0 件,
+O008,A009,2026-05-01,other,"hooks/skill-prompt-log.sh (UserPromptExpansion 経由 user-slash 起動を捕捉) + hooks/skill-usage-log.sh (claude-proactive trigger 列追加) + bin/atom-suggest (find_unused_skills を proactive/slash 2 軸に分離)。CSV: timestamp,skill,trigger に migration",user-slash 取りこぼし修正 + 2 軸 unused 判定,

@@ -13,7 +13,7 @@ context.md を統合分析し、backlog 俯瞰と skill ヘルスを 1 レポー
     [Skill health]
         - top-skills        : 累計使用回数ランキング（top 10）
         - duration-stats    : 実行時間統計（count / avg_ms / max_ms / sum_ms）
-        - unused-skills     : 累計使用 ≤ 1 回（description 改善 / 削除候補）
+        - unused-skills     : 累計使用 ≤ 1 回（proactive=0 → description 改善 / total=0 → 削除候補）
         - gotcha-ranking    : AUTO-GOTCHAS 累計（直近 30 日 / 累計、累計多 = atom 化候補）
     [Activity pulse]
         - recent-atoms      : 直近 7 日に追加された atom
@@ -111,11 +111,15 @@ def find_stuck_pipeline(pipeline: list[dict[str, str]]) -> list[dict]:
     return out
 
 
-def load_usage_counts() -> Counter:
-    """USAGE_CSV を 1 回だけ読んで skill 別カウントを返す"""
-    if not USAGE_CSV or not USAGE_CSV.exists():
-        return Counter()
-    return Counter(u.get("skill", "") for u in read_csv(USAGE_CSV))
+def split_usage_counts(usage: list[dict[str, str]]) -> tuple[Counter, Counter, Counter]:
+    """usage rows から (total, proactive, slash) の Counter を作る。
+
+    旧スキーマ（trigger 列なし）のデータは total にだけ計上され proactive/slash は 0。
+    """
+    total = Counter(u.get("skill", "") for u in usage)
+    proactive = Counter(u.get("skill", "") for u in usage if u.get("trigger") == "claude-proactive")
+    slash = Counter(u.get("skill", "") for u in usage if u.get("trigger") == "user-slash")
+    return total, proactive, slash
 
 
 def find_top_skills(counts: Counter) -> list[tuple[str, int]]:
@@ -145,8 +149,13 @@ def find_duration_stats() -> list[dict]:
     return sorted(out, key=lambda x: -x["sum_ms"])[:TOP_N]
 
 
-def find_unused_skills(counts: Counter) -> list[dict]:
-    """登録されている skill のうち、累計使用 ≤ 1 回のもの（description 改善 / 削除候補）"""
+def find_unused_skills(total: Counter, proactive: Counter, slash: Counter) -> list[dict]:
+    """登録されている skill のうち、累計使用 ≤ 1 回のもの。
+
+    proactive=0 で slash≥1: ユーザーは使うが Claude が自動発動しない（description 改善候補）
+    total=0:                完全に未使用（削除候補）
+    proactive≥1:            自動発動する（OK）
+    """
     skills_dir = ROOT / "skills"
     if not skills_dir.exists():
         return []
@@ -154,9 +163,11 @@ def find_unused_skills(counts: Counter) -> list[dict]:
     for skill_md in skills_dir.glob("*/SKILL.md"):
         name = skill_md.parent.name
         # plugin prefix 付き / なし両方を加算（hook の出力形式が混在するため）
-        c = counts.get(f"o-m-cc:{name}", 0) + counts.get(name, 0)
+        c = total.get(f"o-m-cc:{name}", 0) + total.get(name, 0)
+        p = proactive.get(f"o-m-cc:{name}", 0) + proactive.get(name, 0)
+        s = slash.get(f"o-m-cc:{name}", 0) + slash.get(name, 0)
         if c <= UNUSED_THRESHOLD:
-            out.append({"skill": name, "count": c})
+            out.append({"skill": name, "count": c, "proactive": p, "slash": s})
     return sorted(out, key=lambda x: x["count"])
 
 
@@ -243,15 +254,15 @@ def collect_all() -> dict:
     atoms = read_csv(ATOMS)
     pipeline = read_csv(PIPELINE)
     usage = read_csv(USAGE_CSV) if USAGE_CSV and USAGE_CSV.exists() else []
-    counts = Counter(u.get("skill", "") for u in usage)
+    total, proactive, slash = split_usage_counts(usage)
     return {
         "stale_atoms": find_stale_atoms(atoms),
         "promote_ready": find_promote_ready(atoms),
         "stuck_pipeline": find_stuck_pipeline(pipeline),
         "orphan_next": find_orphan_next(atoms, pipeline),
-        "top_skills": find_top_skills(counts),
+        "top_skills": find_top_skills(total),
         "duration_stats": find_duration_stats(),
-        "unused_skills": find_unused_skills(counts),
+        "unused_skills": find_unused_skills(total, proactive, slash),
         "gotcha_ranking": find_gotcha_ranking(),
         "recent_activity": find_recent_activity(atoms, usage),
     }
@@ -308,7 +319,7 @@ def main() -> None:
         print("\n## Duration stats (なし、Claude Code 2.1.119+ で記録開始)")
 
     print_section(f"Unused skills (累計 ≤{UNUSED_THRESHOLD}回)", data["unused_skills"],
-                  lambda x: f"{x['skill']} ({x['count']}回)")
+                  lambda x: f"{x['skill']} ({x['count']}回 / proactive={x['proactive']}, slash={x['slash']})")
 
     print_section(f"Gotcha ranking (直近 {RECENT_GOTCHA_DAYS}日 / 累計、累計多 = atom 化候補)",
                   data["gotcha_ranking"],

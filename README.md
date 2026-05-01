@@ -1,4 +1,4 @@
-# o-m-cc v0.53.1
+# o-m-cc v0.54.0
 
 [English](README_en.md)
 
@@ -196,10 +196,12 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（プロファイル・フィードバック・プロジェクト知見） |
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm（次 round） | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh hook | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill）|
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger。trigger ∈ claude-proactive / user-slash）|
 | `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト再構築コストをゼロにする。A スキルの出力を B スキルが読むとき、A の文脈を知る必要はなく、成果物ファイルだけで完結する。
+
+> ⚠️ **`claude project purge` は破壊的**: このコマンドは `.claude/` 配下を物理削除する。`.claude/atoms.csv` / `.claude/pipeline.csv` / `.claude/outputs.csv` / `.claude/journal.md` は kawai 氏型 analytics ループと跨マシン handoff の中核データなので、**purge 前に必ず VCS にコミットして退避**すること。誤って purge した場合は `jj op log` / `git reflog` から `.claude/` をチェックアウトし直して復旧できる（VCS にコミット済みであれば）。`.claude/memory/`（auto-memory）も同様。プロジェクトを完全リセットする目的でない限り `purge` は使わない。
 
 ### Skill Chain（コンテキスト分離）
 
@@ -624,6 +626,17 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.54.0
+
+- **skill-usage.csv に `trigger` 列追加 + user-slash 起動の取りこぼし修正**
+  - 既存 `hooks/skill-usage-log.sh` (PreToolUse Skill matcher) は Claude proactive 発動でしか発火せず、`/skill` 直接入力（user-slash）が**構造的に記録漏れ**していた既存バグを修正
+  - `hooks/skill-prompt-log.sh` 新設: UserPromptExpansion で user-slash 起動を補完。built-in slash command (`/clear` 等) と非 slash expansion はスキップ
+  - CSV スキーマ: `timestamp,skill` → `timestamp,skill,trigger`（trigger ∈ `claude-proactive` / `user-slash`）。既存ファイルは hook 内で 1 行目だけ自動 migration、データ行は trigger 空欄で残る（後方互換）
+  - `bin/atom-suggest find_unused_skills` を `(total, proactive, slash)` の 3 Counter 化。「proactive=0 で slash≥1 → description 改善候補」「total=0 → 削除候補」を 1 行で判別可能に
+  - 着想: Claude Code v2.1.126 で `claude_code.skill_activated` OTel イベントに `invocation_trigger` 属性が追加されたリリースノートを読んでいて発見
+- **README データレイヤー表に `claude project purge` 警告セクション追加**
+  - `.claude/atoms.csv` / `.claude/pipeline.csv` / `.claude/outputs.csv` / `.claude/journal.md` が purge で消失するリスクと、`jj op log` / `git reflog` による復旧手段を明記
 
 ### 0.53.1
 
