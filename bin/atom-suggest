@@ -18,6 +18,7 @@ context.md を統合分析し、backlog 俯瞰と skill ヘルスを 1 レポー
     [Activity pulse]
         - recent-atoms      : 直近 7 日に追加された atom
         - recent-skills     : 直近 7 日のトップ skill
+        - session-stats     : セッション別 skill 起動数（top 5、v2.1.132+ で session_id 列が必要）
 
 Usage:
     atom-suggest                      全セクション
@@ -149,6 +150,24 @@ def find_duration_stats() -> list[dict]:
     return sorted(out, key=lambda x: -x["sum_ms"])[:TOP_N]
 
 
+def _skill_override_recommendation(total: int, proactive: int, slash: int) -> str:
+    """unused 判定スキルに対する skillOverrides 推奨アクションを返す。
+
+    Claude Code v2.1.129+ の skillOverrides 設定（off / user-invocable-only / name-only）
+    を踏まえ、計測結果から actionable な対応を 1 ワードで返す:
+
+    - total=0:                  off            (誰も使ってない、完全に隠す)
+    - proactive=0 で slash≥1:   user-invocable-only (自動発動が効かない、/slash のみ残す)
+    - proactive≥1 で slash=0:   keep           (proactive で動いてる、現状維持)
+    - proactive≥1 で slash≥1:   keep           (両方使われてる、現状維持)
+    """
+    if total == 0:
+        return "off"
+    if proactive == 0 and slash >= 1:
+        return "user-invocable-only"
+    return "keep"
+
+
 def find_unused_skills(total: Counter, proactive: Counter, slash: Counter) -> list[dict]:
     """登録されている skill のうち、累計使用 ≤ 1 回のもの。
 
@@ -167,7 +186,10 @@ def find_unused_skills(total: Counter, proactive: Counter, slash: Counter) -> li
         p = proactive.get(f"o-m-cc:{name}", 0) + proactive.get(name, 0)
         s = slash.get(f"o-m-cc:{name}", 0) + slash.get(name, 0)
         if c <= UNUSED_THRESHOLD:
-            out.append({"skill": name, "count": c, "proactive": p, "slash": s})
+            out.append({
+                "skill": name, "count": c, "proactive": p, "slash": s,
+                "recommend": _skill_override_recommendation(c, p, s),
+            })
     return sorted(out, key=lambda x: x["count"])
 
 
@@ -258,6 +280,24 @@ def find_recent_activity(atoms: list[dict[str, str]], usage: list[dict[str, str]
     return {"atoms": recent_atoms, "top_skills": skill_counts.most_common(5)}
 
 
+def find_session_stats(usage: list[dict[str, str]]) -> list[dict]:
+    """セッション別 skill 起動数（session_id 列が無い旧データはスキップ）"""
+    by_session: dict[str, Counter] = {}
+    for u in usage:
+        sid = (u.get("session_id") or "").strip()
+        if not sid:
+            continue
+        by_session.setdefault(sid, Counter())[u.get("skill", "")] += 1
+    out = []
+    for sid, counts in by_session.items():
+        out.append({
+            "session_id": sid[:8],  # 短縮表示
+            "total": sum(counts.values()),
+            "top": counts.most_common(3),
+        })
+    return sorted(out, key=lambda x: -x["total"])[:5]
+
+
 def collect_all() -> dict:
     atoms = read_csv(ATOMS)
     pipeline = read_csv(PIPELINE)
@@ -273,6 +313,7 @@ def collect_all() -> dict:
         "unused_skills": find_unused_skills(total, proactive, slash),
         "gotcha_ranking": find_gotcha_ranking(),
         "recent_activity": find_recent_activity(atoms, usage),
+        "session_stats": find_session_stats(usage),
     }
 
 
@@ -327,7 +368,25 @@ def main() -> None:
         print("\n## Duration stats (なし、Claude Code 2.1.119+ で記録開始)")
 
     print_section(f"Unused skills (累計 ≤{UNUSED_THRESHOLD}回)", data["unused_skills"],
-                  lambda x: f"{x['skill']} ({x['count']}回 / proactive={x['proactive']}, slash={x['slash']})")
+                  lambda x: f"{x['skill']} ({x['count']}回 / proactive={x['proactive']}, slash={x['slash']}) → {x['recommend']}")
+
+    overrides = {
+        x["skill"]: x["recommend"]
+        for x in data["unused_skills"]
+        if x["recommend"] != "keep"
+    }
+    if overrides:
+        print("\n## skillOverrides 設定例（~/.claude/settings.json に追記）")
+        print("  {")
+        print('    "skillOverrides": {')
+        items = sorted(overrides.items())
+        for i, (skill, action) in enumerate(items):
+            comma = "," if i < len(items) - 1 else ""
+            print(f'      "o-m-cc:{skill}": "{action}"{comma}')
+        print("    }")
+        print("  }")
+        print("  off                : Claude proactive / slash 両方から隠す（total=0 の場合）")
+        print("  user-invocable-only: /slash のみ残し Claude proactive 候補から外す（slash≥1 で proactive=0）")
 
     print_section(f"Gotcha ranking (直近 {RECENT_GOTCHA_DAYS}日 / 累計、累計多 = atom 化候補)",
                   data["gotcha_ranking"],
@@ -341,6 +400,12 @@ def main() -> None:
         print("  recent top skills:")
         for skill, count in data["recent_activity"]["top_skills"]:
             print(f"    - {skill}: {count}回")
+
+    if data["session_stats"]:
+        print("\n## Session stats (top 5、Claude Code v2.1.132+ で session_id 記録開始)")
+        for s in data["session_stats"]:
+            top_str = ", ".join(f"{name}={n}" for name, n in s["top"])
+            print(f"  - session {s['session_id']}…: total {s['total']}回 ({top_str})")
 
 
 if __name__ == "__main__":

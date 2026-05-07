@@ -1,4 +1,4 @@
-# o-m-cc v0.54.1
+# o-m-cc v0.55.0
 
 [English](README_en.md)
 
@@ -196,7 +196,7 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（プロファイル・フィードバック・プロジェクト知見） |
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm（次 round） | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger。trigger ∈ claude-proactive / user-slash）|
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id。trigger ∈ claude-proactive / user-slash。session_id は Claude Code v2.1.132+ で記録）|
 | `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト再構築コストをゼロにする。A スキルの出力を B スキルが読むとき、A の文脈を知る必要はなく、成果物ファイルだけで完結する。
@@ -559,6 +559,8 @@ Max plan（$200/月）でも、大規模タスクを1日に何本も回すとコ
 - **大規模タスク**: `/o-m-cc:sisyphus` は途中で compaction が走る前提で設計されている
 - **コストを意識する場合**: エージェントの `model` を `sonnet` に統一（デフォルト）。`opus` は designer、quality-gate、sisyphus（200k 超のコンテキスト）
 
+> **Note (Claude Code v2.1.128+)**: sub-agent progress summary の prompt cache が修正され、Council 系スキル（`discovery-council` / `quality-gate` / `editorial-swarm`）の `cache_creation` トークンが **約 3 倍削減**された。上記の見積もりは v2.1.127 以前のもので、最新版では Council コストはより低くなる傾向。
+
 ## Configuration
 
 特別な環境変数の設定は不要。主な動作は plugin.json + settings.json + hooks.json で完結。
@@ -626,6 +628,12 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.55.0
+
+- **skill-usage.csv に `session_id` 列追加（v2.1.132 対応）** — `CLAUDE_CODE_SESSION_ID` env var を `hooks/skill-usage-log.sh` / `skill-prompt-log.sh` で 4 列目に記録（env var 優先 / hook input JSON にフォールバック）。旧 2 列 / 3 列スキーマからの自動 migration（既存行は空欄）。`bin/atom-suggest` に **Session stats** セクション追加（top 5 セッションごとの skill 起動数）
+- **unused-skills × `skillOverrides` 連携（v2.1.129 対応）** — `bin/atom-suggest` の Unused skills 出力に推奨アクションを併記（`off` / `user-invocable-only` / `keep`）。さらに末尾に `~/.claude/settings.json` 追記用の `skillOverrides` JSON 例を生成（`keep` 以外のみ列挙）。proactive=0 で slash≥1 → `user-invocable-only`、total=0 → `off` の判定で actionable に
+- **README Token & Cost に Council コスト改善メモ追加（v2.1.128 観測）** — sub-agent progress summary の prompt cache 修正で discovery-council / quality-gate / editorial-swarm の `cache_creation` トークンが約 3 倍削減された旨を Note 段落として明記
 
 ### 0.54.1
 

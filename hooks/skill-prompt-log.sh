@@ -1,7 +1,7 @@
 #!/bin/bash
 # UserPromptExpansion: slash command 起動を記録（trigger=user-slash）
 # 公式 docs: PreToolUse Skill hook は user-slash 起動では発火しないため、本 hook で補完する。
-# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記（header: timestamp,skill,trigger）
+# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記（header: timestamp,skill,trigger,session_id）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -29,18 +29,26 @@ if [[ ! -d "$SKILLS_DIR/$SKILL_BASENAME" ]]; then
   exit 0
 fi
 
+# session_id は v2.1.132+ で Bash subprocess 環境変数として渡される
+SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}"
+if [[ -z "$SESSION_ID" ]]; then
+  SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "")
+fi
+
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
 
-# Header migration: 旧 "timestamp,skill" → "timestamp,skill,trigger"
+# Header migration:
+#   旧1: "timestamp,skill"          → "timestamp,skill,trigger,session_id"
+#   旧2: "timestamp,skill,trigger"  → "timestamp,skill,trigger,session_id"
 if [[ -f "$CSV" ]]; then
   HEAD=$(head -n1 "$CSV")
-  if [[ "$HEAD" == "timestamp,skill" ]]; then
-    sed -i.bak '1s/.*/timestamp,skill,trigger/' "$CSV" && rm -f "$CSV.bak"
+  if [[ "$HEAD" == "timestamp,skill" || "$HEAD" == "timestamp,skill,trigger" ]]; then
+    sed -i.bak '1s/.*/timestamp,skill,trigger,session_id/' "$CSV" && rm -f "$CSV.bak"
   fi
 else
-  echo "timestamp,skill,trigger" > "$CSV"
+  echo "timestamp,skill,trigger,session_id" > "$CSV"
 fi
 
-printf '%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CMD_NAME" "user-slash" >> "$CSV"
+printf '%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CMD_NAME" "user-slash" "${SESSION_ID}" >> "$CSV"
 exit 0
