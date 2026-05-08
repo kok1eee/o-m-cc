@@ -1,7 +1,8 @@
 #!/bin/bash
 # UserPromptExpansion: slash command 起動を記録（trigger=user-slash）
 # 公式 docs: PreToolUse Skill hook は user-slash 起動では発火しないため、本 hook で補完する。
-# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記（header: timestamp,skill,trigger,session_id）
+# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記
+# header: timestamp,skill,trigger,session_id,effort
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -35,20 +36,27 @@ if [[ -z "$SESSION_ID" ]]; then
   SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "")
 fi
 
+# effort は v2.1.133+ で env var / hook input JSON から取得
+EFFORT="${CLAUDE_EFFORT:-}"
+if [[ -z "$EFFORT" ]]; then
+  EFFORT=$(echo "$HOOK_INPUT" | jq -r '.effort.level // empty' 2>/dev/null || echo "")
+fi
+
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
 
-# Header migration:
-#   旧1: "timestamp,skill"          → "timestamp,skill,trigger,session_id"
-#   旧2: "timestamp,skill,trigger"  → "timestamp,skill,trigger,session_id"
+# Header migration: 2/3/4 列いずれも 5 列に揃える
+NEW_HEADER="timestamp,skill,trigger,session_id,effort"
 if [[ -f "$CSV" ]]; then
   HEAD=$(head -n1 "$CSV")
-  if [[ "$HEAD" == "timestamp,skill" || "$HEAD" == "timestamp,skill,trigger" ]]; then
-    sed -i.bak '1s/.*/timestamp,skill,trigger,session_id/' "$CSV" && rm -f "$CSV.bak"
-  fi
+  case "$HEAD" in
+    "timestamp,skill"|"timestamp,skill,trigger"|"timestamp,skill,trigger,session_id")
+      sed -i.bak "1s/.*/$NEW_HEADER/" "$CSV" && rm -f "$CSV.bak"
+      ;;
+  esac
 else
-  echo "timestamp,skill,trigger,session_id" > "$CSV"
+  echo "$NEW_HEADER" > "$CSV"
 fi
 
-printf '%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CMD_NAME" "user-slash" "${SESSION_ID}" >> "$CSV"
+printf '%s,%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CMD_NAME" "user-slash" "${SESSION_ID}" "${EFFORT}" >> "$CSV"
 exit 0

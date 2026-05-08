@@ -2,7 +2,8 @@
 # PreToolUse: Skill ツールの使用をログ（trigger=claude-proactive）
 # 公式 docs: PreToolUse Skill hook は Claude が proactive に skill を呼ぶ場合のみ発火。
 # user-slash 起動は skill-prompt-log.sh (UserPromptExpansion) が補完する。
-# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記（header: timestamp,skill,trigger,session_id）
+# ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記
+# header: timestamp,skill,trigger,session_id,effort
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -17,27 +18,36 @@ if [[ -z "$SKILL_NAME" ]]; then
 fi
 
 # session_id は v2.1.132+ で Bash subprocess 環境変数として渡される
-# 旧バージョンでは hook input JSON から取得（v2.1.105+ で session_id key 提供）
 SESSION_ID="${CLAUDE_CODE_SESSION_ID:-}"
 if [[ -z "$SESSION_ID" ]]; then
   SESSION_ID=$(echo "$HOOK_INPUT" | jq -r '.session_id // empty' 2>/dev/null || echo "")
+fi
+
+# effort は v2.1.133+ で env var / hook input JSON から取得（high / medium / low / xhigh）
+EFFORT="${CLAUDE_EFFORT:-}"
+if [[ -z "$EFFORT" ]]; then
+  EFFORT=$(echo "$HOOK_INPUT" | jq -r '.effort.level // empty' 2>/dev/null || echo "")
 fi
 
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
 
 # Header migration:
-#   旧1: "timestamp,skill"          → "timestamp,skill,trigger,session_id"
-#   旧2: "timestamp,skill,trigger"  → "timestamp,skill,trigger,session_id"
+#   旧1: "timestamp,skill"                       → 5 列
+#   旧2: "timestamp,skill,trigger"               → 5 列
+#   旧3: "timestamp,skill,trigger,session_id"    → 5 列
+NEW_HEADER="timestamp,skill,trigger,session_id,effort"
 if [[ -f "$CSV" ]]; then
   HEAD=$(head -n1 "$CSV")
-  if [[ "$HEAD" == "timestamp,skill" || "$HEAD" == "timestamp,skill,trigger" ]]; then
-    sed -i.bak '1s/.*/timestamp,skill,trigger,session_id/' "$CSV" && rm -f "$CSV.bak"
-  fi
+  case "$HEAD" in
+    "timestamp,skill"|"timestamp,skill,trigger"|"timestamp,skill,trigger,session_id")
+      sed -i.bak "1s/.*/$NEW_HEADER/" "$CSV" && rm -f "$CSV.bak"
+      ;;
+  esac
 else
-  echo "timestamp,skill,trigger,session_id" > "$CSV"
+  echo "$NEW_HEADER" > "$CSV"
 fi
 
-printf '%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SKILL_NAME}" "claude-proactive" "${SESSION_ID}" >> "$CSV"
+printf '%s,%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SKILL_NAME}" "claude-proactive" "${SESSION_ID}" "${EFFORT}" >> "$CSV"
 
 exit 0

@@ -19,6 +19,7 @@ context.md を統合分析し、backlog 俯瞰と skill ヘルスを 1 レポー
         - recent-atoms      : 直近 7 日に追加された atom
         - recent-skills     : 直近 7 日のトップ skill
         - session-stats     : セッション別 skill 起動数（top 5、v2.1.132+ で session_id 列が必要）
+        - effort-breakdown  : effort 別 skill 起動数（xhigh / high / medium / low、v2.1.133+ で effort 列が必要）
 
 Usage:
     atom-suggest                      全セクション
@@ -298,6 +299,32 @@ def find_session_stats(usage: list[dict[str, str]]) -> list[dict]:
     return sorted(out, key=lambda x: -x["total"])[:5]
 
 
+def find_effort_breakdown(usage: list[dict[str, str]]) -> list[dict]:
+    """effort 別 skill 起動数（effort 列が無い旧データはスキップ）。
+
+    Claude Code v2.1.133+ で hooks に effort.level / $CLAUDE_EFFORT が渡る。
+    各 skill が xhigh / high / medium / low のどれで呼ばれているかを集計し、
+    例えば「sisyphus は xhigh で重く、quality-gate は medium で軽く」などの
+    使い分けパターンを可視化する。
+    """
+    by_effort: dict[str, Counter] = {}
+    for u in usage:
+        effort = (u.get("effort") or "").strip()
+        if not effort:
+            continue
+        by_effort.setdefault(effort, Counter())[u.get("skill", "")] += 1
+    # xhigh > high > medium > low の順で表示（その他は末尾）
+    order = {"xhigh": 0, "high": 1, "medium": 2, "low": 3}
+    out = []
+    for effort, counts in by_effort.items():
+        out.append({
+            "effort": effort,
+            "total": sum(counts.values()),
+            "top": counts.most_common(3),
+        })
+    return sorted(out, key=lambda x: order.get(x["effort"], 99))
+
+
 def collect_all() -> dict:
     atoms = read_csv(ATOMS)
     pipeline = read_csv(PIPELINE)
@@ -314,6 +341,7 @@ def collect_all() -> dict:
         "gotcha_ranking": find_gotcha_ranking(),
         "recent_activity": find_recent_activity(atoms, usage),
         "session_stats": find_session_stats(usage),
+        "effort_breakdown": find_effort_breakdown(usage),
     }
 
 
@@ -406,6 +434,12 @@ def main() -> None:
         for s in data["session_stats"]:
             top_str = ", ".join(f"{name}={n}" for name, n in s["top"])
             print(f"  - session {s['session_id']}…: total {s['total']}回 ({top_str})")
+
+    if data["effort_breakdown"]:
+        print("\n## Effort breakdown (Claude Code v2.1.133+ で effort 記録開始)")
+        for e in data["effort_breakdown"]:
+            top_str = ", ".join(f"{name}={n}" for name, n in e["top"])
+            print(f"  - {e['effort']:<7}: total {e['total']}回 ({top_str})")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-# o-m-cc v0.55.0
+# o-m-cc v0.56.0
 
 [English](README_en.md)
 
@@ -196,7 +196,7 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（プロファイル・フィードバック・プロジェクト知見） |
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm（次 round） | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id。trigger ∈ claude-proactive / user-slash。session_id は Claude Code v2.1.132+ で記録）|
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort。trigger ∈ claude-proactive / user-slash。session_id は Claude Code v2.1.132+、effort は v2.1.133+ で記録）|
 | `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト再構築コストをゼロにする。A スキルの出力を B スキルが読むとき、A の文脈を知る必要はなく、成果物ファイルだけで完結する。
@@ -576,6 +576,39 @@ Headless モードでは AskUserQuestion が使えないため、中間成果物
 
 通常モードでは品質が崩れた時点で AskUserQuestion で人間に判断を委ねる。
 
+### 推奨 settings.json（`~/.claude/settings.json`）
+
+o-m-cc を快適 / 安全に使うための推奨設定:
+
+```jsonc
+{
+  // [v2.1.133+] worktree.baseRef のデフォルトが fresh (origin/<default>) に
+  // revert されたため、isolation: worktree を使う o-m-cc エージェント
+  // (designer / planner / debugger) で unpushed commits が dropped される。
+  // head に明示しておくと従来通り local HEAD を起点に worktree が切られる
+  "worktree": {
+    "baseRef": "head"
+  },
+
+  // [v2.1.136+] auto mode で「絶対拒否」のルール。permissions.deny は
+  // user 確認を経由しうるが、autoMode.hard_deny は user intent / allow
+  // exceptions に関係なく block。Sisyphus 自動ループ中の暴走を二重防御
+  "autoMode": {
+    "hard_deny": [
+      "Bash(rm -rf /*)",
+      "Bash(sudo rm -rf /*)",
+      "Bash(dd if=/dev/zero of=*)",
+      "Bash(mkfs.:*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard origin*)",
+      "Bash(*--no-verify*)"
+    ]
+  }
+}
+```
+
+`hard_deny` の中身は環境ごとに調整。CI / 個人 dev 環境で必要な操作まで block しないよう、最初は最小限から始めて、Sisyphus が誤実行しそうなコマンドを観測しながら追加する。
+
 ## CLAUDE.md のベストプラクティス
 
 Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置付けのファイル（2025年末の流出コード分析で判明）。o-m-cc では以下の運用を推奨:
@@ -628,6 +661,11 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.56.0
+
+- **skill-usage.csv に `effort` 列追加（v2.1.133 対応）** — `$CLAUDE_EFFORT` env var を `hooks/skill-usage-log.sh` / `skill-prompt-log.sh` で 5 列目に記録（env var 優先 / hook input `.effort.level` にフォールバック）。旧 2/3/4 列スキーマからの自動 migration（既存行は空欄）。`bin/atom-suggest` に **Effort breakdown** セクション追加（xhigh / high / medium / low 別の skill 起動分布、`sisyphus は xhigh で重く、quality-gate は medium で軽く` のような使い分けパターンを可視化）
+- **README に「推奨 settings.json」セクション追加** — `worktree.baseRef: "head"`（v2.1.133 で default が fresh に revert され、`isolation: worktree` エージェントで unpushed commits dropped 問題を防ぐため）と `autoMode.hard_deny`（v2.1.136 の auto mode 専用無条件 block ルール、Sisyphus 自動ループの安全装置二重化）の推奨設定例を提示
 
 ### 0.55.0
 

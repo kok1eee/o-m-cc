@@ -48,7 +48,7 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（ユーザープロファイル・フィードバック・プロジェクト知見）|
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm (次 round) | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id。trigger ∈ claude-proactive/user-slash。session_id は v2.1.132+ で記録）|
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort。trigger ∈ claude-proactive/user-slash。session_id は v2.1.132+、effort は v2.1.133+ で記録）|
 | `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト（会話履歴）に依存しない。別スキル/別セッション/別マシンから再開できる状態を必ずファイルに書く。
