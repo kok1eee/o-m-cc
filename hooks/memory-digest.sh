@@ -109,7 +109,7 @@ if [[ ${#STALE_REFS[@]} -gt 0 ]]; then
 fi
 
 for f in ${MEMORY_FILES[@]+"${MEMORY_FILES[@]}"}; do
-  # エージェント名を抽出 (o-m-cc-code-reviewer → code-reviewer)
+  # エージェント名を抽出 (o-m-cc-security-reviewer → security-reviewer)
   agent_dir=$(basename "$(dirname "$f")")
   agent_name="${agent_dir#o-m-cc-}"
 

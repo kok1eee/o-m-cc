@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: "Review Council → 静的解析(ruff/ty/shellcheck/tsc/eslint/clippy) を連続実行してコード品質を最終確認。code-reviewer, security-reviewer, critic を並列実行して品質・セキュリティ・計画整合性をチェック。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
+description: "コード品質の最終確認。Skill: simplify (built-in) で重複・hacky・効率を自動修正 → lint/ty 静的解析 → 条件付きで security-reviewer / critic を spawn (security 関連変更 or plan/requirements.md がある時のみ)。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
@@ -85,18 +85,56 @@ Review Council 前に検出する。過去に「5 画面 redesign を要求し�
 | 対象ファイルが全て変更されている | 通常通り Step 1.5 へ |
 | requirements.md に対象範囲が書かれていない | スキップ（抽出不能な場合は検証できない） |
 
-### Step 1.5: /simplify（自動修正）
+### Step 2: Skill: simplify（コード品質の自動修正）
 
-Review Council の前に、再利用性・品質・効率の自動レビュー+修正を実行する。
-レビュアーに渡す前にまず機械的に改善できるものは改善しておく。
+旧 `code-reviewer` agent の責任範囲（重複コード / hacky パターン / 効率性 / 不要コメント）は Anthropic 公式の **`Skill: simplify`** が完全カバーするため、これに一任する。
 
 ```
 Skill: simplify
 ```
 
-### Step 2: レビューチーム作成
+> **設計理由**: Anthropic 公式 skill (`simplify`) と独自 agent (`code-reviewer`) の責任範囲が完全に重複していたため、v0.58.0 で `code-reviewer` agent を削除し simplify に統合。これで Council を呼ばずに済む軽量タスクが大半（小規模 diff、security 無関係、plan/ なし）になり、quality-gate の所要時間を大幅短縮。
 
-**既存チームがあれば削除してから作成（前回の残骸 cleanup）：**
+### Step 3: 静的解析（lint + 型チェック）— Monitor で並列ストリーミング
+
+simplify によるコード変更後、言語別の静的解析を **Monitor で並列実行** する。Council を呼ぶ前に lint エラーを潰しておくことで、reviewer に「lint で見つかる軽微な問題」を見せずレビュアーの注意を本質的問題に集中させる。
+
+```
+Monitor:
+  description: "quality-gate lint (parallel)"
+  timeout_ms: 120000
+  persistent: false
+  command: |
+    (
+      command -v ruff >/dev/null 2>&1 && { echo "=== [ruff] ===" && ruff check . 2>&1 | sed -u 's/^/[ruff] /'; } &
+      command -v ty >/dev/null 2>&1 && { echo "=== [ty] ===" && ty check . 2>&1 | sed -u 's/^/[ty] /'; } &
+      command -v shellcheck >/dev/null 2>&1 && { echo "=== [shellcheck] ===" && shellcheck **/*.sh 2>&1 | sed -u 's/^/[shellcheck] /'; } &
+      command -v npx >/dev/null 2>&1 && { echo "=== [tsc] ===" && npx tsc --noEmit 2>&1 | sed -u 's/^/[tsc] /'; } &
+      command -v cargo >/dev/null 2>&1 && { echo "=== [clippy] ===" && cargo clippy 2>&1 | sed -u 's/^/[clippy] /'; } &
+      wait
+      echo "=== lint complete ==="
+    )
+```
+
+エラーが残っていれば修正してから Step 4 へ。warning のみなら記録して続行。
+
+### Step 4: 条件付き Review Council（security / plan 整合性が必要な時のみ）
+
+ここまでで「コード品質一般」と「lint」は片付いている。**残りの責任範囲は (a) セキュリティ脆弱性、(b) 計画妥当性 / 範囲整合性** のみ。これらは条件付きで spawn する:
+
+| 条件 | 起動するレビュアー |
+|---|---|
+| `git diff` に **認証 / 暗号化 / 入力検証 / 認可** 系のキーワード（auth, login, password, token, jwt, sanitize, escape, validate, sql, injection 等）または `*/auth/*`, `*/security/*`, `*/middleware/*` パスの変更が含まれる | **security-reviewer** を spawn |
+| `plan/requirements.md` が存在する | **critic** を spawn（実装範囲整合性検証も併せて担当） |
+| 上記いずれにも該当しない | **Council はスキップして Step 5 へ** |
+
+両方該当する場合は **両方を同時 spawn**（peer-to-peer で SendMessage 共有）。
+
+**spawn 時の原則: コンテキスト遮断** — reviewer は実装者の意図・理由を知らない状態でレビューする。prompt に「なぜこの実装をしたか」を含めない。渡すのはコード差分のみ。実装者のバイアスを排除する。
+
+prompt テンプレートは `reference.md` を Read して使用。
+
+#### TeamCreate（Council 起動時のみ）
 
 ```
 TeamDelete:
@@ -104,24 +142,14 @@ TeamDelete:
 
 TeamCreate:
   team_name: "quality-gate"
-  description: "Quality gate review council"
+  description: "Quality gate review council (conditional)"
 ```
 
-### Step 3: Review Council
+### Step 5: 結果の集約（Council 起動時のみ、JSON 入力 + 降格マトリクス自動適用）
 
-**3つの reviewer を Agent ツールで同時 spawn：**
+Council をスキップした場合はこの Step も飛ばす。
 
-**原則: コンテキスト遮断** — reviewer は実装者の意図・理由・議論を知らない状態でレビューする。prompt に実装の「なぜ」を含めない。渡すのはコード差分のみ。これにより実装者のバイアスを排除し、コードそのものを客観的に評価する。
-
-3つの reviewer（code-reviewer, security-reviewer, critic）を Agent で同時 spawn。
-→ **prompt テンプレートは reference.md を Read して使用**
-
-**重要**: 3つの teammate を同時に spawn してレビュー時間を短縮。
-SendMessage で互いの発見を共有・議論し、相互検証する。
-
-### Step 4: 結果の集約（JSON 入力 + 降格マトリクス自動適用）
-
-3 つの teammate は `facets/policies/council-output-schema.md` に従う JSON オブジェクトを返す。集約側で機械的に降格・分類する。
+起動した teammate は `facets/policies/council-output-schema.md` に従う JSON オブジェクトを返す。集約側で機械的に降格・分類する。
 
 #### 手順
 
@@ -151,56 +179,25 @@ SendMessage で互いの発見を共有・議論し、相互検証する。
 
 → 集約擬似コード・レポートテンプレートは reference.md 参照
 
-### Step 4.5: チーム解散
+### Step 5.5: チーム解散（Council 起動時のみ）
 
-結果を集約したらすぐにチームを解散する。**lint や修正の前に必ず実行。**
+結果を集約したらすぐにチームを解散する。**修正の前に必ず実行。**
 **shutdown メッセージは送らない。** TeamDelete だけで十分。SendMessage でブロードキャストしない。
 
 ```
 TeamDelete
 ```
 
-### Step 5: Critical 発見時の自動修正
+### Step 6: Critical 発見時の自動修正
 
-Critical が見つかった場合、**自動で修正を試みる**（ノンストップ原則）：
+Critical が見つかった場合（Council 起動かつ集約結果に Critical あり）、**自動で修正を試みる**（ノンストップ原則）：
 
 1. 問題箇所を特定し、修正を適用
-2. Step 1 に戻り Review Council を再実行して修正を確認
-3. 修正不可能な場合は AskUserQuestion で判断を委ねる
+2. **Step 3 に戻り lint を再実行**（修正で型エラーや構文エラーが出ていないかチェック）
+3. 必要なら Step 4 の Council を再実行して修正を確認
+4. 修正不可能な場合は AskUserQuestion で判断を委ねる
 
-### Step 6: 静的解析（言語別 Lint — Monitor で並列ストリーミング）
-
-全修正が完了した最終成果物に対して、言語別のリンターを **Monitor で並列実行** する。該当ファイルがなければスキップ。
-
-→ **コマンド詳細は reference.md 参照**
-
-**Monitor で並列実行**: 各 lint の出力がリアルタイムでストリーミングされる。最初の lint 結果が出た時点で修正に着手でき、全ツール完了を待たない。
-
-```
-Monitor:
-  description: "quality-gate lint (parallel)"
-  timeout_ms: 120000
-  persistent: false
-  command: |
-    (
-      command -v ruff >/dev/null 2>&1 && { echo "=== [ruff] ===" && ruff check . 2>&1 | sed -u 's/^/[ruff] /'; } &
-      command -v shellcheck >/dev/null 2>&1 && { echo "=== [shellcheck] ===" && shellcheck **/*.sh 2>&1 | sed -u 's/^/[shellcheck] /'; } &
-      command -v npx >/dev/null 2>&1 && { echo "=== [tsc] ===" && npx tsc --noEmit 2>&1 | sed -u 's/^/[tsc] /'; } &
-      command -v cargo >/dev/null 2>&1 && { echo "=== [clippy] ===" && cargo clippy 2>&1 | sed -u 's/^/[clippy] /'; } &
-      wait
-      echo "=== lint complete ==="
-    )
-```
-
-**tag prefix** (`[ruff]`, `[shellcheck]` 等) で出力元を識別し、エラーがあれば該当ツールの指摘から順に修正して再実行。warning のみなら記録して続行。
-
-**fallback**: Monitor が使えない環境では従来通り Bash で順次実行:
-- Python: `ruff check . && ty check .`
-- Shell: `shellcheck`
-- TypeScript: `npx tsc --noEmit && npx eslint .`
-- Rust: `cargo clippy && cargo test`
-
-### Step 7: 静的解析の最終実行
+### Step 7: 最終 lint
 
 **全ステップ完了後**、lint を実行する。
 
@@ -212,7 +209,7 @@ lint
 
 以下のいずれかに該当する場合、`PushNotification` で結果を送る。短時間（数分以内）＆ユーザーが画面を見ている可能性がある場合は送らない。
 
-- **Critical 発見で Step 5 の自動修正も不可**（ユーザー判断が必要で停止）: 例 `quality-gate 停止: SQL injection in auth.ts:42、判断待ち`
+- **Critical 発見で Step 6 の自動修正も不可**（ユーザー判断が必要で停止）: 例 `quality-gate 停止: SQL injection in auth.ts:42、判断待ち`
 - **Review Council が 10 分以上走った**（ユーザー離席想定）: 例 `quality-gate 通過: Critical 0, 12 ファイルレビュー完了`
 - **静的解析で Error が残った**: 例 `lint 失敗: shellcheck 3 errors in hooks/foo.sh`
 

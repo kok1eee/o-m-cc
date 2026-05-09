@@ -8,46 +8,11 @@
 - **Council Output Schema (JSON)**: `facets/policies/council-output-schema.md`
 - **Confidence Scoring (Coverage-first)**: `facets/policies/confidence-scoring.md`
 
-各 reviewer は Council Output Schema に従って **1 つの JSON オブジェクト** を返す。集約側（SKILL.md Step 4）が JSON でパースして降格マトリクスを機械的に適用する。
+各 reviewer は Council Output Schema に従って **1 つの JSON オブジェクト** を返す。集約側（SKILL.md Step 5）が JSON でパースして降格マトリクスを機械的に適用する。
+
+> **コード品質一般** (重複 / hacky / 効率 / 不要コメント) は **`Skill: simplify`** (built-in) が担当（SKILL.md Step 2 で実行済み）。Council でレビュアーを spawn するのは security-reviewer と critic のみ。
 
 ## Agent Prompt テンプレート
-
-### code-reviewer
-
-```
-Agent:
-  subagent_type: "o-m-cc:code-reviewer"
-  name: "code-reviewer"
-  team_name: "quality-gate"
-  description: "Quality Gate: コード品質"
-  prompt: |
-    ## エージェント定義
-    agents/code-reviewer.md の指示に従ってください。
-
-    ## 参照ポリシー
-    facets/policies/confidence-scoring.md を Read して適用してください。
-
-    ## コンテキスト
-    - タスク: $ARGUMENTS のコードレビュー
-    - スコープ: コード品質（バグ、複雑性、保守性）
-
-    ## 入力
-    [変更差分を含める]
-
-    ## Council プロトコル
-    1. 独立にレビューを実施
-    2. SendMessage で findings を security-reviewer・critic に共有
-    3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
-    4. 相互検証を経た最終 findings のみを報告
-    5. このプロジェクトで繰り返し発見した指摘パターンは memory に保存
-
-    ## 出力（Coverage-first + JSON Schema）
-    - 検出した issue は confidence (0-100) と severity (critical/high/medium/low) を付与して**全件報告**
-    - finding 時にフィルタリングしない（閾値カットは集約側で行う）
-    - 出力は `facets/policies/council-output-schema.md` の JSON schema に従う 1 つの JSON オブジェクト
-    - `reviewer: "code-reviewer"`、`category: "code-quality"`、`file` と `line_range` 必須
-    - 前置き・後書き・コードフェンスなしの純粋な JSON で返す
-```
 
 ### security-reviewer
 
@@ -73,7 +38,7 @@ Agent:
 
     ## Council プロトコル
     1. 独立にセキュリティレビューを実施
-    2. SendMessage で findings を code-reviewer・critic に共有
+    2. critic も同時 spawn されている場合は SendMessage で findings を共有（plan/ がある時）
     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
     4. 相互検証を経た最終 findings のみを報告
     5. このプロジェクトで繰り返し発見した脆弱性パターンは memory に保存
@@ -109,7 +74,7 @@ Agent:
 
     ## Council プロトコル
     1. 独立に計画整合性レビューを実施
-    2. SendMessage で findings を code-reviewer・security-reviewer に共有
+    2. security-reviewer も同時 spawn されている場合は SendMessage で findings を共有
     3. 他の reviewer から SendMessage で共有された findings を検証し、同意/異議を返す
     4. 相互検証を経た最終 findings のみを報告
     5. このプロジェクトで繰り返し発見した計画乖離パターンは memory に保存
@@ -152,9 +117,10 @@ def classify(finding: dict) -> str:
         return "note"
     return "archive"
 
-# 各 reviewer JSON を読み込んで集約
+# 各 reviewer JSON を読み込んで集約（Council 起動時のみ。security-reviewer / critic
+# のいずれか、または両方）
 buckets = {"critical": [], "warning": [], "note": [], "archive": []}
-for reviewer_json in [code_reviewer_json, security_reviewer_json, critic_json]:
+for reviewer_json in active_reviewer_jsons:  # 起動した reviewer のみ
     for f in reviewer_json["findings"]:
         f["_reviewer"] = reviewer_json["reviewer"]
         buckets[classify(f)].append(f)
@@ -167,13 +133,12 @@ passed = len(buckets["critical"]) == 0
 ```markdown
 # 統合レビュー結果
 
-## サマリ（reviewer 別）
-- code-reviewer: <code-reviewer-json.summary>
-- security-reviewer: <security-reviewer-json.summary>
-- critic: <critic-json.summary>（計画なしの場合: スキップ）
+## サマリ（reviewer 別、Council 起動時のみ）
+- security-reviewer: <security-reviewer-json.summary>（security 関連変更なしの場合: スキップ）
+- critic: <critic-json.summary>（plan/requirements.md なしの場合: スキップ）
 
 ## 🔴 Critical (X件)
-- [code-reviewer] file:line — issue (confidence: N, severity: S)
+- [security-reviewer] file:line — issue (confidence: N, severity: S)
   - fix: ...
 - ...
 
@@ -186,12 +151,12 @@ passed = len(buckets["critical"]) == 0
 ## 📦 Archive (X件、デフォルト非表示)
 
 ## 良い点
-- code-reviewer.good_points
-- security-reviewer.good_points
+- security-reviewer.good_points（起動時のみ）
+- critic.good_points（起動時のみ）
 
 ## 総合判定
 → 🔴 Critical 0件 → 品質ゲート通過
-→ 🔴 Critical あり → 修正必須（Step 5 へ）
+→ 🔴 Critical あり → 修正必須（SKILL.md Step 6 へ）
 （🟡 / ℹ️ / 📦 は通過判定の対象外、レポートには記録）
 ```
 
@@ -225,20 +190,18 @@ fi
 ## 完了時の出力フォーマット
 
 ```
-✅ 品質ゲート通過（Review Council + Lint）
+✅ 品質ゲート通過（simplify + lint + 条件付き Council）
 
-📊 コード品質
+🧹 コード品質（Skill: simplify）
+   修正済み: X件 (重複コード / hacky パターン / 効率改善 / 不要コメント)
+
+🔒 セキュリティ（security-reviewer、起動時のみ）
    🔴 Critical: なし
    🟡 Warning: X件
    ℹ️ Note: X件
 
-🔒 セキュリティ
+📐 計画整合性（critic、起動時のみ）
    🔴 Critical: なし
-   🟡 Warning: X件
-   ℹ️ Note: X件
-
-📐 計画整合性
-   🔴 Critical: なし（または: 計画なし - スキップ）
    🟡 Warning: X件
    ℹ️ Note: X件
 
@@ -249,7 +212,6 @@ fi
    tsc: ✅ (or N/A)
    eslint: ✅ (or N/A)
    clippy: ✅ (or N/A)
-   cargo test: ✅ (or N/A)
 
 → 品質ゲート通過
 ```

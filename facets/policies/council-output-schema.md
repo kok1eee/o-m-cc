@@ -10,13 +10,13 @@
 
 ```json
 {
-  "reviewer": "code-reviewer",
+  "reviewer": "security-reviewer",
   "schema_version": "1",
   "summary": "1-2 文の総評",
   "findings": [
     {
       "id": "F001",
-      "category": "code-quality",
+      "category": "security",
       "file": "src/api/users.ts",
       "line_range": "42-55",
       "issue": "問題の要約（1 文）",
@@ -35,7 +35,7 @@
 
 | フィールド | 型 | 必須 | 説明 |
 |---|---|---|---|
-| `reviewer` | string | ✅ | reviewer の identifier（`code-reviewer` / `security-reviewer` / `critic` / `analyst` / `scout` / `researcher` / `anti-ai-slop` / `fact-checker` / `narrative-critic` / `reader-advocate`） |
+| `reviewer` | string | ✅ | reviewer の identifier（`security-reviewer` / `critic` / `analyst` / `scout` / `researcher` / `anti-ai-slop` / `fact-checker` / `narrative-critic` / `reader-advocate`） |
 | `schema_version` | string | ✅ | 本 schema のバージョン。現行は `"1"` |
 | `summary` | string | ✅ | 1-2 文の総評。集約サマリで使う |
 | `findings` | array | ✅ | 検出 issue の配列。0 件の場合は `[]` |
@@ -86,7 +86,7 @@ schema を破壊変更する場合は `schema_version` を `"2"` に上げ、集
 
 このポリシーは以下から参照される:
 
-- `agents/code-reviewer.md` / `security-reviewer.md` / `critic.md` / `analyst.md` / `scout.md` / `researcher.md`
+- `agents/security-reviewer.md` / `critic.md` / `analyst.md` / `scout.md` / `researcher.md`
 - `skills/quality-gate/SKILL.md` / `skills/quality-gate/reference.md`
 - `skills/discovery-council/SKILL.md` / `skills/discovery-council/reference.md`
 - `skills/editorial-swarm/SKILL.md`（4 reviewer の出力もこの schema に準拠する）

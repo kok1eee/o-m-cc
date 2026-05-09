@@ -4,7 +4,7 @@
 > 詳細なディレクトリ構造・Hooks 一覧・スキル一覧は [README.md](README.md) を参照。
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。15 の専門エージェント + 15 スキル + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。14 の専門エージェント + 15 スキル + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
@@ -114,7 +114,7 @@ Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode �
 
 Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがちだが、これは誤り。subagent は:
 - **メイン context の汚染を避けるための並列実行**（Read 大量 / Grep / WebSearch 等）
-- **独立視点でのレビュー**（code-reviewer / security-reviewer / critic）
+- **独立視点でのレビュー**（security-reviewer / critic、コード品質一般は built-in `Skill: simplify`）
 - **バイアスなしの検証**（Verifier パターン）
 - **情報の事前整備**（architecture-mapper / code-explorer / convention-scout）
 
@@ -128,7 +128,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | 類似機能を辿りたい | `code-explorer` |
 | アーキテクチャ / 抽象境界を把握したい | `architecture-mapper` |
 | 命名規則 / テストパターン調査 | `convention-scout` |
-| コード品質レビュー | `code-reviewer` |
+| コード品質レビュー | built-in `Skill: simplify`（旧 `code-reviewer` agent は v0.58.0 で削除） |
 | セキュリティレビュー | `security-reviewer` |
 | 計画の妥当性検証 | `critic` |
 | 曖昧な部分の調査 | `researcher` |
@@ -140,7 +140,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | 状況 | チーム構成 |
 |---|---|
 | 要件を並列分析したい | discovery-council（researcher + analyst + scout）|
-| 品質を多角レビューしたい | Review Council（code-reviewer + security-reviewer + critic）|
+| 品質を多角レビューしたい | quality-gate skill（`Skill: simplify` + 条件付き Council: security-reviewer / critic）|
 | 記事を多視点で推敲したい | editorial-swarm（anti-ai-slop + fact-checker + narrative-critic + reader-advocate）|
 
 **これらは sisyphus / quality-gate / editorial-swarm skill 内で自動構築されるが、手動でも積極使用可**。
@@ -149,7 +149,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 
 - ❌ 3 ファイル以上の Read を main agent が自分でやる（subagent に delegate すべき）
 - ❌ 大きな実装を main agent だけで完結させる（Verifier subagent を spawn しない）
-- ❌ レビューを「後でやる」と先送り（code-reviewer subagent を即 spawn すべき）
+- ❌ レビューを「後でやる」と先送り（`Skill: simplify` を即実行すべき）
 - ✅ 並列 agent spawn で context 節約 + 速度向上
 
 ## ワークフロー判断

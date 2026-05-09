@@ -45,7 +45,7 @@
 | 設計パターンの適用結果 | タスク ID やセッション内の進捗 |
 | レビューで繰り返し指摘されるポイント | 一時的なレビューコメント |
 
-### 実装・品質系（frontend, debugger, code-reviewer, security-reviewer）
+### 実装・品質系（frontend, debugger, security-reviewer）
 
 | 蓄積する | 蓄積しない |
 |---------|-----------|
@@ -108,11 +108,12 @@ Claude Code 2.1.63+ では、**同一リポジトリの git worktree 間で proj
 
 | エージェント | 参照先 | 活用方法 |
 |-------------|--------|---------|
-| planner | debugger, code-reviewer | バグ傾向→テスト優先度、品質問題→タスク設計 |
-| designer | code-reviewer, critic | 頻出指摘→設計で回避、却下された計画→同じ落とし穴回避 |
+| planner | debugger | バグ傾向→テスト優先度 |
+| designer | critic | 却下された計画→同じ落とし穴回避 |
 | scout | critic | レビュー落とし穴→ギャップ分析精度向上 |
-| code-reviewer | security-reviewer | セキュリティコンテキスト→品質判定に活用 |
-| security-reviewer | code-reviewer | 品質コンテキスト→セキュリティ判定に活用 |
+| security-reviewer | critic | 計画整合性のコンテキスト→セキュリティ判定の精度向上（共起 spawn 時のみ）|
+
+> 旧 `code-reviewer` agent は v0.58.0 で削除（built-in `Skill: simplify` に置換）。コード品質一般のクロスリードは不要になった。
 
 ## Gotcha vs Atom 分類（書き分け）
 
@@ -142,7 +143,7 @@ evolve スキルが学びを抽出するときは、この判定を必ず実施�
 
 ## Calibration Loop（自己校正）
 
-reviewer 系（code-reviewer, security-reviewer, critic）が判定精度を振り返る。
+reviewer 系（security-reviewer, critic）が判定精度を振り返る。
 
 - **過剰検知**: Warning を出したが実際は問題なかった傾向
 - **見逃し**: 後で発覚した問題を検知できなかった傾向

@@ -84,11 +84,11 @@ TeamCreate → team_name で作成
 
 | パターン | 組み合わせ | 効果 |
 |---------|-----------|------|
-| **相互レビュー** | code-reviewer + security-reviewer | 品質とセキュリティを同時に、互いの発見を共有 |
+| **セキュリティ + 整合性** | security-reviewer + critic | セキュリティと計画整合性を同時にチェック |
 | **仮説競合** | debugger × 2-3 | 異なる仮説を並列検証、偏りを排除 |
 | **多角調査** | researcher + analyst + scout | コード・外部情報・要件を同時に調査 |
 | **設計批評** | designer + critic | 設計しながらリアルタイムでレビュー |
-| **実装+品質** | frontend + code-reviewer | 実装しながら逐次レビュー |
+| **コード品質一般** | `Skill: simplify` (built-in) | 重複・hacky・効率を一括レビュー + 自動修正（旧 code-reviewer の役割を Anthropic 公式 skill に置換） |
 
 ---
 
@@ -113,8 +113,9 @@ TeamCreate → team_name で作成
 | **critic** | 計画整合性チェック | 実装後、計画・設計との乖離確認 | `/quality-gate` / ユーザー直接 | 検証, 妥当性, リスク, validate, 整合性 |
 | **debugger** | 体系的デバッグ | バグ・テスト失敗・予期しない動作、sisyphus の3エージェント方式 | ユーザー直接 / sisyphus | バグ, エラー, デバッグ, bug, error |
 | **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/discovery-council` / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
-| **code-reviewer** | コード品質チェック | タスク完了後、マージ前 | `/quality-gate` | レビュー, 品質, review, quality |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | `/quality-gate` | セキュリティ, 脆弱性, security |
+
+> **コード品質一般のレビュー**は Claude Code の built-in `Skill: simplify` に一任（重複・hacky・効率・不要コメント整理）。旧 `code-reviewer` agent は v0.58.0 で削除（Anthropic 公式 skill との責任重複解消）。
 
 ---
 
@@ -146,10 +147,9 @@ TeamCreate → team_name で作成
 
 | エージェント | Input | Processing | Output | Memory 蓄積 |
 |-------------|-------|------------|--------|------------|
-| code-reviewer | diff、変更コード | 品質チェック | 問題レポート（Confidence付き） | 頻出指摘パターン、OK/NG 基準、Calibration Loop、security-reviewer クロスリード |
-| security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート | 脅威モデル、セキュリティ要件、Calibration Loop、code-reviewer クロスリード |
+| security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート | 脅威モデル、セキュリティ要件、Calibration Loop |
 
-> **並列 spawn 推奨**: `code-reviewer` + `security-reviewer` + `critic` は同時 spawn でチェック。
+> **コード品質一般**は built-in `Skill: simplify` を使う（quality-gate skill が自動で呼び出す）。`security-reviewer` + `critic` は条件付き spawn（security 関連変更あり / requirements.md ありの時のみ）。
 
 ---
 
@@ -168,8 +168,12 @@ Phase 2-3: Pipeline（順次実行）
 ### レビューフロー（/o-m-cc:quality-gate）
 
 ```
-Review Council（同時 spawn + peer-to-peer）
-  code-reviewer ◄──► security-reviewer ◄──► critic
+1. Skill: simplify (built-in) — 重複・hacky・効率の自動レビュー + 修正
+2. lint + ty (静的解析、Monitor で並列)
+3. 条件付き Council:
+     security 関連変更あり → security-reviewer
+     plan/requirements.md あり → critic + 範囲整合性検証
+     両方なし → スキップ
 ```
 
 ### ユーザー直接呼び出し

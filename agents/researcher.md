@@ -1,6 +1,6 @@
 ---
 name: researcher
-description: コードベース探索と外部調査の統合エージェント。ファイル検索、構造把握、公式ドキュメント、ベストプラクティス調査。「探して」「どこにある」「構造を教えて」「使い方を調べて」「ベストプラクティスは？」「ドキュメントを確認して」で発動。※コードレビューは code-reviewer、計画レビューは critic を使う。
+description: コードベース探索と外部調査の統合エージェント。ファイル検索、構造把握、公式ドキュメント、ベストプラクティス調査。「探して」「どこにある」「構造を教えて」「使い方を調べて」「ベストプラクティスは？」「ドキュメントを確認して」で発動。※コードレビューは built-in `Skill: simplify`、計画レビューは critic を使う。
 tools: Read, Glob, Grep, WebSearch, WebFetch
 model: sonnet
 memory: project

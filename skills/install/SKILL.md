@@ -54,7 +54,7 @@ CLAUDE.md がなければ公式 /init を先に実行するよう案内して終
 **subagent spawn / Agent Teams は「並列 action」であり planning ではない。auto mode でも必ず使うこと**:
 
 - 3 ファイル以上の Read が見込まれる → `Explore` or `general-purpose` subagent に delegate
-- コード品質レビュー → `code-reviewer` subagent を spawn
+- コード品質レビュー → built-in `Skill: simplify` を呼ぶ（重複・hacky・効率を一括対処）
 - セキュリティレビュー → `security-reviewer` subagent を spawn
 - バグ調査 → `debugger` subagent を spawn
 - 実装後の独立検証 → 別 subagent を spawn（自分でテストすると確認バイアス）
