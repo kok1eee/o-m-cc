@@ -1,4 +1,4 @@
-# o-m-cc v0.56.0
+# o-m-cc v0.57.0
 
 [English](README_en.md)
 
@@ -398,6 +398,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | - | `dotfiles-pull.sh` | dotfiles repo を24h throttle で自動 pull（bg 実行） |
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/atom-suggest で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
+| PreToolUse | `Bash` | `simplify-diff-gate.sh` | push 系コマンド前に diff 行数をチェック。閾値（default 500、`SIMPLIFY_DIFF_THRESHOLD` で上書き可）を超え かつ 最終コミット以降に `/simplify` 未実行なら **exit 2 で block**（強制 gate） |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
 | TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/atom-suggest で集計可能） |
@@ -661,6 +662,11 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.57.0
+
+- **`hooks/simplify-diff-gate.sh` 新設（強制 simplify gate）** — PreToolUse Bash matcher で `jj git push` / `git push` を検知時に diff 行数（main@origin..@- の insertion + deletion 合計）を計算。閾値（環境変数 `SIMPLIFY_DIFF_THRESHOLD` で上書き可、default 500）を超え かつ 最終コミット以降に `/simplify` 実行履歴がなければ **exit 2 で block**。`/simplify` で整理してから再 push する運用を強制。`skill-usage.csv` の simplify エントリ（最終 timestamp）を参照して通過判定
+- **`skills/sisyphus/SKILL.md` description を action 化** — auto mode classifier が「planning」と誤分類して抑制しないよう、冒頭を「新機能を実装まで一気通貫で走らせる action skill」に書き換え。「`auto mode でも planning ではなく action として積極発動`」を明示。`実装して` / `作って` / `追加して` 等の action verb キーワードを先頭に追加（旧来の「計画して」も互換のため後方に維持）
 
 ### 0.56.0
 

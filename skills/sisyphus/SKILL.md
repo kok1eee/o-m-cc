@@ -1,6 +1,6 @@
 ---
 name: sisyphus
-description: "計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー。Agent Teams で要件→設計→タスク分解→実装→quality-gate を一括実行。新機能開発や設計判断が必要な変更に使う。「計画して」「この機能を実装したい」「新機能を作りたい」「要件から実装まで」で発動。"
+description: "新機能を実装まで一気通貫で走らせる action skill。Agent Teams で要件・設計・タスク分解・実装・quality-gate を自動実行し、コードがコミット可能な状態になるまで止まらない（Sisyphus Loop）。auto mode でも planning ではなく action として積極発動する。「実装して」「作って」「機能を追加して」「新機能を作りたい」「要件から実装まで一気に」「計画して」「この機能を実装したい」で発動。"
 argument-hint: "<feature description>"
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
