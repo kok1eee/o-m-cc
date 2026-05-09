@@ -668,6 +668,18 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 
 ## Changelog
 
+### 0.58.0
+
+- **`code-reviewer` agent を削除** — Anthropic 公式 built-in `Skill: simplify` と責任範囲が完全重複（重複コード / hacky パターン / 効率性 / 不要コメント）していたため統合。agent 数 15 → 14
+- **`quality-gate` skill を軽量再設計** — Step 構成を 3 reviewer 同時 spawn から **simplify → lint → 条件付き Council** に変更:
+  1. **Step 2**: `Skill: simplify` (built-in) でコード品質一般を一括対処
+  2. **Step 3**: lint + ty (Monitor 並列ストリーミング)
+  3. **Step 4**: 条件付き Council
+     - `git diff` に **security 系変更** (auth / login / password / token / sql / injection / 認証パス) が含まれる → `security-reviewer` を spawn
+     - `plan/requirements.md` がある → `critic` を spawn（範囲整合性検証も担当）
+     - 両方なし → スキップ（軽量タスクは simplify + lint だけで完了）
+- **影響範囲の整理** — `agents/capabilities.md`, `agents/{security-reviewer,critic,designer,planner,debugger,researcher}.md`, `skills/install/SKILL.md`, `skills/quality-gate/reference.md`, `facets/policies/{agent-memory-guidance,council-output-schema,plan-handoff}.md`, `facets/references/code-review-criteria.md` (削除), `hooks/memory-digest.sh` から `code-reviewer` 参照を更新／削除
+
 ### 0.57.0
 
 - **`hooks/simplify-diff-gate.sh` 新設（強制 simplify gate）** — PreToolUse Bash matcher で `jj git push` / `git push` を検知時に diff 行数（main@origin..@- の insertion + deletion 合計）を計算。閾値（環境変数 `SIMPLIFY_DIFF_THRESHOLD` で上書き可、default 500）を超え かつ 最終コミット以降に `/simplify` 実行履歴がなければ **exit 2 で block**。`/simplify` で整理してから再 push する運用を強制。`skill-usage.csv` の simplify エントリ（最終 timestamp）を参照して通過判定
