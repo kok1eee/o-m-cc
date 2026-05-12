@@ -1,16 +1,15 @@
 #!/bin/bash
 # PreToolUse(Bash): push 前に diff 行数をチェックし、閾値超 + simplify 未実行なら block
 #
-# 強制 mode (exit 2): diff 行数が SIMPLIFY_DIFF_THRESHOLD (default 500) を超え、
-# かつ最終コミット以降に simplify が実行されていない場合に push を block。
-# /simplify でコード整理してから再 push する運用を強制する。
+# exit 2 でブロックすると stderr が Claude にフィードバックされ同ターン継続する。
+# メッセージに Skill(simplify) 呼び出し指示を含めることで Claude が自動で整理→再 push する。
 #
 # 閾値の調整: 環境変数 SIMPLIFY_DIFF_THRESHOLD で上書き可能（settings.json の env section など）
 # 例: 1000 行まで許容したいなら export SIMPLIFY_DIFF_THRESHOLD=1000
 #
 # 通過方法:
-# 1. /simplify を実行する → skill-usage.csv に記録され gate を通過
-# 2. SIMPLIFY_DIFF_THRESHOLD を一時的に大きくして push（推奨しない）
+# 1. Skill(simplify) を実行する → skill-usage.csv に記録され gate を通過
+# 2. SIMPLIFY_DIFF_THRESHOLD を大きくして push（推奨しない）
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -100,14 +99,12 @@ fi
 # Block + CTA
 {
   echo ""
-  echo "🚧 [simplify-diff-gate] diff が ${DIFF_LINES} 行で閾値 ${THRESHOLD} を超えています"
-  echo "   この変更量だと整理されていない可能性があります（重複コード / 不要コメント / hacky パターン）。"
+  echo "🚧 [simplify-diff-gate] push をブロックしました（diff ${DIFF_LINES} 行 > 閾値 ${THRESHOLD} 行）"
+  echo "   最終コミット以降に /simplify が実行されていません。"
   echo ""
-  echo "   通過するには次のいずれか:"
-  echo "   1. /simplify でコード整理 → 再 push"
-  echo "   2. 一時的に閾値を上げる: SIMPLIFY_DIFF_THRESHOLD=<行数> claude ..."
+  echo "   → 今すぐ Skill(simplify) を呼び出してコードを整理し、その後 push を再試行してください。"
   echo ""
-  echo "   現在の閾値変更: settings.json の env で SIMPLIFY_DIFF_THRESHOLD を設定"
+  echo "   ※ 閾値を変更したい場合: settings.json の env で SIMPLIFY_DIFF_THRESHOLD=<行数> を設定"
   echo ""
 } >&2
 

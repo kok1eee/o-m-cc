@@ -163,6 +163,8 @@ Agent Teams (Council + Pipeline ハイブリッド):
 
 > **推奨モデル**: Claude Code v2.1.111+ の Max 契約なら **Opus 4.7 + Auto mode** が `/o-m-cc:sisyphus` のような長時間ループと相性が良い（`--enable-auto-mode` は不要）。`/effort xhigh` で速度と知能のバランス調整も可能。
 
+> **`/goal` vs `/o-m-cc:sisyphus`**: built-in `/goal <完了条件>` はターン跨ぎの単純継続（完了条件を満たすまで Claude が作業を続けるだけ）。Agent Teams・quality-gate・構造化フェーズは含まない。**新機能開発や設計判断を伴う作業は `/o-m-cc:sisyphus`**（要件→設計→実装→品質ゲートを Agent Teams で一貫実行）。
+
 ### 実装フェーズ
 
 ```
@@ -566,6 +568,22 @@ Max plan（$200/月）でも、大規模タスクを1日に何本も回すとコ
 - **コストを意識する場合**: エージェントの `model` を `sonnet` に統一（デフォルト）。`opus` は designer、quality-gate、sisyphus（200k 超のコンテキスト）
 
 > **Note (Claude Code v2.1.128+)**: sub-agent progress summary の prompt cache が修正され、Council 系スキル（`discovery-council` / `quality-gate` / `editorial-swarm`）の `cache_creation` トークンが **約 3 倍削減**された。上記の見積もりは v2.1.127 以前のもので、最新版では Council コストはより低くなる傾向。
+
+### スキル別起動コスト（v2.1.139 実測）
+
+`claude plugin details o-m-cc` で取得したスキルごとの on-invoke トークン概算。重量スキルを使う前の目安として参照すること。
+
+| スキル | 起動コスト（on-invoke） | 備考 |
+|--------|------------------------|------|
+| `sisyphus` | ~6.4k tok | 最重量。大規模タスク専用 |
+| `editorial-swarm` | ~4.9k tok | 4 エージェント Council |
+| `feature-flow` | ~4.5k tok | 要件→実装の中規模フロー |
+| `quality-gate` | ~3.8k tok | セキュリティ+lint 含む |
+| `experiment` | ~3.2k tok | 反復ループ（自動継続） |
+| `evolve` | ~2.3k tok | スキル自己進化 |
+| `discovery-council` | ~1.1k tok | 軽量（3 agent のみ） |
+
+セッション常時コスト（always-on）は **~4.1k tok/session**。
 
 ## Configuration
 

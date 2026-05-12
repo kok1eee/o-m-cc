@@ -88,7 +88,8 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 
 Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode の「prefer action over planning」を過剰解釈して o-m-cc skill の発動を抑制しがち。これは誤り:
 
-- `/sisyphus` = 新機能を **実装まで一気通貫で走らせる** action skill（内部に planning phase はあるが成果物は動作するコード）
+- `/sisyphus` = 新機能を **実装まで一気通貫で走らせる** action skill（内部に planning phase はあるが成果物は動作するコード）。**明示起動推奨**（auto mode での自動発動は実質機能しない）
+- built-in `/goal` = 完了条件を設定してターン跨ぎで継続する native action。**auto mode でも発動する**。Agent Teams・quality-gate 不要な多ターン継続タスクはまずこれ
 - `/quality-gate` = コミット前に品質検証する action skill（CI 代わり）
 - `/discovery-council` = 要件を即座に確定する action skill（analyst/researcher/scout を並列実行）
 - `/ui-polish` = UI を複数画面連続で修正する action skill
@@ -160,6 +161,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | 複数ファイルにまたがる変更 | `/plan` で計画してから実行 |
 | 要件が曖昧・何を作るか不明確 | `/deep-interview` で掘り下げてから `/sisyphus` |
 | 新機能・設計判断が必要な変更 | `/sisyphus` で要件→設計→タスク分解→実装 |
+| 複数ターンかかる実装・継続タスク（設計判断・Agent Teams 不要） | built-in `/goal <完了条件>` で継続（auto mode でも発動。Agent Teams・quality-gate なし）。大型新機能で Agent Teams + quality-gate が必要なら明示的に `/o-m-cc:sisyphus` |
 | 最適化・リファクタリング・試行錯誤 | `/experiment` で実験駆動ループ（試す→測る→保持 or revert） |
 | 完了を宣言する前 | `/verification` で証拠確認（テスト実行、動作確認） |
 | 次に何をやるか迷う・atom が溜まってきた・放置案件が気になる・skill 使用統計を見たい | `/atom-suggest` で atoms/pipeline/outputs/skill-usage/skill-duration を統合分析（backlog 俯瞰 + skill ヘルス）|
@@ -181,8 +183,8 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 **原則: 迷ったら `/plan` に入る。** 計画なしで進むと後戻りが大きい。
 
 **エスカレーション:** 想定より複雑だと判明したら上位ワークフローに切り替え。小さく始めて必要に応じて上げる。
-- そのまま実行 → 影響範囲が広がった → `/plan`
-- `/plan` → 設計判断が多い・複数フェーズ必要 → `/sisyphus`
+- そのまま実行 → 複数ターンかかりそう → built-in `/goal <完了条件>`
+- `/goal` → 設計判断・Agent Teams が必要と判明 → 明示的に `/o-m-cc:sisyphus`
 
 ## コミットメッセージ Trailers
 
