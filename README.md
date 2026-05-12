@@ -72,9 +72,9 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | 自動発動 |
 |--------|------|----------|
-| `/o-m-cc:install` | プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化） | 手動のみ |
+| `/o-m-cc:install` | プラグインインストール後にプロジェクトで一度実行。CLAUDE.md に o-m-cc ワークフローセクションを追記し、plan/ ディレクトリ・パーミッション設定を追加する。CLAUDE.md がない場合は /init を案内。 | 手動のみ |
 
-> 既存プロジェクト（CLAUDE.md あり）でも `/o-m-cc:install` でOK。Sisyphusセクションのみ追加されます。
+> **インストール後の推奨手順**: `claude plugin install o-m-cc` → プロジェクトで `/o-m-cc:install` を一度実行。既存の CLAUDE.md に `<!-- o-m-cc: start/end -->` マーカー付きで追記するため、既存内容は保持されます。
 
 ### 計画フェーズ
 
