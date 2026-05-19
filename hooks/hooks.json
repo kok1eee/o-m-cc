@@ -107,6 +107,11 @@
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/subagent-verify.sh",
             "timeout": 3000
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/agent-duration-log.sh",
+            "timeout": 2000
           }
         ]
       }

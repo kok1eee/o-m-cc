@@ -569,21 +569,35 @@ Max plan（$200/月）でも、大規模タスクを1日に何本も回すとコ
 
 > **Note (Claude Code v2.1.128+)**: sub-agent progress summary の prompt cache が修正され、Council 系スキル（`discovery-council` / `quality-gate` / `editorial-swarm`）の `cache_creation` トークンが **約 3 倍削減**された。上記の見積もりは v2.1.127 以前のもので、最新版では Council コストはより低くなる傾向。
 
-### スキル別起動コスト（v2.1.139 実測）
+### コンポーネント別コスト（v2.1.143 実測）
 
-`claude plugin details o-m-cc` で取得したスキルごとの on-invoke トークン概算。重量スキルを使う前の目安として参照すること。
+`claude plugin details o-m-cc` で取得した値。v2.1.143 以降は `/plugin marketplace browse` でも per-turn / per-invocation 見積もりが表示される。
 
-| スキル | 起動コスト（on-invoke） | 備考 |
-|--------|------------------------|------|
-| `sisyphus` | ~6.4k tok | 最重量。大規模タスク専用 |
-| `editorial-swarm` | ~4.9k tok | 4 エージェント Council |
-| `feature-flow` | ~4.5k tok | 要件→実装の中規模フロー |
-| `quality-gate` | ~3.8k tok | セキュリティ+lint 含む |
-| `experiment` | ~3.2k tok | 反復ループ（自動継続） |
-| `evolve` | ~2.3k tok | スキル自己進化 |
-| `discovery-council` | ~1.1k tok | 軽量（3 agent のみ） |
+**セッション常時コスト（always-on）**: **~4.4k tok/session**（全コンポーネントの frontmatter 合算）
 
-セッション常時コスト（always-on）は **~4.1k tok/session**。
+**スキル別 on-invoke コスト**（重量降順、起動 1 回あたり）:
+
+| スキル | on-invoke | always-on | 備考 |
+|--------|-----------|-----------|------|
+| `sisyphus` | ~7.1k | ~120 | 最重量。新機能フル workflow |
+| `editorial-swarm` | ~5.5k | ~210 | 4 エージェント Council |
+| `feature-flow` | ~5.1k | ~210 | 要件→実装の中規模フロー |
+| `quality-gate` | ~4.2k | ~210 | セキュリティ+lint Council |
+| `experiment` | ~3.5k | ~150 | 反復ループ（自動継続）|
+| `install` | ~3.1k | ~120 | プロジェクトセットアップ |
+| `evolve` | ~2.5k | ~120 | スキル自己進化 |
+| `handoff` | ~2.3k | ~220 | 別マシン引き継ぎ |
+| `atom-suggest` | ~1.8k | ~220 | バックログ + skill 統計 |
+| `ui-polish` | ~1.5k | ~190 | UI 整理ループ |
+| `verification` | ~1.4k | ~100 | 完了前証拠確認 |
+| `discovery-council` | ~1.2k | ~120 | 軽量 Council |
+| `deep-interview` | ~1.1k | ~100 | 要件掘り下げ |
+| `task-decomposition` | ~560 | ~120 | タスク分解 |
+| `design` | ~500 | ~110 | 設計（最軽量）|
+
+**エージェント on-invoke コスト**（spawn 1 回あたり、抜粋）: `capabilities` ~3.5k / `security-reviewer` ~2.7k / `convention-scout` ~2.3k / `architecture-mapper` ~2.1k / `planner` ~2.1k / `code-explorer` ~1.9k / `designer` ~1.7k / `pattern-observer` ~1.6k / `critic` ~1.6k / `scout` ~1.5k / `analyst` ~1.4k / `oss-scout` ~1.4k / `market-researcher` ~1.3k / `researcher` ~1.1k / `debugger` ~0.76k。
+
+最新値は `claude plugin details o-m-cc` を実行して取得すること。Council 系（quality-gate / editorial-swarm / discovery-council）は内部で複数 agent を並列 spawn するため、実際のコストは「スキル on-invoke + 構成 agent on-invoke の和」になる。
 
 ## Configuration
 
