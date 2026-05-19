@@ -1,0 +1,129 @@
+#!/bin/bash
+# sync-plugin-data — Mac/EC2 双方向同期のための plugin-data ↔ dotfiles 連結ヘルパー
+#
+# 仕組み:
+#   - ${CLAUDE_PLUGIN_DATA} の skill-usage.csv / skill-duration.csv / agent-duration.csv を
+#     ~/dotfiles/claude/.claude/plugins/data/o-m-cc-kok1eee/ に置いて symlink で参照する
+#   - dotfiles は git/jj 管理されており Mac/EC2 間で push/pull で同期される
+#   - .gitattributes の merge=union で append-only な追記は両側保持される
+#
+# Usage:
+#   bin/sync-plugin-data setup    新マシン (EC2) で初回セットアップ
+#                                 既存 CSV と dotfiles CSV を merge → symlink 化
+#   bin/sync-plugin-data status   現在の symlink/merge 状態を表示
+#
+# 双方向同期の通常運用:
+#   - pull: ~/dotfiles で jj git fetch + rebase (SessionStart hook で自動 git pull --rebase される)
+#   - push: ~/dotfiles で jj describe + jj git push (定期的に手動)
+set -euo pipefail
+
+DOTFILES="${O_M_CC_DOTFILES:-$HOME/dotfiles}"
+DOT_DIR="$DOTFILES/claude/.claude/plugins/data/o-m-cc-kok1eee"
+SRC_DIR="$HOME/.claude/plugins/data/o-m-cc-kok1eee"
+CSVS=(skill-usage.csv skill-duration.csv agent-duration.csv)
+
+usage() {
+  sed -n '2,/^$/p' "$0" | sed 's/^# \?//'
+  exit 1
+}
+
+cmd_status() {
+  echo "DOTFILES: $DOTFILES"
+  echo "DOT_DIR:  $DOT_DIR"
+  echo "SRC_DIR:  $SRC_DIR"
+  echo ""
+  for csv in "${CSVS[@]}"; do
+    src="$SRC_DIR/$csv"
+    dot="$DOT_DIR/$csv"
+    if [[ -L "$src" ]]; then
+      target=$(readlink "$src")
+      if [[ "$target" == "$dot" ]]; then
+        printf "  %-20s SYMLINK → dotfiles (OK)\n" "$csv"
+      else
+        printf "  %-20s SYMLINK → %s (UNEXPECTED)\n" "$csv" "$target"
+      fi
+    elif [[ -f "$src" ]]; then
+      lines=$(wc -l < "$src" 2>/dev/null || echo 0)
+      printf "  %-20s REAL FILE (%s lines) — setup 未実行\n" "$csv" "$lines"
+    else
+      printf "  %-20s 未作成\n" "$csv"
+    fi
+  done
+}
+
+# CSV concat + dedup: ヘッダ 1 行 + 残りを sort -u で重複排除
+merge_csv() {
+  local a="$1"  # existing file at SRC
+  local b="$2"  # dotfiles file
+  local out="$3"
+
+  local header
+  if [[ -f "$a" ]]; then
+    header=$(head -1 "$a")
+  elif [[ -f "$b" ]]; then
+    header=$(head -1 "$b")
+  else
+    return 1
+  fi
+
+  {
+    echo "$header"
+    { [[ -f "$a" ]] && tail -n +2 "$a"; [[ -f "$b" ]] && tail -n +2 "$b"; } | sort -u
+  } > "$out"
+}
+
+cmd_setup() {
+  if [[ ! -d "$DOTFILES" ]]; then
+    echo "ERROR: $DOTFILES が見つかりません。O_M_CC_DOTFILES env var で指定するか dotfiles を clone してください。" >&2
+    exit 1
+  fi
+
+  mkdir -p "$DOT_DIR" "$SRC_DIR"
+
+  for csv in "${CSVS[@]}"; do
+    src="$SRC_DIR/$csv"
+    dot="$DOT_DIR/$csv"
+
+    if [[ -L "$src" ]] && [[ "$(readlink "$src")" == "$dot" ]]; then
+      echo "[skip] $csv は既に symlink 設定済み"
+      continue
+    fi
+
+    # SRC が real file → dotfiles 側と merge する
+    if [[ -f "$src" && ! -L "$src" ]]; then
+      tmp=$(mktemp)
+      merge_csv "$src" "$dot" "$tmp"
+      mv "$tmp" "$dot"
+      rm -f "$src"
+      ln -sf "$dot" "$src"
+      lines=$(wc -l < "$dot")
+      echo "[merged] $csv (合計 $lines 行) → symlink 作成"
+      continue
+    fi
+
+    # SRC 未作成 → dotfiles 側があれば symlink、無ければ ヘッダだけの空ファイル作成
+    if [[ ! -f "$dot" ]]; then
+      case "$csv" in
+        skill-usage.csv)     echo "timestamp,skill,trigger,session_id,effort" > "$dot" ;;
+        skill-duration.csv)  echo "timestamp,skill,duration_ms" > "$dot" ;;
+        agent-duration.csv)  echo "timestamp,agent_type,duration_ms" > "$dot" ;;
+      esac
+      echo "[new] $csv をヘッダのみで作成"
+    fi
+    ln -sf "$dot" "$src"
+    echo "[link] $csv の symlink を作成"
+  done
+
+  echo ""
+  echo "次のステップ:"
+  echo "  1. cd $DOTFILES"
+  echo "  2. jj status で変更確認"
+  echo "  3. jj describe -m 'data: plugin-data merge from \$(hostname)'"
+  echo "  4. jj git fetch && jj rebase -d main@origin && jj bookmark set main -r @ && jj git push"
+}
+
+case "${1:-}" in
+  setup)  cmd_setup ;;
+  status) cmd_status ;;
+  *)      usage ;;
+esac

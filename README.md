@@ -210,6 +210,32 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 
 > ⚠️ **`claude project purge` は破壊的**: このコマンドは `.claude/` 配下を物理削除する。`.claude/atoms.csv` / `.claude/pipeline.csv` / `.claude/outputs.csv` / `.claude/journal.md` は kawai 氏型 analytics ループと跨マシン handoff の中核データなので、**purge 前に必ず VCS にコミットして退避**すること。誤って purge した場合は `jj op log` / `git reflog` から `.claude/` をチェックアウトし直して復旧できる（VCS にコミット済みであれば）。`.claude/memory/`（auto-memory）も同様。プロジェクトを完全リセットする目的でない限り `purge` は使わない。
 
+### 跨マシン同期（Mac ↔ EC2）
+
+`.claude/atoms.csv` 等の **in-repo データ**は jj/git で自動同期されるが、`${CLAUDE_PLUGIN_DATA}/*.csv`（skill-usage / skill-duration / agent-duration）は per-machine データのため、Mac で `/o-m-cc:atom-suggest` を回しても EC2 の累積データが見えない問題がある。
+
+**解決策**: `bin/sync-plugin-data setup` で `${CLAUDE_PLUGIN_DATA}` の CSV を dotfiles リポにぶら下げて symlink 化し、git/jj 経由で同期する。
+
+```bash
+# 各マシンで初回のみ実行
+bin/sync-plugin-data setup
+
+# 状態確認
+bin/sync-plugin-data status
+```
+
+**仕組み**:
+- 実体: `~/dotfiles/claude/.claude/plugins/data/o-m-cc-kok1eee/{skill-usage,skill-duration,agent-duration}.csv`
+- symlink: `${CLAUDE_PLUGIN_DATA}/<csv>` → 上記実体
+- dotfiles 側 `.gitattributes` に `claude/.claude/plugins/data/**/*.csv merge=union` を設定済み（両側追記行を保持）
+
+**運用**:
+- **pull**: SessionStart hook の `dotfiles-pull.sh` が自動で `git pull --rebase` する（throttle 24h）
+- **push**: dotfiles で `jj describe + jj git push` を定期的に手動実行
+- **conflict**: append-only CSV なので `merge=union` でほぼ自動解決。重複行は `sort -u` で除去可能
+
+**EC2 で初回 setup を実行する場合**: EC2 既存の CSV と dotfiles 経由で取り込んだ Mac 側 CSV を `sort -u` で merge してから symlink 化される。実データを破壊せずに統合される。
+
 ### Skill Chain（コンテキスト分離）
 
 `/o-m-cc:sisyphus` は各フェーズを独立スキルとして chain 実行する:
