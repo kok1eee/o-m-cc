@@ -101,7 +101,7 @@ disallowedTools: [Bash]
 |-----------|----------------|------|
 | UI/フロントエンド | `frontend` | capabilities.md |
 | API/バックエンド | `general-purpose` | - |
-| テスト/検証 | built-in `Skill: simplify` + `security-reviewer` | capabilities.md |
+| テスト/検証 | built-in `Skill: code-review` + `security-reviewer` | capabilities.md |
 | 調査 | `researcher` | capabilities.md |
 
 **選択に迷った場合**: `capabilities.md` の「得意分野」「使用場面」を確認。
@@ -137,7 +137,7 @@ disallowedTools: [Bash]
 
 **クロスリード（タスク開始時に参照）:**
 - `debugger` の memory → バグパターンを把握し、テスト優先度に反映
-- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コード品質は built-in `Skill: simplify` が runtime で対処)
+- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コード品質は built-in `Skill: code-review` が runtime で対処)
 
 ## 重要
 

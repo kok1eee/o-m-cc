@@ -9,7 +9,7 @@
 o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追加するプラグインです。
 
 - **Skill Chain**: 要件分析 → 設計 → タスク分解 → 実装 → 品質ゲートを独立スキルとして chain 実行。各フェーズのコンテキストが分離される
-- **Agent Teams**: peer-to-peer マルチエージェント協調。14 の専門エージェントが SendMessage で相互検証（コード品質一般は built-in `Skill: simplify` に委譲）
+- **Agent Teams**: peer-to-peer マルチエージェント協調。14 の専門エージェントが SendMessage で相互検証（コード品質一般は built-in `Skill: code-review` に委譲）
 - **Monitor 統合**: experiment/quality-gate/sisyphus で Monitor ツールを活用し、長時間処理を非同期化
 - **二段階検証**: verification（自己エビデンス収集）+ Verifier agent（独立 adversarial 検証）で実装者バイアスを排除
 - **Progressive Disclosure**: エージェント定義を3層に分離し、常時ロードは全体の約10%に抑制
@@ -149,7 +149,7 @@ Agent Teams (Council + Pipeline ハイブリッド):
           ┌──────────────────────────────────────────┐
           │         Phase 4: 実装                      │
           │         Phase 5: Quality Gate              │
-          │  Skill: simplify (built-in)                │
+          │  Skill: code-review (built-in)             │
           │     ↓                                      │
           │  lint + ty (Monitor 並列)                   │
           │     ↓                                      │
@@ -305,7 +305,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ## Agents
 
-合計 14 エージェント（計画 5 + 分析 2 + 品質 1 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。コード品質一般は built-in `Skill: simplify` に一任（v0.58.0 で旧 code-reviewer agent を削除）。
+合計 14 エージェント（計画 5 + 分析 2 + 品質 1 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。コード品質一般は built-in `Skill: code-review` に一任（v0.58.0 で旧 code-reviewer agent を削除）。
 
 ### Planning Agents（計画系）
 
@@ -330,7 +330,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|--------|
 | @security-reviewer | セキュリティレビュー（OWASP Top 10、認証認可、入力検証） | sonnet | default | project |
 
-> **コード品質一般**は v0.58.0 から built-in `Skill: simplify` に一任（重複・hacky・効率・不要コメント）。旧 `code-reviewer` agent は同 version で削除。
+> **コード品質一般**は v0.58.0 から built-in `Skill: code-review` に一任（重複・hacky・効率・不要コメント）。旧 `code-reviewer` agent は同 version で削除。
 
 ### Prior Art Agents（feature-flow Phase B 専用）
 
@@ -571,7 +571,7 @@ Sisyphus Loop の背後にある哲学：
 2. **並列実行**: Agent Teams で3体同時に分析できる。Discovery Council（researcher + analyst + scout）は並列 spawn で時間コストを削減する。ロールプレイは直列実行しかできない
 3. **永続メモリ**: `memory: project` を持つエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を蓄積する。次のセッションでも引き継がれる。ロールプレイのコンテキストはセッション終了で消える
 
-ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コード品質一般のレビューは built-in `Skill: simplify` に一任（旧 code-reviewer agent は v0.58.0 で削除）。
+ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コード品質一般のレビューは built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除）。
 
 ## Token & Cost
 
@@ -728,14 +728,14 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 
 ### 0.58.0
 
-- **`code-reviewer` agent を削除** — Anthropic 公式 built-in `Skill: simplify` と責任範囲が完全重複（重複コード / hacky パターン / 効率性 / 不要コメント）していたため統合。agent 数 15 → 14
-- **`quality-gate` skill を軽量再設計** — Step 構成を 3 reviewer 同時 spawn から **simplify → lint → 条件付き Council** に変更:
-  1. **Step 2**: `Skill: simplify` (built-in) でコード品質一般を一括対処
+- **`code-reviewer` agent を削除** — Anthropic 公式 built-in `Skill: code-review` と責任範囲が完全重複（重複コード / hacky パターン / 効率性 / 不要コメント）していたため統合。agent 数 15 → 14
+- **`quality-gate` skill を軽量再設計** — Step 構成を 3 reviewer 同時 spawn から **code-review → lint → 条件付き Council** に変更:
+  1. **Step 2**: `Skill: code-review` (built-in) でコード品質一般を一括対処
   2. **Step 3**: lint + ty (Monitor 並列ストリーミング)
   3. **Step 4**: 条件付き Council
      - `git diff` に **security 系変更** (auth / login / password / token / sql / injection / 認証パス) が含まれる → `security-reviewer` を spawn
      - `plan/requirements.md` がある → `critic` を spawn（範囲整合性検証も担当）
-     - 両方なし → スキップ（軽量タスクは simplify + lint だけで完了）
+     - 両方なし → スキップ（軽量タスクは code-review + lint だけで完了）
 - **影響範囲の整理** — `agents/capabilities.md`, `agents/{security-reviewer,critic,designer,planner,debugger,researcher}.md`, `skills/install/SKILL.md`, `skills/quality-gate/reference.md`, `facets/policies/{agent-memory-guidance,council-output-schema,plan-handoff}.md`, `facets/references/code-review-criteria.md` (削除), `hooks/memory-digest.sh` から `code-reviewer` 参照を更新／削除
 
 ### 0.57.0

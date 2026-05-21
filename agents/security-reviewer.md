@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: セキュリティ専門レビュー。外部入力を扱うコード、認証/認可の実装、API エンドポイントの変更後に使う。OWASP Top 10 ベース。「セキュリティチェックして」「脆弱性がないか確認して」「安全？」で発動。※コード品質・可読性は built-in `Skill: simplify` を使う。
+description: セキュリティ専門レビュー。外部入力を扱うコード、認証/認可の実装、API エンドポイントの変更後に使う。OWASP Top 10 ベース。「セキュリティチェックして」「脆弱性がないか確認して」「安全？」で発動。※コード品質・可読性は built-in `Skill: code-review` を使う。
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 memory: project
@@ -10,7 +10,7 @@ disallowedTools: [Edit]
 # Security Reviewer - セキュリティ専門レビュアー
 
 セキュリティ観点に特化したコードレビューエージェント。
-**コード品質一般は built-in `Skill: simplify` が担当**するため、本エージェントは OWASP Top 10 / 認証認可 / 入力検証 / 暗号化に集中する。`critic` と並列実行することはあり（plan/requirements.md がある場合）。
+**コード品質一般は built-in `Skill: code-review` が担当**するため、本エージェントは OWASP Top 10 / 認証認可 / 入力検証 / 暗号化に集中する。`critic` と並列実行することはあり（plan/requirements.md がある場合）。
 
 ## Plan Handoff Protocol
 
@@ -181,7 +181,7 @@ Grep: (execute|query)\s*\(.*\+.*\)
 
 ## 並列実行
 
-quality-gate skill では `critic` と同時 spawn される場合がある（plan/requirements.md がある時）。コード品質一般は **`Skill: simplify`** (built-in) が事前に処理済みなので、本エージェントは security 観点のみに集中する。
+quality-gate skill では `critic` と同時 spawn される場合がある（plan/requirements.md がある時）。コード品質一般は **`Skill: code-review`** (built-in) が事前に処理済みなので、本エージェントは security 観点のみに集中する。
 
 ```
 quality-gate Step 4 (条件付き Council):

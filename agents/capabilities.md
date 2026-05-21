@@ -88,7 +88,7 @@ TeamCreate → team_name で作成
 | **仮説競合** | debugger × 2-3 | 異なる仮説を並列検証、偏りを排除 |
 | **多角調査** | researcher + analyst + scout | コード・外部情報・要件を同時に調査 |
 | **設計批評** | designer + critic | 設計しながらリアルタイムでレビュー |
-| **コード品質一般** | `Skill: simplify` (built-in) | 重複・hacky・効率を一括レビュー + 自動修正（旧 code-reviewer の役割を Anthropic 公式 skill に置換） |
+| **コード品質一般** | `Skill: code-review` (built-in) | 重複・hacky・効率を一括レビュー + 自動修正（旧 code-reviewer の役割を Anthropic 公式 skill に置換） |
 
 ---
 
@@ -115,7 +115,7 @@ TeamCreate → team_name で作成
 | **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/discovery-council` / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | `/quality-gate` | セキュリティ, 脆弱性, security |
 
-> **コード品質一般のレビュー**は Claude Code の built-in `Skill: simplify` に一任（重複・hacky・効率・不要コメント整理）。旧 `code-reviewer` agent は v0.58.0 で削除（Anthropic 公式 skill との責任重複解消）。
+> **コード品質一般のレビュー**は Claude Code の built-in `Skill: code-review` に一任（重複・hacky・効率・不要コメント整理）。旧 `code-reviewer` agent は v0.58.0 で削除（Anthropic 公式 skill との責任重複解消）。
 
 ---
 
@@ -149,7 +149,7 @@ TeamCreate → team_name で作成
 |-------------|-------|------------|--------|------------|
 | security-reviewer | diff、変更コード | OWASP Top 10 チェック | 脆弱性レポート | 脅威モデル、セキュリティ要件、Calibration Loop |
 
-> **コード品質一般**は built-in `Skill: simplify` を使う（quality-gate skill が自動で呼び出す）。`security-reviewer` + `critic` は条件付き spawn（security 関連変更あり / requirements.md ありの時のみ）。
+> **コード品質一般**は built-in `Skill: code-review` を使う（quality-gate skill が自動で呼び出す）。`security-reviewer` + `critic` は条件付き spawn（security 関連変更あり / requirements.md ありの時のみ）。
 
 ---
 
@@ -168,7 +168,7 @@ Phase 2-3: Pipeline（順次実行）
 ### レビューフロー（/o-m-cc:quality-gate）
 
 ```
-1. Skill: simplify (built-in) — 重複・hacky・効率の自動レビュー + 修正
+1. Skill: code-review (built-in) — 重複・hacky・効率の自動レビュー + 修正
 2. lint + ty (静的解析、Monitor で並列)
 3. 条件付き Council:
      security 関連変更あり → security-reviewer

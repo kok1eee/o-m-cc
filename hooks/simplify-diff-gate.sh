@@ -1,15 +1,18 @@
 #!/bin/bash
-# PreToolUse(Bash): push 前に diff 行数をチェックし、閾値超 + simplify 未実行なら block
+# PreToolUse(Bash): push 前に diff 行数をチェックし、閾値超 + code-review 未実行なら block
 #
 # exit 2 でブロックすると stderr が Claude にフィードバックされ同ターン継続する。
-# メッセージに Skill(simplify) 呼び出し指示を含めることで Claude が自動で整理→再 push する。
+# メッセージに Skill(code-review) 呼び出し指示を含めることで Claude が自動で整理→再 push する。
 #
-# 閾値の調整: 環境変数 SIMPLIFY_DIFF_THRESHOLD で上書き可能（settings.json の env section など）
-# 例: 1000 行まで許容したいなら export SIMPLIFY_DIFF_THRESHOLD=1000
+# 閾値の調整: 環境変数 CODE_REVIEW_DIFF_THRESHOLD で上書き可能（旧 SIMPLIFY_DIFF_THRESHOLD も fallback で読む）
+# 例: 1000 行まで許容したいなら export CODE_REVIEW_DIFF_THRESHOLD=1000
 #
 # 通過方法:
-# 1. Skill(simplify) を実行する → skill-usage.csv に記録され gate を通過
-# 2. SIMPLIFY_DIFF_THRESHOLD を大きくして push（推奨しない）
+# 1. Skill(code-review) を実行する → skill-usage.csv に記録され gate を通過
+# 2. CODE_REVIEW_DIFF_THRESHOLD を大きくして push（推奨しない）
+#
+# 履歴: built-in /simplify は v2.1.146 で /code-review にリネーム。skill-usage.csv の旧
+# 「simplify」エントリも match させて後方互換維持。ファイル名はそのまま (内部参照のみ)。
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,8 +41,8 @@ if ! echo "$COMMAND" | grep -qE '(jj[[:space:]]+git[[:space:]]+push|^[[:space:]]
   exit 0
 fi
 
-# 閾値（環境変数で上書き可能、デフォルト 500 行）
-THRESHOLD="${SIMPLIFY_DIFF_THRESHOLD:-500}"
+# 閾値（新 env var 優先 / 旧名 fallback / default 500 行）
+THRESHOLD="${CODE_REVIEW_DIFF_THRESHOLD:-${SIMPLIFY_DIFF_THRESHOLD:-500}}"
 
 # diff 行数を計算（main@origin / origin/HEAD ベースの変更分）
 DIFF_LINES=0
@@ -60,14 +63,14 @@ if [[ "$DIFF_LINES" -lt "$THRESHOLD" ]]; then
   exit 0
 fi
 
-# 閾値超え。simplify 実行マーカーをチェック
+# 閾値超え。code-review (旧 simplify) 実行マーカーをチェック
 PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-}"
 LOG_FILE="${PLUGIN_DATA}/skill-usage.csv"
 
-# 最終 simplify 実行時刻（skill 列が "simplify" or "*:simplify" の最新タイムスタンプ）
-LAST_SIMPLIFY_ISO=""
+# 最終 code-review / simplify 実行時刻（skill 列が "code-review" / "simplify" / "*:同" の最新タイムスタンプ）
+LAST_REVIEW_ISO=""
 if [[ -f "$LOG_FILE" ]]; then
-  LAST_SIMPLIFY_ISO=$(awk -F, 'NR>1 && $2 ~ /(^|:)simplify$/ {ts=$1} END {print ts}' "$LOG_FILE" 2>/dev/null || true)
+  LAST_REVIEW_ISO=$(awk -F, 'NR>1 && $2 ~ /(^|:)(code-review|simplify)$/ {ts=$1} END {print ts}' "$LOG_FILE" 2>/dev/null || true)
 fi
 
 # 直近コミット時刻
@@ -89,22 +92,22 @@ to_epoch() {
   esac
 }
 
-LAST_SIMPLIFY_EPOCH=$(to_epoch "$LAST_SIMPLIFY_ISO")
+LAST_REVIEW_EPOCH=$(to_epoch "$LAST_REVIEW_ISO")
 
-# 最終コミット時刻 < simplify 時刻 → コミット後に simplify したと判定 → pass
-if [[ "$LAST_SIMPLIFY_EPOCH" -gt "$LAST_COMMIT_EPOCH" && "$LAST_SIMPLIFY_EPOCH" -gt 0 ]]; then
+# 最終コミット時刻 < code-review 時刻 → コミット後に code-review したと判定 → pass
+if [[ "$LAST_REVIEW_EPOCH" -gt "$LAST_COMMIT_EPOCH" && "$LAST_REVIEW_EPOCH" -gt 0 ]]; then
   exit 0
 fi
 
 # Block + CTA
 {
   echo ""
-  echo "🚧 [simplify-diff-gate] push をブロックしました（diff ${DIFF_LINES} 行 > 閾値 ${THRESHOLD} 行）"
-  echo "   最終コミット以降に /simplify が実行されていません。"
+  echo "🚧 [code-review-diff-gate] push をブロックしました（diff ${DIFF_LINES} 行 > 閾値 ${THRESHOLD} 行）"
+  echo "   最終コミット以降に /code-review が実行されていません。"
   echo ""
-  echo "   → 今すぐ Skill(simplify) を呼び出してコードを整理し、その後 push を再試行してください。"
+  echo "   → 今すぐ Skill(code-review) を呼び出してコードを整理し、その後 push を再試行してください。"
   echo ""
-  echo "   ※ 閾値を変更したい場合: settings.json の env で SIMPLIFY_DIFF_THRESHOLD=<行数> を設定"
+  echo "   ※ 閾値を変更したい場合: settings.json の env で CODE_REVIEW_DIFF_THRESHOLD=<行数> を設定"
   echo ""
 } >&2
 

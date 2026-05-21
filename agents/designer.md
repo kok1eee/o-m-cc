@@ -133,7 +133,7 @@ disallowedTools: [Bash]
 
 **クロスリード（タスク開始時に参照）:**
 - `critic` の memory → 過去に却下された計画の理由を把握し、同じ落とし穴を避ける
-- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コード品質一般は built-in `Skill: simplify` が runtime で対処)
+- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コード品質一般は built-in `Skill: code-review` が runtime で対処)
 
 ## 重要
 

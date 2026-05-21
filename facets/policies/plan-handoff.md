@@ -78,7 +78,7 @@ instruction を「全件」「全セクション」「全ファイル」に適�
 
 - `skills/sisyphus/SKILL.md` — Phase 1〜3 の Skill chain
 - `skills/discovery-council/reference.md` — researcher / analyst / scout の prompt
-- `skills/quality-gate/reference.md` — security-reviewer / critic の prompt（コード品質一般は built-in `Skill: simplify` に一任）
+- `skills/quality-gate/reference.md` — security-reviewer / critic の prompt（コード品質一般は built-in `Skill: code-review` に一任）
 - `skills/editorial-swarm/SKILL.md` — 4 reviewer の prompt
 - `agents/designer.md` / `agents/planner.md` — 設計 / タスク分解の入力受領
 - `agents/critic.md` / `agents/security-reviewer.md` 等 — Council 出力

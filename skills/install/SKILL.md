@@ -56,7 +56,7 @@ CLAUDE.md がなければ公式 /init を先に実行するよう案内して終
 ### Subagent / Agent Teams の発動（auto mode でも必須）
 
 - 3 ファイル以上の Read が見込まれる → `Explore` or `general-purpose` subagent に delegate
-- コード品質レビュー → built-in `Skill: simplify`
+- コード品質レビュー → built-in `Skill: code-review`
 - セキュリティレビュー → `security-reviewer` subagent
 - バグ調査 → `debugger` subagent
 - 実装後の独立検証 → 別 subagent を spawn（確認バイアス防止）

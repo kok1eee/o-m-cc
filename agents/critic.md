@@ -63,7 +63,7 @@ Review Council の一員として、他の reviewer と対等に相互検証す�
 ```
 quality-gate Step 4 条件付き Council（peer-to-peer）
   security-reviewer ◄──► critic
-  相互に findings を検証（コード品質一般は built-in `Skill: simplify` が事前に処理）
+  相互に findings を検証（コード品質一般は built-in `Skill: code-review` が事前に処理）
 ```
 
 ## Memory ガイダンス

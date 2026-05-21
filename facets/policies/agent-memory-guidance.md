@@ -113,7 +113,7 @@ Claude Code 2.1.63+ では、**同一リポジトリの git worktree 間で proj
 | scout | critic | レビュー落とし穴→ギャップ分析精度向上 |
 | security-reviewer | critic | 計画整合性のコンテキスト→セキュリティ判定の精度向上（共起 spawn 時のみ）|
 
-> 旧 `code-reviewer` agent は v0.58.0 で削除（built-in `Skill: simplify` に置換）。コード品質一般のクロスリードは不要になった。
+> 旧 `code-reviewer` agent は v0.58.0 で削除（built-in `Skill: code-review` に置換）。コード品質一般のクロスリードは不要になった。
 
 ## Gotcha vs Atom 分類（書き分け）
 

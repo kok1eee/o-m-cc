@@ -10,7 +10,7 @@
 
 各 reviewer は Council Output Schema に従って **1 つの JSON オブジェクト** を返す。集約側（SKILL.md Step 5）が JSON でパースして降格マトリクスを機械的に適用する。
 
-> **コード品質一般** (重複 / hacky / 効率 / 不要コメント) は **`Skill: simplify`** (built-in) が担当（SKILL.md Step 2 で実行済み）。Council でレビュアーを spawn するのは security-reviewer と critic のみ。
+> **コード品質一般** (重複 / hacky / 効率 / 不要コメント) は **`Skill: code-review`** (built-in) が担当（SKILL.md Step 2 で実行済み）。Council でレビュアーを spawn するのは security-reviewer と critic のみ。
 
 ## Agent Prompt テンプレート
 
@@ -190,9 +190,9 @@ fi
 ## 完了時の出力フォーマット
 
 ```
-✅ 品質ゲート通過（simplify + lint + 条件付き Council）
+✅ 品質ゲート通過（code-review + lint + 条件付き Council）
 
-🧹 コード品質（Skill: simplify）
+🧹 コード品質（Skill: code-review）
    修正済み: X件 (重複コード / hacky パターン / 効率改善 / 不要コメント)
 
 🔒 セキュリティ（security-reviewer、起動時のみ）

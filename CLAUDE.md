@@ -118,7 +118,7 @@ Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode �
 
 Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがちだが、これは誤り。subagent は:
 - **メイン context の汚染を避けるための並列実行**（Read 大量 / Grep / WebSearch 等）
-- **独立視点でのレビュー**（security-reviewer / critic、コード品質一般は built-in `Skill: simplify`）
+- **独立視点でのレビュー**（security-reviewer / critic、コード品質一般は built-in `Skill: code-review`）
 - **バイアスなしの検証**（Verifier パターン）
 - **情報の事前整備**（architecture-mapper / code-explorer / convention-scout）
 
@@ -132,7 +132,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | 類似機能を辿りたい | `code-explorer` |
 | アーキテクチャ / 抽象境界を把握したい | `architecture-mapper` |
 | 命名規則 / テストパターン調査 | `convention-scout` |
-| コード品質レビュー | built-in `Skill: simplify`（旧 `code-reviewer` agent は v0.58.0 で削除） |
+| コード品質レビュー | built-in `Skill: code-review`（旧 `code-reviewer` agent は v0.58.0 で削除） |
 | セキュリティレビュー | `security-reviewer` |
 | 計画の妥当性検証 | `critic` |
 | 曖昧な部分の調査 | `researcher` |
@@ -144,7 +144,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | 状況 | チーム構成 |
 |---|---|
 | 要件を並列分析したい | discovery-council（researcher + analyst + scout）|
-| 品質を多角レビューしたい | quality-gate skill（`Skill: simplify` + 条件付き Council: security-reviewer / critic）|
+| 品質を多角レビューしたい | quality-gate skill（`Skill: code-review` + 条件付き Council: security-reviewer / critic）|
 | 記事を多視点で推敲したい | editorial-swarm（anti-ai-slop + fact-checker + narrative-critic + reader-advocate）|
 
 **これらは sisyphus / quality-gate / editorial-swarm skill 内で自動構築されるが、手動でも積極使用可**。
@@ -153,7 +153,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 
 - ❌ 3 ファイル以上の Read を main agent が自分でやる（subagent に delegate すべき）
 - ❌ 大きな実装を main agent だけで完結させる（Verifier subagent を spawn しない）
-- ❌ レビューを「後でやる」と先送り（`Skill: simplify` を即実行すべき）
+- ❌ レビューを「後でやる」と先送り（`Skill: code-review` を即実行すべき）
 - ✅ 並列 agent spawn で context 節約 + 速度向上
 
 ## ワークフロー判断
@@ -179,7 +179,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | クロスモデルレビューで別視点が欲しい・Claude の盲点を別モデルに突かせたい | `/codex:review` or `/codex:adversarial-review`（[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)）。Node.js + Codex CLI + ChatGPT アカウント（無料可）必要。o-m-cc Review Council と補完関係（同モデル複数視点 vs 別モデル）|
 
 **実装完了時のフロー:**
-1. `/simplify` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等）
+1. `/code-review` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等。v2.1.146 で `/simplify` から rename）
 2. Review Council — セキュリティ関連の変更、新規ファイル3つ以上、100行以上の変更がある場合
 3. lint（`bin/lint`）— 常に実行
 

@@ -41,7 +41,7 @@ initialPrompt: "CLAUDE.md を Read してプロジェクトの文脈とワーク
 |------|----------|
 | 機能の計画が必要 | `/sisyphus` — 計画→実装→品質ゲートまで一括 |
 | コードレビュー | `/review` — code + security 並列レビュー |
-| コード品質改善 | `/simplify` — 再利用・品質・効率の自動レビュー+修正 |
+| コード品質改善 | `/code-review` — 再利用・品質・効率の自動レビュー+修正 |
 | 大規模な一括変更 | `/batch` — worktree 並列で PR 自動作成（`/sisyphus` が自動選択） |
 | 最適化・試行錯誤 | `/experiment` — 実験駆動ループ |
 
@@ -52,7 +52,7 @@ initialPrompt: "CLAUDE.md を Read してプロジェクトの文脈とワーク
 | ステップ | やること |
 |---------|---------|
 | テスト/ビルド | テスト実行: 0 failures、ビルド: exit 0 |
-| `/quality-gate` | /simplify + Review Council + 静的解析を一括実行 |
+| `/quality-gate` | /code-review + Review Council + 静的解析を一括実行 |
 
 コミット前・PR 前・実装完了時に `/quality-gate` を実行する。
 
