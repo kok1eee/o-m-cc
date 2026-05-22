@@ -87,4 +87,4 @@ maxTurns: 20
 
 ## 連携
 
-- **`Skill: code-review`** (built-in): 修正後のコード整理（重複・hacky・不要コメント除去）
+- **`Skill: code-review`** (built-in): 修正後のコードレビュー（correctness bug 検出）。cleanup-and-fix は v2.1.147 で削除されたため、format / style 統一は lint、findings 反映は main agent が手動で行う

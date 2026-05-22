@@ -2,7 +2,8 @@
 # PreToolUse(Bash): push 前に diff 行数をチェックし、閾値超 + code-review 未実行なら block
 #
 # exit 2 でブロックすると stderr が Claude にフィードバックされ同ターン継続する。
-# メッセージに Skill(code-review) 呼び出し指示を含めることで Claude が自動で整理→再 push する。
+# メッセージに Skill(code-review) 呼び出し指示を含めることで Claude が自動で
+# レビュー → finding 修正 → 再 push する。
 #
 # 閾値の調整: 環境変数 CODE_REVIEW_DIFF_THRESHOLD で上書き可能（旧 SIMPLIFY_DIFF_THRESHOLD も fallback で読む）
 # 例: 1000 行まで許容したいなら export CODE_REVIEW_DIFF_THRESHOLD=1000
@@ -11,8 +12,10 @@
 # 1. Skill(code-review) を実行する → skill-usage.csv に記録され gate を通過
 # 2. CODE_REVIEW_DIFF_THRESHOLD を大きくして push（推奨しない）
 #
-# 履歴: built-in /simplify は v2.1.146 で /code-review にリネーム。skill-usage.csv の旧
-# 「simplify」エントリも match させて後方互換維持。ファイル名はそのまま (内部参照のみ)。
+# 履歴: built-in /simplify は v2.1.147 で /code-review にリネーム + cleanup-and-fix 動作削除
+# (correctness bug 検出特化に変更)。本 gate は「diff が大きいときレビューを必ず通す」役割
+# として機能継続。skill-usage.csv の旧「simplify」エントリも match させて後方互換維持。
+# ファイル名 simplify-diff-gate.sh はそのまま (内部参照のみ、再 rename の breaking 回避)。
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -63,7 +66,7 @@ if [[ "$DIFF_LINES" -lt "$THRESHOLD" ]]; then
   exit 0
 fi
 
-# 閾値超え。code-review (旧 simplify) 実行マーカーをチェック
+# 閾値超え。code-review (旧 simplify) のレビュー実行マーカーをチェック
 PLUGIN_DATA="${CLAUDE_PLUGIN_DATA:-}"
 LOG_FILE="${PLUGIN_DATA}/skill-usage.csv"
 
@@ -94,7 +97,7 @@ to_epoch() {
 
 LAST_REVIEW_EPOCH=$(to_epoch "$LAST_REVIEW_ISO")
 
-# 最終コミット時刻 < code-review 時刻 → コミット後に code-review したと判定 → pass
+# 最終コミット時刻 < code-review 時刻 → コミット後にレビュー実施と判定 → pass
 if [[ "$LAST_REVIEW_EPOCH" -gt "$LAST_COMMIT_EPOCH" && "$LAST_REVIEW_EPOCH" -gt 0 ]]; then
   exit 0
 fi
@@ -105,7 +108,7 @@ fi
   echo "🚧 [code-review-diff-gate] push をブロックしました（diff ${DIFF_LINES} 行 > 閾値 ${THRESHOLD} 行）"
   echo "   最終コミット以降に /code-review が実行されていません。"
   echo ""
-  echo "   → 今すぐ Skill(code-review) を呼び出してコードを整理し、その後 push を再試行してください。"
+  echo "   → 今すぐ Skill(code-review) を呼び出してレビューを受け、検出された correctness bug を修正してから push を再試行してください。"
   echo ""
   echo "   ※ 閾値を変更したい場合: settings.json の env で CODE_REVIEW_DIFF_THRESHOLD=<行数> を設定"
   echo ""

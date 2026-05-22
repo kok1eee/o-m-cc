@@ -137,7 +137,7 @@ disallowedTools: [Bash]
 
 **クロスリード（タスク開始時に参照）:**
 - `debugger` の memory → バグパターンを把握し、テスト優先度に反映
-- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コード品質は built-in `Skill: code-review` が runtime で対処)
+- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コードレビューは built-in `Skill: code-review`、cleanup-and-fix は v2.1.147 で削除されたため findings は main agent が修正)
 
 ## 重要
 

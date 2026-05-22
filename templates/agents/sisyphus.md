@@ -41,7 +41,7 @@ initialPrompt: "CLAUDE.md を Read してプロジェクトの文脈とワーク
 |------|----------|
 | 機能の計画が必要 | `/sisyphus` — 計画→実装→品質ゲートまで一括 |
 | コードレビュー | `/review` — code + security 並列レビュー |
-| コード品質改善 | `/code-review` — 再利用・品質・効率の自動レビュー+修正 |
+| コードレビュー | `/code-review` — correctness bug を effort 別で検出・報告（cleanup は v2.1.147 で廃止、findings は手動修正） |
 | 大規模な一括変更 | `/batch` — worktree 並列で PR 自動作成（`/sisyphus` が自動選択） |
 | 最適化・試行錯誤 | `/experiment` — 実験駆動ループ |
 

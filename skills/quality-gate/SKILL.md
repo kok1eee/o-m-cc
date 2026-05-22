@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: "コード品質の最終確認。Skill: code-review (built-in) で重複・hacky・効率を自動修正 → lint/ty 静的解析 → 条件付きで security-reviewer / critic を spawn (security 関連変更 or plan/requirements.md がある時のみ)。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
+description: "コード品質の最終確認。Skill: code-review (built-in) で correctness bug を検出 → main agent が findings を修正 → lint/ty 静的解析 → 条件付きで security-reviewer / critic を spawn (security 関連変更 or plan/requirements.md がある時のみ)。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
@@ -85,19 +85,24 @@ Review Council 前に検出する。過去に「5 画面 redesign を要求し�
 | 対象ファイルが全て変更されている | 通常通り Step 1.5 へ |
 | requirements.md に対象範囲が書かれていない | スキップ（抽出不能な場合は検証できない） |
 
-### Step 2: Skill: code-review（コード品質の自動修正）
+### Step 2: Skill: code-review（correctness bug 検出 → main agent が修正）
 
-旧 `code-reviewer` agent の責任範囲（重複コード / hacky パターン / 効率性 / 不要コメント）は Anthropic 公式の **`Skill: code-review`** が完全カバーするため、これに一任する。
+Anthropic 公式の **`Skill: code-review`** に **コードレビュー（correctness bug 検出）** を委譲する。effort level 指定可（`/code-review high` 等）。**v2.1.147 で cleanup-and-fix 動作は削除された**ため、本 skill は bug を **報告するのみ** で自動修正はしない。検出された finding は main agent が読み取って修正コードを書く。
 
 ```
 Skill: code-review
 ```
 
-> **設計理由**: Anthropic 公式 skill (`simplify`、v2.1.146 で `code-review` にリネーム) と独自 agent (`code-reviewer`) の責任範囲が完全に重複していたため、v0.58.0 で `code-reviewer` agent を削除し built-in skill に統合。これで Council を呼ばずに済む軽量タスクが大半（小規模 diff、security 無関係、plan/ なし）になり、quality-gate の所要時間を大幅短縮。
+`/code-review` の出力に correctness bug が含まれていれば、main agent は次のいずれかで対応する:
+- 自分で修正コードを書く（軽微な finding）
+- `debugger` agent を spawn（複雑なバグ）
+- finding を Council reviewer に渡して指示を待つ
+
+> **設計理由**: v0.58.0 当時は `Skill: simplify`（cleanup-and-fix）と独自 `code-reviewer` agent の責任範囲が重複していたため統合した。v2.1.147 で `/simplify` は `/code-review` にリネームされ **cleanup 機能が削除**（bug 検出特化）。現状は cleanup の自動化機能はビルトインから失われており、findings は main agent が手動反映する。format / style 統一は Step 3 の lint に任せる。
 
 ### Step 3: 静的解析（lint + 型チェック）— Monitor で並列ストリーミング
 
-code-review によるコード変更後、言語別の静的解析を **Monitor で並列実行** する。Council を呼ぶ前に lint エラーを潰しておくことで、reviewer に「lint で見つかる軽微な問題」を見せずレビュアーの注意を本質的問題に集中させる。
+code-review の findings を main agent が修正した後、言語別の静的解析を **Monitor で並列実行** する。Council を呼ぶ前に lint エラーを潰しておくことで、reviewer に「lint で見つかる軽微な問題」を見せずレビュアーの注意を本質的問題に集中させる。
 
 ```
 Monitor:

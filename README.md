@@ -9,7 +9,7 @@
 o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追加するプラグインです。
 
 - **Skill Chain**: 要件分析 → 設計 → タスク分解 → 実装 → 品質ゲートを独立スキルとして chain 実行。各フェーズのコンテキストが分離される
-- **Agent Teams**: peer-to-peer マルチエージェント協調。14 の専門エージェントが SendMessage で相互検証（コード品質一般は built-in `Skill: code-review` に委譲）
+- **Agent Teams**: peer-to-peer マルチエージェント協調。14 の専門エージェントが SendMessage で相互検証（コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に委譲）
 - **Monitor 統合**: experiment/quality-gate/sisyphus で Monitor ツールを活用し、長時間処理を非同期化
 - **二段階検証**: verification（自己エビデンス収集）+ Verifier agent（独立 adversarial 検証）で実装者バイアスを排除
 - **Progressive Disclosure**: エージェント定義を3層に分離し、常時ロードは全体の約10%に抑制
@@ -305,7 +305,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 
 ## Agents
 
-合計 14 エージェント（計画 5 + 分析 2 + 品質 1 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。コード品質一般は built-in `Skill: code-review` に一任（v0.58.0 で旧 code-reviewer agent を削除）。
+合計 14 エージェント（計画 5 + 分析 2 + 品質 1 + Prior Art 6）+ capabilities（メタ：選択・ディスパッチの参照ドキュメント）。コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に一任（v0.58.0 で旧 code-reviewer agent を削除）。
 
 ### Planning Agents（計画系）
 
@@ -330,7 +330,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|--------|
 | @security-reviewer | セキュリティレビュー（OWASP Top 10、認証認可、入力検証） | sonnet | default | project |
 
-> **コード品質一般**は v0.58.0 から built-in `Skill: code-review` に一任（重複・hacky・効率・不要コメント）。旧 `code-reviewer` agent は同 version で削除。
+> **コードレビュー**（correctness bug 検出）は v0.58.0 から built-in skill に一任（当時の `Skill: simplify` を v2.1.147 で `Skill: code-review` にリネーム + cleanup-and-fix 動作削除）。旧 `code-reviewer` agent は v0.58.0 で削除。自動 cleanup 機能は失われたため、findings は main agent が手動反映する。
 
 ### Prior Art Agents（feature-flow Phase B 専用）
 
@@ -432,7 +432,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SessionStart | - | `dotfiles-pull.sh` | dotfiles repo を24h throttle で自動 pull（bg 実行） |
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/atom-suggest で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
-| PreToolUse | `Bash` | `simplify-diff-gate.sh` | push 系コマンド前に diff 行数をチェック。閾値（default 500、`SIMPLIFY_DIFF_THRESHOLD` で上書き可）を超え かつ 最終コミット以降に `/simplify` 未実行なら **exit 2 で block**（強制 gate） |
+| PreToolUse | `Bash` | `simplify-diff-gate.sh` | push 系コマンド前に diff 行数をチェック。閾値（default 500、`CODE_REVIEW_DIFF_THRESHOLD` で上書き可。旧 `SIMPLIFY_DIFF_THRESHOLD` も fallback）を超え かつ 最終コミット以降に `/code-review` 未実行なら **exit 2 で block**（強制 review gate）。ファイル名は履歴的に simplify-diff-gate のまま |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
 | TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/atom-suggest で集計可能） |
@@ -571,7 +571,7 @@ Sisyphus Loop の背後にある哲学：
 2. **並列実行**: Agent Teams で3体同時に分析できる。Discovery Council（researcher + analyst + scout）は並列 spawn で時間コストを削減する。ロールプレイは直列実行しかできない
 3. **永続メモリ**: `memory: project` を持つエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を蓄積する。次のセッションでも引き継がれる。ロールプレイのコンテキストはセッション終了で消える
 
-ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コード品質一般のレビューは built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除）。
+ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除、`Skill: simplify` → `Skill: code-review` は v2.1.147 でリネーム + cleanup 動作削除）。
 
 ## Token & Cost
 

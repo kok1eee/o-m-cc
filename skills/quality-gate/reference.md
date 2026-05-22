@@ -10,7 +10,7 @@
 
 各 reviewer は Council Output Schema に従って **1 つの JSON オブジェクト** を返す。集約側（SKILL.md Step 5）が JSON でパースして降格マトリクスを機械的に適用する。
 
-> **コード品質一般** (重複 / hacky / 効率 / 不要コメント) は **`Skill: code-review`** (built-in) が担当（SKILL.md Step 2 で実行済み）。Council でレビュアーを spawn するのは security-reviewer と critic のみ。
+> **コードレビュー一般** (correctness bug 検出) は **`Skill: code-review`** (built-in) が担当（SKILL.md Step 2 で実行済み）。**v2.1.147 で cleanup-and-fix 動作は削除**されたため、findings は main agent が読んで修正反映する。Council でレビュアーを spawn するのは security-reviewer と critic のみ。
 
 ## Agent Prompt テンプレート
 

@@ -118,7 +118,7 @@ Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode �
 
 Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがちだが、これは誤り。subagent は:
 - **メイン context の汚染を避けるための並列実行**（Read 大量 / Grep / WebSearch 等）
-- **独立視点でのレビュー**（security-reviewer / critic、コード品質一般は built-in `Skill: code-review`）
+- **独立視点でのレビュー**（security-reviewer / critic、コードレビュー（correctness bug 検出）は built-in `Skill: code-review`）
 - **バイアスなしの検証**（Verifier パターン）
 - **情報の事前整備**（architecture-mapper / code-explorer / convention-scout）
 
@@ -179,9 +179,9 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | クロスモデルレビューで別視点が欲しい・Claude の盲点を別モデルに突かせたい | `/codex:review` or `/codex:adversarial-review`（[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)）。Node.js + Codex CLI + ChatGPT アカウント（無料可）必要。o-m-cc Review Council と補完関係（同モデル複数視点 vs 別モデル）|
 
 **実装完了時のフロー:**
-1. `/code-review` — コードを整理（ネイティブスキル。重複コード削除、不要コメント除去等。v2.1.146 で `/simplify` から rename）
+1. `/code-review` — コードレビュー（ネイティブスキル。correctness bug を effort 別で報告、`--comment` で GitHub PR インラインコメント可。v2.1.147 で `/simplify` から rename + cleanup 動作削除。検出された finding は main agent が修正）
 2. Review Council — セキュリティ関連の変更、新規ファイル3つ以上、100行以上の変更がある場合
-3. lint（`bin/lint`）— 常に実行
+3. lint（`bin/lint`）— 常に実行（format / style 統一を担当、cleanup 自動化のフォロー）
 
 **原則: 迷ったら `/plan` に入る。** 計画なしで進むと後戻りが大きい。
 
