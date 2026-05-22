@@ -47,6 +47,8 @@ $ARGUMENTS
 
 ## 実行フロー
 
+> **fork コンテキスト制約**: 本スキルは `context: fork` + `allowed-tools` に **Edit / Write を含めない設計**（呼び出し元のメインコンテキストを Council の verbose な findings で汚染しないため）。fork agent はファイルを **直接編集できない**。修正が必要な場合は、(a) 軽微なら findings を fork の最終 summary に列挙して **呼び出し元（main / sisyphus）に修正を委ねる**、(b) 複雑なら fork 内から **Agent ツールで debugger 等を spawn**（debugger は Edit/Write を持つ）して修正する。
+
 ### Step 1: 変更差分の取得
 
 上記の動的注入で概要は把握済み。詳細な diff を取得します：
@@ -85,18 +87,21 @@ Review Council 前に検出する。過去に「5 画面 redesign を要求し�
 | 対象ファイルが全て変更されている | 通常通り Step 1.5 へ |
 | requirements.md に対象範囲が書かれていない | スキップ（抽出不能な場合は検証できない） |
 
-### Step 2: Skill: code-review（correctness bug 検出 → main agent が修正）
+### Step 2: Skill: code-review（correctness bug 検出 → 呼び出し元 / debugger spawn で修正）
 
-Anthropic 公式の **`Skill: code-review`** に **コードレビュー（correctness bug 検出）** を委譲する。effort level 指定可（`/code-review high` 等）。**v2.1.147 で cleanup-and-fix 動作は削除された**ため、本 skill は bug を **報告するのみ** で自動修正はしない。検出された finding は main agent が読み取って修正コードを書く。
+Anthropic 公式の **`Skill: code-review`** に **コードレビュー（correctness bug 検出）** を委譲する。effort level 指定可（`/code-review high` 等）。**v2.1.147 で cleanup-and-fix 動作は削除された**ため、本 skill は bug を **報告するのみ** で自動修正はしない。
 
 ```
 Skill: code-review
 ```
 
-`/code-review` の出力に correctness bug が含まれていれば、main agent は次のいずれかで対応する:
-- 自分で修正コードを書く（軽微な finding）
-- `debugger` agent を spawn（複雑なバグ）
-- finding を Council reviewer に渡して指示を待つ
+**fork 内の findings 取り扱い** (上記 fork 制約を参照):
+
+1. **findings をメモする**: 出力された bug list（ファイル / 行 / 説明）を保持して、Step 9 の最終 summary に必ず列挙すること（fork 終了時に caller に渡る）
+2. **修正の振り分け**:
+   - **軽微な finding**: 修正は **呼び出し元（main / sisyphus）** に委ねる → fork の summary に "[fix needed]" マーカー付きで列挙し、Step 3 へ進む
+   - **複雑なバグ**: Step 6 と同じ要領で `Agent` ツールから **debugger を spawn** して fork 内で修正完結させる（debugger は Edit/Write を持つ）
+3. **caller 側の動作**: fork 終了後、main / sisyphus は summary を読んで該当箇所を Edit し、必要なら quality-gate を再実行して通過確認する（iterative ループ）
 
 > **設計理由**: v0.58.0 当時は `Skill: simplify`（cleanup-and-fix）と独自 `code-reviewer` agent の責任範囲が重複していたため統合した。v2.1.147 で `/simplify` は `/code-review` にリネームされ **cleanup 機能が削除**（bug 検出特化）。現状は cleanup の自動化機能はビルトインから失われており、findings は main agent が手動反映する。format / style 統一は Step 3 の lint に任せる。
 
@@ -197,10 +202,10 @@ TeamDelete
 
 Critical が見つかった場合（Council 起動かつ集約結果に Critical あり）、**自動で修正を試みる**（ノンストップ原則）：
 
-1. 問題箇所を特定し、修正を適用
+1. **`Agent` ツールで debugger を spawn して修正を適用**（fork は Edit/Write 不可。debugger の tools: には Edit/Write が含まれるため、spawn 経由で修正可能）
 2. **Step 3 に戻り lint を再実行**（修正で型エラーや構文エラーが出ていないかチェック）
 3. 必要なら Step 4 の Council を再実行して修正を確認
-4. 修正不可能な場合は AskUserQuestion で判断を委ねる
+4. 修正不可能な場合は AskUserQuestion で判断を委ねる、または summary に "[fix needed]" として列挙し caller に委ねる
 
 ### Step 7: 最終 lint
 
@@ -219,6 +224,31 @@ lint
 - **静的解析で Error が残った**: 例 `lint 失敗: shellcheck 3 errors in hooks/foo.sh`
 
 メッセージは行動可能な情報でリードし、200 文字以内。
+
+### Step 9: fork 終了時の summary（必須）
+
+fork の **最後のメッセージ** が呼び出し元（main / sisyphus）に戻る成果物になる。以下を必ず含めること（caller がこの summary だけで状況把握できる粒度で）:
+
+- **総合判定**: 通過 / 修正必要 / 停止（ユーザー判断待ち）のいずれか
+- **Step 2 code-review findings**: `[fix needed]` マーカー付きで「ファイル:行 — 内容」形式で列挙（fork 内で修正済みの分は `[fixed by debugger]` マーカー付きで別記）
+- **Step 3 lint 結果**: 各言語の error / warning 件数。残存 error があれば該当ファイル列挙
+- **Step 4 Council 結果**（実行時のみ）: Critical / Warning の件数、Critical の代表例
+- **caller への次アクション**: 「Edit で fix → quality-gate 再実行」「修正不可なのでユーザー判断必要」等
+
+例:
+```
+[quality-gate summary]
+判定: 修正必要 (Critical 2, fix needed)
+
+Step 2 code-review findings:
+  [fix needed] src/auth.ts:42 — uninitialized password before null check
+  [fixed by debugger] src/utils.ts:88 — off-by-one in loop boundary
+
+Step 3 lint: ruff 0 / ty 0 / shellcheck 0 errors
+Step 4 Council: 未実行 (security-related changes なし / requirements.md なし)
+
+次アクション: src/auth.ts:42 を Edit で fix → quality-gate を再実行
+```
 
 ## Gotchas
 
