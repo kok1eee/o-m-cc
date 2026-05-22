@@ -1,4 +1,4 @@
-# o-m-cc v0.58.0
+# o-m-cc v0.59.0
 
 [English](README_en.md)
 
@@ -725,6 +725,18 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.59.0
+
+- **`/simplify` → `/code-review` 全面置換（v2.1.146-147 対応）** — built-in skill のリネームに追従。v2.1.147 で **cleanup-and-fix 動作が削除**され bug 検出特化に変わったため、A047 の機械的置換から A049 で semantic 再修正を実施。`hooks/simplify-diff-gate.sh` の awk pattern を `(code-review|simplify)` 両対応、env var を `CODE_REVIEW_DIFF_THRESHOLD` に rename（旧 `SIMPLIFY_DIFF_THRESHOLD` も fallback）、CTA を「整理」→「レビュー → finding 修正」に。CLAUDE.md / README / 7 agents / 2 facets / 3 skills / template / hook の cleanup を期待する記述を「correctness bug 検出 → 呼び出し元 / debugger spawn で修正」モデルに統一
+- **`quality-gate` SKILL.md の fork 制約と findings フロー明確化** — `context: fork` + `allowed-tools` に Edit/Write がない設計を明文化。修正は (a) 軽微なら caller (main / sisyphus) に委ねる、(b) 複雑なら fork 内で `Agent` ツールで debugger を spawn の 2 経路を Step 2 / Step 6 で規定。Step 9 新設で fork 終了時の summary 必須項目（判定 / findings / lint / Council / 次アクション）を構造化
+- **跨マシン同期（Mac ↔ EC2）対応** — `${CLAUDE_PLUGIN_DATA}/*.csv` (skill-usage / skill-duration / agent-duration) が per-machine で偏る問題に対処。`bin/sync-plugin-data setup/status` 新設で dotfiles リポにぶら下げて symlink 化、git の `merge=union` で append-only 行を両側保持。EC2 で初回 setup 時は既存 CSV と dotfiles 経由の他マシン CSV を `sort -u` で merge してデータロスなく統合
+- **`agent-duration.csv` 追跡（v2.1.144 対応）** — `hooks/agent-duration-log.sh` 新設で SubagentStop hook から agent dispatch の elapsed duration を記録。`.duration_ms` / `.duration` / `.elapsed_ms` / `.elapsed_duration_ms` を順試行、未対応なら 0 で集計除外。`bin/atom-suggest` に **Agent duration stats** セクション追加
+- **`/goal` vs `/o-m-cc:sisyphus` 役割差明記（v2.1.139 対応）** — CLAUDE.md ワークフローテーブルと Skill 発動ガイドラインに `/goal`（多ターン継続・auto mode で発動）と `/o-m-cc:sisyphus`（Agent Teams + quality-gate、明示起動推奨）の使い分けを規定。エスカレーションを「直接 → /goal → /sisyphus 明示」の 3 段階に
+- **per-invocation cost 透明性拡張（v2.1.139/143 対応）** — README Token & Cost 節を `claude plugin details o-m-cc` の per-component 実測値で再構成。15 スキル全部の on-invoke / always-on + 主要 agent の on-invoke を掲載、always-on を ~4.4k に更新、Council は skill + 構成 agent の和になる旨を明記
+- **`install` スキルの CLAUDE.md 注入内容更新** — Step 2 で他プロジェクトの CLAUDE.md に追記するワークフローセクションを `<!-- o-m-cc: start/end -->` マーカー付き（二重注入防止）に。`/goal` 行追加 + エスカレーション 3 段階 + Subagent / Agent Teams 発動ガイダンス
+- **`hooks/simplify-diff-gate.sh` のメッセージを directive 語に変更（A020）** — 「次のいずれか」という選択肢語が auto mode で Claude が自動 `/simplify` 呼び出しを判断できない原因だったため、「今すぐ Skill(code-review) を呼んで再 push」と命令形に
+- **v2.1.143-148 release-notes から atom 蓄積** — A025-A053 (29 件) を atoms.csv に登録。`/goal` evaluator 修正 / SubagentStop hook の新フィールド / context: fork 無限ループ修正 / Agent Teams 非 ASCII 名 / bare var assignment perm bypass / claude agents --json / Plugin component counts doubled 等を追跡
 
 ### 0.58.0
 
