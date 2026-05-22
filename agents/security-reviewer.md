@@ -1,6 +1,6 @@
 ---
 name: security-reviewer
-description: セキュリティ専門レビュー。外部入力を扱うコード、認証/認可の実装、API エンドポイントの変更後に使う。OWASP Top 10 ベース。「セキュリティチェックして」「脆弱性がないか確認して」「安全？」で発動。※コードレビュー一般（correctness bug 検出）は built-in `Skill: code-review` を使う。
+description: "セキュリティ専門レビュー。外部入力を扱うコード、認証/認可の実装、API エンドポイントの変更後に使う。OWASP Top 10 ベース。「セキュリティチェックして」「脆弱性がないか確認して」「安全？」で発動。※コードレビュー一般（correctness bug 検出）は built-in `Skill: code-review` を使う。"
 tools: Read, Glob, Grep, Bash, Write
 model: sonnet
 memory: project

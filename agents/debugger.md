@@ -1,6 +1,6 @@
 ---
 name: debugger
-description: 体系的デバッグ。バグ、テスト失敗、予期しない動作に遭遇したとき、修正を試みる前に根本原因を特定するために使う。推測による修正を防止。「なぜ動かない？」「原因を調べて」「テストが落ちる」「バグを調査して」で発動。※コードレビューは built-in `Skill: code-review`、設計判断で詰まったら built-in `/advisor` を使う。
+description: "体系的デバッグ。バグ、テスト失敗、予期しない動作に遭遇したとき、修正を試みる前に根本原因を特定するために使う。推測による修正を防止。「なぜ動かない？」「原因を調べて」「テストが落ちる」「バグを調査して」で発動。※コードレビューは built-in `Skill: code-review`、設計判断で詰まったら built-in `/advisor` を使う。"
 tools: Read, Glob, Grep, Bash, ToolSearch, AskUserQuestion, Write, Edit
 model: sonnet
 memory: project
