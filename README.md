@@ -16,9 +16,10 @@ o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追�
 
 ## 動作環境
 
+- **Claude Code v2.1.146+ 必須（v0.59.0 以降）** — built-in `/code-review` skill（旧 `/simplify`）に依存。quality-gate / simplify-diff-gate.sh / 各 agent description が `/code-review` を前提に書かれているため、v2.1.145 以前では未知 skill エラーになる。**旧 CC を使う場合は v0.58.0 を pin** すること
 - **macOS / Linux**: フルサポート
 - **Windows**: WSL (Windows Subsystem for Linux) 経由で使用してください
-- **Claude Code v2.1.108+**: built-in `/recap` をセッション文脈の復元に利用します。v2.1.110+ なら telemetry 無効環境（Bedrock / Vertex / `DISABLE_TELEMETRY`）でも `/recap` が動作します
+- **その他の依存 CC 機能**: `/recap` (v2.1.108+), `/goal` (v2.1.139+), `--effort` (v2.1.133+), `terminalSequence` hook output (v2.1.141+), `claude agents --json` (v2.1.145+)
 - **jq**: hooks 用（`brew install jq` / `apt install jq`）
 
 ## Quick Start
