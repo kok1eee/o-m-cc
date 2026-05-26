@@ -25,3 +25,4 @@ O023,A062,2026-05-26,doc,agents/planner.md,Factor 5: TaskCreate metadata に pip
 O024,A061,2026-05-26,doc,agents/capabilities.md,codegraph を任意の外部 companion として記載（code-explorer/architecture-mapper/Explore のトークン効率化、依存ではない）,status:pass
 O025,A054,2026-05-26,other,bin/sync-plugin-data,(a)(b)(c) 全対応: DIR symlink early-exit + mv 前 rm -f + status の DIR-SYMLINK 表示。OWASP-NIST 監査 Finding2 と同件,status:pass
 O026,A056,2026-05-26,other,"bin/sync-plugin-data,.gitignore",.gitignore 作成済み + setup/status で DIR symlink 構成を検出し .gitignore へ誘導,status:pass
+O027,A041,2026-05-26,doc,README.md,Quick Start に /plugin Browse 事前確認を案内追加,status:pass

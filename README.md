@@ -28,13 +28,17 @@ o-m-cc は、Claude Code に仕様駆動開発（SDD）ワークフローを追�
 # 1. marketplace 追加
 claude plugin marketplace add kok1eee/o-m-cc
 
-# 2. プラグインインストール
+# 2. （任意）install 前に中身を確認
+#    /plugin の Browse / Discover 画面で o-m-cc の commands / agents /
+#    skills / hooks / MCP / LSP 一覧を install 前にプレビューできる（v2.1.145+）
+
+# 3. プラグインインストール
 claude plugin install o-m-cc@kok1eee
 
-# 3. プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化）
+# 4. プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化）
 /o-m-cc:install
 
-# 4. あとは普通に作業するだけ
+# 5. あとは普通に作業するだけ
 「ログインボタンのバグを修正して」
 → 自動的に Sisyphus モードで動作
 ```
