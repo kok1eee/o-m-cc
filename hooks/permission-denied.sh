@@ -41,8 +41,10 @@ if [[ -n "${CLAUDE_PLUGIN_DATA:-}" ]]; then
   mkdir -p "${CLAUDE_PLUGIN_DATA}"
   DENIAL_LOG="${CLAUDE_PLUGIN_DATA}/permission-denials.jsonl"
   TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+  # command は先頭 200 文字に切り詰めて記録（拒否されたコマンドに秘密情報が
+  # 含まれていた場合の平文残留を抑える。ログ衛生 / OWASP-NIST 監査 P1）
   echo "$HOOK_INPUT" | jq -c --arg ts "$TIMESTAMP" \
-    '{timestamp: $ts, tool: (.tool_name // .tool // "unknown"), command: (.tool_input.command // .input.command // null)}' \
+    '{timestamp: $ts, tool: (.tool_name // .tool // "unknown"), command: ((.tool_input.command // .input.command // null) | if type == "string" then .[:200] else . end)}' \
     >> "$DENIAL_LOG" 2>/dev/null || true
 
   # ログローテーション（100行超過時）

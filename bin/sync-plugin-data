@@ -32,6 +32,12 @@ cmd_status() {
   echo "DOT_DIR:  $DOT_DIR"
   echo "SRC_DIR:  $SRC_DIR"
   echo ""
+  # DIR symlink 構成（SRC_DIR 自体が DOT_DIR への symlink）なら個別ファイルは見ない（A054(c)）
+  if [[ "$(realpath "$SRC_DIR" 2>/dev/null)" == "$(realpath "$DOT_DIR" 2>/dev/null)" ]] && [[ -e "$SRC_DIR" ]]; then
+    echo "  DIR-SYMLINK 構成 (OK) — SRC_DIR が DOT_DIR への symlink。全ファイルが dotfiles 経由で共有済み。"
+    echo "  per-machine 除外は $DOT_DIR/.gitignore で管理。"
+    return
+  fi
   for csv in "${CSVS[@]}"; do
     src="$SRC_DIR/$csv"
     dot="$DOT_DIR/$csv"
@@ -80,6 +86,17 @@ cmd_setup() {
 
   mkdir -p "$DOT_DIR" "$SRC_DIR"
 
+  # SRC_DIR 自体が DOT_DIR を指す symlink（DIR symlink 構成）の検出。
+  # この場合 src と dot は同一実体になり、個別ファイル symlink は self-loop
+  # （'Too many levels of symbolic links'）を生む。ファイルは既にディレクトリ
+  # 経由で dotfiles と共有済みなので、個別 symlink 化は不要 → early exit。
+  # （A054/A056 / OWASP-NIST 監査 P1: 過去に実際に self-loop 事故が発生）
+  if [[ "$(realpath "$SRC_DIR" 2>/dev/null)" == "$(realpath "$DOT_DIR" 2>/dev/null)" ]]; then
+    echo "[skip] SRC_DIR が DOT_DIR への symlink（DIR symlink 構成）= ファイルは既に dotfiles 経由で共有済み。"
+    echo "  個別ファイル symlink 不要。per-machine ファイルの除外は $DOT_DIR/.gitignore で管理。"
+    exit 0
+  fi
+
   for csv in "${CSVS[@]}"; do
     src="$SRC_DIR/$csv"
     dot="$DOT_DIR/$csv"
@@ -93,6 +110,8 @@ cmd_setup() {
     if [[ -f "$src" && ! -L "$src" ]]; then
       tmp=$(mktemp)
       merge_csv "$src" "$dot" "$tmp"
+      # dot が stale symlink だと mv がリンク先に書いて self-loop しうるため先に実体化を保証（A054(b)）
+      rm -f "$dot"
       mv "$tmp" "$dot"
       rm -f "$src"
       ln -sf "$dot" "$src"

@@ -185,6 +185,15 @@ debugger   — バグの根本原因調査 → 修正
 
 ---
 
+## 任意の外部 companion（コード探索のトークン効率化）
+
+`code-explorer` / `architecture-mapper` / built-in `Explore` は grep / glob / Read でコードベースを探索するためトークンを消費する。外部 MCP **[codegraph](https://github.com/colbymchenry/codegraph)**（100% ローカル・自己完結・API キー不要）を併用すると、事前インデックス化したコード知識グラフを `codegraph_context` / `codegraph_trace` 等で直接クエリでき、観測ベンチで **トークン -57% / ツール呼び出し -71%** の削減。Progressive Disclosure / context 効率の方針と整合する。
+
+- o-m-cc の**依存ではない**（任意導入。Lightweight 原則は維持）。インストールすると `~/.claude/settings.json` に自動登録される
+- 補完関係: codegraph は「コード構造の事前インデックス探索」、o-m-cc の探索 agent は「探索結果を踏まえた分析・判断」。codegraph で位置特定 → agent が分析、という分業が効く
+
+---
+
 ## 詳細ファイル
 
 各エージェントの詳細な振る舞いは個別ファイルを参照:
