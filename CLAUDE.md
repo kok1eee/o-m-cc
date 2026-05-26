@@ -179,7 +179,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | クロスモデルレビューで別視点が欲しい・Claude の盲点を別モデルに突かせたい | `/codex:review` or `/codex:adversarial-review`（[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)）。Node.js + Codex CLI + ChatGPT アカウント（無料可）必要。o-m-cc Review Council と補完関係（同モデル複数視点 vs 別モデル）|
 
 **実装完了時のフロー:**
-1. `/code-review` — コードレビュー（ネイティブスキル。correctness bug を effort 別で報告、`--comment` で GitHub PR インラインコメント可。v2.1.147 で `/simplify` から rename + cleanup 動作削除。検出された finding は main agent が修正）
+1. built-in `/code-review` — コードレビュー（Anthropic 公式ネイティブスキル。correctness bug を effort 別で報告、`--comment` で GitHub PR インラインコメント可。v2.1.147 で `/simplify` から rename + cleanup 動作削除。検出された finding は main agent が修正）。※ marketplace plugin `code-review:code-review`（PR レビュー）とは別物。o-m-cc が指すのは常に built-in の方
 2. Review Council — セキュリティ関連の変更、新規ファイル3つ以上、100行以上の変更がある場合
 3. lint（`bin/lint`）— 常に実行（format / style 統一を担当、cleanup 自動化のフォロー）
 

@@ -106,9 +106,9 @@ fi
 {
   echo ""
   echo "🚧 [code-review-diff-gate] push をブロックしました（diff ${DIFF_LINES} 行 > 閾値 ${THRESHOLD} 行）"
-  echo "   最終コミット以降に /code-review が実行されていません。"
+  echo "   最終コミット以降に built-in /code-review が実行されていません。"
   echo ""
-  echo "   → 今すぐ Skill(code-review) を呼び出してレビューを受け、検出された correctness bug を修正してから push を再試行してください。"
+  echo "   → 今すぐ built-in Skill(code-review)（Anthropic 公式、correctness bug 検出。marketplace plugin code-review:code-review とは別物）を呼び出してレビューを受け、検出された bug を修正してから push を再試行してください。"
   echo ""
   echo "   ※ 閾値を変更したい場合: settings.json の env で CODE_REVIEW_DIFF_THRESHOLD=<行数> を設定"
   echo ""
