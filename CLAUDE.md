@@ -43,7 +43,7 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 | `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
 | `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（rm しない）|
 | `plan/progress.md` | experiment | experiment (次 iteration) | 試行履歴（keep/revert 判断）|
-| TaskCreate / TaskUpdate | planner, sisyphus | 全 teammate | ネイティブタスクリスト（Claude Code 機能）|
+| TaskCreate / TaskUpdate | planner, sisyphus | 全 teammate | ネイティブタスクリスト（Claude Code 機能）。atoms backlog 由来の実装はタスク `metadata` に `pipeline_id`/`atom_id` を付与して業務状態（CSV）と橋渡し（12-factor Factor 5、CSV への複製はしない軽量規約）|
 | `.claude/journal.md` | handoff | session-resume.sh, 別マシン | EC2 跨ぎ引き継ぎ（Recap + Next Actions）|
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（ユーザープロファイル・フィードバック・プロジェクト知見）|
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |

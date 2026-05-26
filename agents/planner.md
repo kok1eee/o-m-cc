@@ -86,6 +86,7 @@ disallowedTools: [Bash]
    - **subject**: `N-M: タスク名`（N=フェーズ番号, M=タスク番号）
    - **description**: What/Where/How/Why/Verify をまとめた説明
    - **activeForm**: `タスク名を実装中` など進行形
+   - **metadata**（業務状態への linkage、12-factor Factor 5）: この実装が atoms backlog 由来なら `metadata: {pipeline_id: "P00X", atom_id: "A0XX"}` を付与する。`.claude/pipeline.csv` で plan_path が今回の design.md/requirements.md を指す行から id を引く。**揮発的な native タスクと永続 CSV を context 内で橋渡しする軽量規約**（CSV への複製はしない＝native 機能と重複させない）。atoms backlog 由来でない単発タスクは付与不要
 2. `TaskUpdate` で依存関係を設定:
    - `**依存**:` フィールドに記載されたタスクを `addBlockedBy` に設定
    - 明示的な依存がない場合、前フェーズの全タスクが完了しないと着手不可

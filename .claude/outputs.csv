@@ -21,3 +21,4 @@ O019,A024,2026-05-09,other,code-reviewer agent 削除 (重複: built-in Skill: s
 O020,A057,2026-05-26,code,"CLAUDE.md,hooks/simplify-diff-gate.sh",code-review 名前衝突を built-in 明示に統一,status:pass
 O021,A058,2026-05-26,skill,skills/discovery-council/SKILL.md,fallback 追加で exit 1 回避,status:pass
 O022,P006,2026-05-26,doc,plan/12factor-audit.md,12-factor self-audit 完了: 中核4原則充足・Factor5が唯一の能動改善余地,status:pass;fr_coverage:100%
+O023,A062,2026-05-26,doc,agents/planner.md,Factor 5: TaskCreate metadata に pipeline_id/atom_id を載せる軽量規約。native↔CSV を context 内で橋渡し（CSV 複製はせず原則準拠）。業務状態 atom→pipeline→output は既に CSV で統合済みと判明,status:pass
