@@ -1,0 +1,179 @@
+#!/bin/bash
+# edd-check — EDD（評価駆動開発）閾値ゲート + drift-detect（FR-5）
+#
+# bin/validate-plan --metrics の FR カバレッジと outputs.csv の failure rate を読み、
+# 閾値超えを検知したら bin/atoms add で atoms.csv に通知 atom を登録する（Sensors 止まり：
+# 自動コード修正はしない）。quality-gate から呼び出し可能なインターフェース（引数なし / --quiet）。
+#
+# Usage:
+#   edd-check            検知内容を stdout に表示、閾値超えで exit 1
+#   edd-check --quiet    stdout 抑制、exit code のみ
+#
+# 閾値（環境変数で上書き可）:
+#   EDD_FR_COVERAGE_MIN  FR カバレッジ率の下限（default 70）
+#   EDD_FAILURE_RATE_MAX 直近 10 件の failure rate 上限 %（default 30）
+#
+# Exit: 0 = 全指標が閾値内 / 1 = いずれかが閾値超え（重複 atom は skip するが exit は 1）
+
+set -euo pipefail
+
+QUIET=false
+[[ "${1:-}" == "--quiet" ]] && QUIET=true
+
+EDD_FR_COVERAGE_MIN="${EDD_FR_COVERAGE_MIN:-70}"
+EDD_FAILURE_RATE_MAX="${EDD_FAILURE_RATE_MAX:-30}"
+
+# --- repo root 検出（jj → git → script の親）---
+ROOT=""
+if command -v jj >/dev/null 2>&1 && jj root >/dev/null 2>&1; then
+  ROOT=$(jj root 2>/dev/null)
+elif command -v git >/dev/null 2>&1 && git rev-parse --show-toplevel >/dev/null 2>&1; then
+  ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+else
+  ROOT=$(cd "$(dirname "$0")/.." && pwd)
+fi
+cd "$ROOT"
+
+OUTPUTS_CSV="$ROOT/.claude/outputs.csv"
+VALIDATE="$ROOT/bin/validate-plan"
+ATOMS="$ROOT/bin/atoms"
+
+say() { [[ "$QUIET" == false ]] && echo "$@"; return 0; }
+
+# register_atom <indicator> <content>
+# 指標種別ごとに直近 7 日以内の重複 edd-drift atom があれば skip（重複防止）。
+# Sensors 止まり：atoms.csv への追記のみ。コード書き換えはしない。
+register_atom() {
+  local indicator="$1"
+  local content="$2"
+  local atoms_csv="$ROOT/.claude/atoms.csv"
+
+  # 同一指標で直近 7 日以内の edd-drift atom が存在するか（python で CSV parse）
+  local dup="OK"
+  if [[ -f "$atoms_csv" ]]; then
+    dup=$(ATOMS_CSV="$atoms_csv" INDICATOR="$indicator" python3 <<'PY'
+import csv, datetime, os
+path = os.environ["ATOMS_CSV"]
+indicator = os.environ["INDICATOR"]
+now = datetime.datetime.now(datetime.UTC)
+try:
+    with open(path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+except OSError:
+    rows = []
+for r in rows:
+    if r.get("source") == "edd-drift" and r.get("content", "").startswith(indicator):
+        try:
+            d = datetime.datetime.fromisoformat(r.get("created_at", "")).replace(tzinfo=datetime.UTC)
+            if (now - d).days < 7:
+                print("DUP")
+                break
+        except ValueError:
+            continue
+else:
+    print("OK")
+PY
+)
+  fi
+
+  if [[ "$dup" == "DUP" ]]; then
+    say "[edd-check]   → 直近 7 日に同種の edd-drift atom あり、登録 skip"
+    return 0
+  fi
+
+  if [[ -x "$ATOMS" ]]; then
+    "$ATOMS" add "edd-drift" "$content" "bin/edd-check で詳細確認" >/dev/null 2>&1 || true
+    say "[edd-check]   → atom 登録（edd-drift / ${indicator}）"
+  fi
+  return 0
+}
+
+violated=0
+
+# --- 指標1: FR カバレッジ（validate-plan --metrics の JSON）---
+FR_COVERAGE=0
+FR_TOTAL=0
+if [[ -x "$VALIDATE" ]]; then
+  METRICS_JSON=$("$VALIDATE" --metrics 2>/dev/null || echo '{}')
+  FR_COVERAGE=$(printf '%s' "$METRICS_JSON" | python3 -c 'import json,sys
+try: print(json.load(sys.stdin).get("fr_coverage", 0))
+except Exception: print(0)')
+  FR_TOTAL=$(printf '%s' "$METRICS_JSON" | python3 -c 'import json,sys
+try: print(json.load(sys.stdin).get("fr_total", 0))
+except Exception: print(0)')
+fi
+# python3 不在等で出力が空でも算術比較がクラッシュしないようガード（set -e 対策）
+FR_COVERAGE="${FR_COVERAGE:-0}"
+FR_TOTAL="${FR_TOTAL:-0}"
+
+if [[ "$FR_TOTAL" -gt 0 ]]; then
+  if [[ "$FR_COVERAGE" -lt "$EDD_FR_COVERAGE_MIN" ]]; then
+    say "[edd-check] FR coverage: ${FR_COVERAGE}% < 閾値 ${EDD_FR_COVERAGE_MIN}% → 閾値超え"
+    violated=1
+    register_atom "FR coverage" "FR coverage が閾値を下回った（値: ${FR_COVERAGE}%、閾値: ${EDD_FR_COVERAGE_MIN}%）" || true
+  else
+    say "[edd-check] FR coverage: ${FR_COVERAGE}% ≥ 閾値 ${EDD_FR_COVERAGE_MIN}% → OK"
+  fi
+else
+  say "[edd-check] FR coverage: plan なし（fr_total=0）→ スキップ"
+fi
+
+# --- 指標2: failure rate（outputs.csv の直近 10 件、python で CSV parse: ADR-2）---
+# 出力: "<pct> <sample>"。sample<3 は -1（誤検知防止、A-4）。
+FAILURE_OUT="-1 0"
+if [[ -f "$OUTPUTS_CSV" ]]; then
+  FAILURE_OUT=$(OUTPUTS_CSV="$OUTPUTS_CSV" python3 <<'PY'
+import csv, os, re
+path = os.environ["OUTPUTS_CSV"]
+KEYS = ("fr_coverage", "duration_ms", "status", "token_cost")
+def parse(m):
+    out = {}
+    for pair in (m or "").split(";"):
+        if ":" in pair:
+            k, _, v = pair.partition(":")
+            k = k.strip()
+            if k in KEYS:
+                out[k] = v.strip()
+    return out
+def id_num(r):
+    digits = re.sub(r"^\D+", "", r.get("id", "") or "")
+    return int(digits) if digits.isdigit() else 0
+try:
+    with open(path, newline="", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+except OSError:
+    rows = []
+rows.sort(key=id_num, reverse=True)
+parsed = [parse(r.get("metric", "")) for r in rows][:10]
+structured = [p for p in parsed if p]
+statuses = [p["status"] for p in structured if "status" in p]
+if len(structured) < 3 or not statuses:
+    print("-1 0")
+else:
+    fails = sum(1 for s in statuses if s == "fail")
+    print(f"{fails * 100 // len(statuses)} {len(statuses)}")
+PY
+)
+fi
+FAILURE_RATE=$(echo "$FAILURE_OUT" | awk '{print $1}')
+FAILURE_SAMPLE=$(echo "$FAILURE_OUT" | awk '{print $2}')
+# 空文字フォールバック（python3 不在等で FAILURE_OUT が空でも算術比較でクラッシュさせない）
+FAILURE_RATE="${FAILURE_RATE:--1}"
+FAILURE_SAMPLE="${FAILURE_SAMPLE:-0}"
+
+if [[ "$FAILURE_RATE" -ge 0 ]]; then
+  if [[ "$FAILURE_RATE" -gt "$EDD_FAILURE_RATE_MAX" ]]; then
+    say "[edd-check] failure rate: ${FAILURE_RATE}% > 閾値 ${EDD_FAILURE_RATE_MAX}%（sample ${FAILURE_SAMPLE}）→ 閾値超え"
+    violated=1
+    register_atom "failure rate" "failure rate が閾値を超えた（値: ${FAILURE_RATE}%、閾値: ${EDD_FAILURE_RATE_MAX}%）" || true
+  else
+    say "[edd-check] failure rate: ${FAILURE_RATE}% ≤ 閾値 ${EDD_FAILURE_RATE_MAX}%（sample ${FAILURE_SAMPLE}）→ OK"
+  fi
+else
+  say "[edd-check] failure rate: サンプル < 3 件 → スキップ"
+fi
+
+if [[ "$violated" -eq 1 ]]; then
+  exit 1
+fi
+exit 0

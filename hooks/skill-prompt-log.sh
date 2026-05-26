@@ -2,7 +2,8 @@
 # UserPromptExpansion: slash command 起動を記録（trigger=user-slash）
 # 公式 docs: PreToolUse Skill hook は user-slash 起動では発火しないため、本 hook で補完する。
 # ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記
-# header: timestamp,skill,trigger,session_id,effort
+# header: timestamp,skill,trigger,session_id,effort,token_cost
+# token_cost は常に空（実値収集は /usage の Desktop 対応後、EDD FR-4）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -45,12 +46,12 @@ fi
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
 
-# Header migration: 2/3/4 列いずれも 5 列に揃える
-NEW_HEADER="timestamp,skill,trigger,session_id,effort"
+# Header migration: 2/3/4/5 列いずれも 6 列に揃える（token_cost 追加、EDD FR-4）
+NEW_HEADER="timestamp,skill,trigger,session_id,effort,token_cost"
 if [[ -f "$CSV" ]]; then
   HEAD=$(head -n1 "$CSV")
   case "$HEAD" in
-    "timestamp,skill"|"timestamp,skill,trigger"|"timestamp,skill,trigger,session_id")
+    "timestamp,skill"|"timestamp,skill,trigger"|"timestamp,skill,trigger,session_id"|"timestamp,skill,trigger,session_id,effort")
       sed -i.bak "1s/.*/$NEW_HEADER/" "$CSV" && rm -f "$CSV.bak"
       ;;
   esac
@@ -58,5 +59,6 @@ else
   echo "$NEW_HEADER" > "$CSV"
 fi
 
-printf '%s,%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CMD_NAME" "user-slash" "${SESSION_ID}" "${EFFORT}" >> "$CSV"
+# 6 フィールド目 token_cost は常に空（実値は /usage Desktop 対応後）
+printf '%s,%s,%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$CMD_NAME" "user-slash" "${SESSION_ID}" "${EFFORT}" "" >> "$CSV"
 exit 0

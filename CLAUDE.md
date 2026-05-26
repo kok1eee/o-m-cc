@@ -26,7 +26,7 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 | 軸 | 役割 | o-m-cc での実装 |
 |---|---|---|
 | **Guides**（前方制御） | 行動を事前に方向づける | CLAUDE.md（設計思想・判断ルール）、skill 定義、agent description、TaskCreate |
-| **Sensors**（後方制御） | 結果を事後に検知して軌道修正 | `quality-gate-cta.sh`（push 前 CTA）、`subagent-verify.sh`、`bin/validate-plan`（Layer 1 形式チェック）、`evolve`（Gotchas 自動反映） |
+| **Sensors**（後方制御） | 結果を事後に検知して軌道修正 | `quality-gate-cta.sh`（push 前 CTA）、`subagent-verify.sh`、`bin/validate-plan`（Layer 1 形式チェック）、`bin/edd-check`（EDD 層: FR カバレッジ / failure rate の数値閾値判定 → 超過で atom 通知、Sensors 止まり）、`evolve`（Gotchas 自動反映） |
 
 新機能追加時は「Guides で誘導するか、Sensors で検知するか」を意識する。Guides で誘導できないものは Sensors で検知する（例: sisyphus の Step 0A 曖昧引数検出は Guides、quality-gate の実装範囲整合性検証は Sensors）。
 
@@ -38,7 +38,7 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 |---|---|---|---|
 | `.claude/atoms.csv` | `bin/atoms add` / 手動 | atom-suggest | アイデアバックログ（kawai 氏 atoms 相当）|
 | `.claude/pipeline.csv` | `bin/atoms promote` | atom-suggest, designer | 要件化フェーズ（atoms ↔ plan/*.md の橋渡し）|
-| `.claude/outputs.csv` | `bin/atoms complete` | atom-suggest | 完了履歴（成果物 path + outcome + metric）|
+| `.claude/outputs.csv` | `bin/atoms complete [--metric]` | atom-suggest, edd-check | 完了履歴（成果物 path + outcome + metric）。metric 列は EDD 構造化フォーマット `key:value;key:value`（標準 key: fr_coverage / duration_ms / status / token_cost）。自由テキストとの後方互換あり（FR-2）|
 | `plan/requirements.md` | discovery-council, deep-interview | designer, critic, quality-gate | 要件定義（FR-X 形式）|
 | `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
 | `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（rm しない）|
@@ -48,7 +48,7 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（ユーザープロファイル・フィードバック・プロジェクト知見）|
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm (次 round) | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort。trigger ∈ claude-proactive/user-slash。session_id は v2.1.132+、effort は v2.1.133+ で記録）|
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort,token_cost。trigger ∈ claude-proactive/user-slash。session_id は v2.1.132+、effort は v2.1.133+、token_cost は EDD FR-4 で列定義のみ先行・実値は /usage Desktop 対応後）|
 | `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 | `${CLAUDE_PLUGIN_DATA}/agent-duration.csv` | agent-duration-log.sh hook | atom-suggest | subagent dispatch 実行時間（CSV: timestamp,agent_type,duration_ms。v2.1.144+ の SubagentStop hook input から取得）|
 

@@ -5,8 +5,11 @@ Usage:
     atoms list [status]                       一覧表示（status: atom|pipeline|output|archive|all）
     atoms add <source> <content> [next]       atoms に追加（id 自動採番）
     atoms promote <atom_id> <plan_path>       atom → pipeline に昇格
-    atoms complete <pipeline_id> <artifact_path> [outcome] [metric]
+    atoms complete <pipeline_id> <artifact_path> [outcome] [metric] [--metric "k:v;k:v"]
                                               pipeline → outputs に完了登録
+                                              metric は第4 positional でも --metric でも渡せる
+                                              （--metric 優先）。構造化フォーマット例:
+                                              fr_coverage:85%;duration_ms:12000;status:pass
     atoms archive <atom_id> [reason]          却下/陳腐化
     atoms show <id>                           ID 詳細表示
     atoms stats                               各 csv の件数集計
@@ -146,11 +149,23 @@ def cmd_complete(args: list[str]) -> None:
     pipeline_id 列には atom_id を入れる（後方互換、参照は atom_id プレフィックスで判別）。
     """
     ensure_files()
-    if len(args) < 2:
-        sys.exit("Usage: atoms complete <pipeline_id_or_atom_id> <artifact_path> [outcome] [metric]")
-    target_id, artifact_path = args[0], args[1]
-    outcome = args[2] if len(args) >= 3 else "success"
-    metric = args[3] if len(args) >= 4 else ""
+    # --metric 名前付きオプションを positional から分離（ADR-3: 第4 positional と両立）
+    metric_opt: str | None = None
+    positional: list[str] = []
+    i = 0
+    while i < len(args):
+        if args[i] == "--metric":
+            metric_opt = args[i + 1] if i + 1 < len(args) else ""
+            i += 2
+            continue
+        positional.append(args[i])
+        i += 1
+    if len(positional) < 2:
+        sys.exit("Usage: atoms complete <pipeline_id_or_atom_id> <artifact_path> [outcome] [metric] [--metric \"k:v;k:v\"]")
+    target_id, artifact_path = positional[0], positional[1]
+    outcome = positional[2] if len(positional) >= 3 else "success"
+    # --metric 優先、無ければ第4 positional（後方互換）。書き込み時の検証はしない（ADR-4）
+    metric = metric_opt if metric_opt is not None else (positional[3] if len(positional) >= 4 else "")
     oid = next_id(OUTPUTS, "O")
     append_row(OUTPUTS, OUTPUTS_HEADER, {
         "id": oid, "pipeline_id": target_id, "completed_at": today(),

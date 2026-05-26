@@ -47,6 +47,12 @@ RECENT_GOTCHA_DAYS = 30  # 直近 N 日の AUTO-GOTCHAS 追加を監視
 UNUSED_THRESHOLD = 1  # 累計使用 1 回以下は unused 候補
 TOP_N = 10            # ランキング表示件数
 
+# EDD metric-health (FR-3)
+RECENT_OUTPUTS = 10   # failure-rate / metric-missing の母集団
+RECENT_FR = 5         # fr-coverage-trend の母集団
+MIN_SAMPLE = 3        # A-4: 構造化 metric が N 件未満なら「データ不足」
+METRIC_KEYS = ("fr_coverage", "duration_ms", "status", "token_cost")
+
 
 ROOT = detect_root()
 ATOMS = ROOT / ".claude" / "atoms.csv"
@@ -355,9 +361,81 @@ def find_effort_breakdown(usage: list[dict[str, str]]) -> list[dict]:
     return sorted(out, key=lambda x: order.get(x["effort"], 99))
 
 
+def parse_metric(metric: str) -> dict[str, str]:
+    """構造化 metric（key:value;key:value）を dict にする。自由テキストは {} を返す。
+
+    最初の ':' のみで分割（value 内に ':' があっても安全）。標準 key 以外は無視するため、
+    既存の自由テキスト metric（例: O001 の「CSV 統一: ...」）は {} になり集計対象外になる。
+    """
+    out: dict[str, str] = {}
+    if not metric:
+        return out
+    for pair in metric.split(";"):
+        if ":" not in pair:
+            continue
+        key, _, value = pair.partition(":")
+        key = key.strip()
+        if key in METRIC_KEYS:
+            out[key] = value.strip()
+    return out
+
+
+def find_metric_health(outputs: list[dict[str, str]]) -> dict:
+    """outputs.csv の構造化 metric を集計し EDD ヘルスを返す（FR-3）。
+
+    - failure-rate: 直近 RECENT_OUTPUTS 件のうち status:fail の割合
+    - fr-coverage-trend: 直近 RECENT_FR 件の fr_coverage 平均
+    - metric-missing: 直近 RECENT_OUTPUTS 件で構造化 metric がゼロ件
+    duration-stats（skill-duration.csv = プロセス効率）と異なり、outputs.csv（成果品質）を見る。
+    """
+    def _id_num(r: dict) -> int:
+        digits = re.sub(r"^\D+", "", r.get("id", "") or "")
+        return int(digits) if digits.isdigit() else 0
+    rows = sorted(outputs, key=_id_num, reverse=True)
+    parsed = [parse_metric(r.get("metric", "")) for r in rows]
+    structured = [p for p in parsed if p]
+
+    result: dict = {
+        "sample_size": len(structured),
+        "failure_rate": None,
+        "fr_coverage_avg": None,
+        "metric_missing": False,
+        "warnings": [],
+    }
+
+    recent_parsed = parsed[:RECENT_OUTPUTS]
+    if not any(recent_parsed):
+        result["metric_missing"] = True
+        return result
+
+    structured_recent = [p for p in recent_parsed if p]
+    if len(structured_recent) < MIN_SAMPLE:
+        result["warnings"].append(f"データ不足（構造化 metric < {MIN_SAMPLE} 件）")
+        return result
+
+    statuses = [p["status"] for p in structured_recent if "status" in p]
+    if statuses:
+        fails = sum(1 for s in statuses if s == "fail")
+        result["failure_rate"] = {
+            "fails": fails, "total": len(statuses), "pct": fails * 100 // len(statuses),
+        }
+
+    covs = []
+    for p in structured[:RECENT_FR]:
+        if "fr_coverage" in p:
+            v = p["fr_coverage"].rstrip("%").strip()
+            if v.isdigit():
+                covs.append(int(v))
+    if covs:
+        result["fr_coverage_avg"] = {"avg": sum(covs) // len(covs), "n": len(covs)}
+
+    return result
+
+
 def collect_all() -> dict:
     atoms = read_csv(ATOMS)
     pipeline = read_csv(PIPELINE)
+    outputs = read_csv(OUTPUTS)
     usage = read_csv(USAGE_CSV) if USAGE_CSV and USAGE_CSV.exists() else []
     total, proactive, slash = split_usage_counts(usage)
     return {
@@ -370,6 +448,7 @@ def collect_all() -> dict:
         "agent_duration_stats": find_agent_duration_stats(),
         "unused_skills": find_unused_skills(total, proactive, slash),
         "gotcha_ranking": find_gotcha_ranking(),
+        "metric_health": find_metric_health(outputs),
         "recent_activity": find_recent_activity(atoms, usage),
         "session_stats": find_session_stats(usage),
         "effort_breakdown": find_effort_breakdown(usage),
@@ -458,6 +537,24 @@ def main() -> None:
     print_section(f"Gotcha ranking (直近 {RECENT_GOTCHA_DAYS}日 / 累計、累計多 = atom 化候補)",
                   data["gotcha_ranking"],
                   lambda x: f"{x['skill']}: 直近 {x['recent']} 件 / 累計 {x['total']} 件")
+
+    print("\n# === Metric health (EDD) ===")
+    mh = data["metric_health"]
+    print(f"\n## Metric health (outputs.csv の構造化 metric、sample={mh['sample_size']})")
+    if mh["metric_missing"]:
+        print("  - metric 列が未記入 — bin/atoms complete --metric を使う推奨")
+    else:
+        for w in mh["warnings"]:
+            print(f"  - {w}")
+        if mh["failure_rate"]:
+            fr = mh["failure_rate"]
+            warn = " — EDD 閾値超え注意" if fr["pct"] > 30 else ""
+            print(f"  - failure-rate: {fr['fails']}/{fr['total']} ({fr['pct']}%){warn}")
+        if mh["fr_coverage_avg"]:
+            cov = mh["fr_coverage_avg"]
+            print(f"  - FR coverage: avg {cov['avg']}% (直近 {cov['n']} 件)")
+        if not mh["failure_rate"] and not mh["fr_coverage_avg"] and not mh["warnings"]:
+            print("  - status / fr_coverage を含む構造化 metric なし")
 
     print(f"\n# === Activity pulse (直近 {RECENT_DAYS}日) ===")
     print(f"  recent atoms: {len(data['recent_activity']['atoms'])}")

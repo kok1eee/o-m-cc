@@ -3,7 +3,8 @@
 # 公式 docs: PreToolUse Skill hook は Claude が proactive に skill を呼ぶ場合のみ発火。
 # user-slash 起動は skill-prompt-log.sh (UserPromptExpansion) が補完する。
 # ${CLAUDE_PLUGIN_DATA}/skill-usage.csv に追記
-# header: timestamp,skill,trigger,session_id,effort
+# header: timestamp,skill,trigger,session_id,effort,token_cost
+# token_cost は常に空（実値収集は /usage の Desktop 対応後、EDD FR-4）
 set -euo pipefail
 
 HOOK_INPUT=$(cat)
@@ -32,15 +33,16 @@ fi
 mkdir -p "${CLAUDE_PLUGIN_DATA}"
 CSV="${CLAUDE_PLUGIN_DATA}/skill-usage.csv"
 
-# Header migration:
-#   旧1: "timestamp,skill"                       → 5 列
-#   旧2: "timestamp,skill,trigger"               → 5 列
-#   旧3: "timestamp,skill,trigger,session_id"    → 5 列
-NEW_HEADER="timestamp,skill,trigger,session_id,effort"
+# Header migration（2/3/4/5 列いずれも 6 列に揃える）:
+#   旧1: "timestamp,skill"                              → 6 列
+#   旧2: "timestamp,skill,trigger"                      → 6 列
+#   旧3: "timestamp,skill,trigger,session_id"           → 6 列
+#   旧4: "timestamp,skill,trigger,session_id,effort"    → 6 列（token_cost 追加）
+NEW_HEADER="timestamp,skill,trigger,session_id,effort,token_cost"
 if [[ -f "$CSV" ]]; then
   HEAD=$(head -n1 "$CSV")
   case "$HEAD" in
-    "timestamp,skill"|"timestamp,skill,trigger"|"timestamp,skill,trigger,session_id")
+    "timestamp,skill"|"timestamp,skill,trigger"|"timestamp,skill,trigger,session_id"|"timestamp,skill,trigger,session_id,effort")
       sed -i.bak "1s/.*/$NEW_HEADER/" "$CSV" && rm -f "$CSV.bak"
       ;;
   esac
@@ -48,6 +50,7 @@ else
   echo "$NEW_HEADER" > "$CSV"
 fi
 
-printf '%s,%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SKILL_NAME}" "claude-proactive" "${SESSION_ID}" "${EFFORT}" >> "$CSV"
+# 6 フィールド目 token_cost は常に空（実値は /usage Desktop 対応後）
+printf '%s,%s,%s,%s,%s,%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "${SKILL_NAME}" "claude-proactive" "${SESSION_ID}" "${EFFORT}" "" >> "$CSV"
 
 exit 0

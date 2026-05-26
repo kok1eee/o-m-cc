@@ -111,7 +111,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | `/o-m-cc:handoff` | **EC2 など別マシンへの引き継ぎの中核**。Recap（LLM 要約）+ Next Actions を `.claude/journal.md`（VCS 共有）に追記。built-in `/recap` はローカル端末固有で補えない跨マシン引き継ぎの役割を担う。同一マシンのセッション区切りにも使える | - | 「EC2 に引き継ぎ」「別マシンに渡したい」「handoff」「引き継ぎ」で発動 |
 | `/o-m-cc:ui-polish <target>` | 既存画面の UI polish / 複数画面の redesign 統一 / a11y 対応 / CSS 一貫性修正を軽量ループで実装（Council なし、tsc/lint のみゲート）。新規デザイン生成は外部プラグイン `frontend-design` | - | 「UI polish」「画面統一」「a11y 対応」「CSS 統一」で発動 |
 | `/o-m-cc:editorial-swarm <article>` | 4 エージェント並列による記事推敲 Council（anti-ai-slop / fact-checker / narrative-critic / reader-advocate）。severity 付き findings → low 自動 apply、medium/high は一括承認 → 最大 3 ラウンドで収束 | fork | 「記事レビュー」「editorial swarm」「編集会議」「記事推敲」「記事添削」で発動 |
-| `/o-m-cc:atom-suggest` | atoms.csv / pipeline.csv / outputs.csv / skill-usage.csv / skill-duration.csv / context.md を統合分析。Backlog issues（stale / promote-ready / stuck / orphan）+ Skill health（top / duration-stats / unused）+ Activity pulse（直近 7 日）を 1 レポートで提示 | - | 「次に何やる？」「atom 整理」「放置案件」「振り返り」「retro」「skill 使用統計」「unused skill」「atom-suggest」で発動 |
+| `/o-m-cc:atom-suggest` | atoms.csv / pipeline.csv / outputs.csv / skill-usage.csv / skill-duration.csv / context.md を統合分析。Backlog issues（stale / promote-ready / stuck / orphan）+ Skill health（top / duration-stats / unused）+ Metric health（EDD: failure-rate / FR coverage trend）+ Activity pulse（直近 7 日）を 1 レポートで提示 | - | 「次に何やる？」「atom 整理」「放置案件」「振り返り」「retro」「skill 使用統計」「unused skill」「atom-suggest」で発動 |
 
 > **Context: fork** — Council 系スキル（quality-gate, discovery-council, sisyphus）が fork コンテキストで動くため、teammate のやり取りがメイン会話を汚さない。
 
@@ -194,7 +194,7 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 |---|---|---|---|
 | `.claude/atoms.csv` | `bin/atoms add` / 手動 | atom-suggest | アイデア・構想バックログ（kawai 氏 atoms 相当）|
 | `.claude/pipeline.csv` | `bin/atoms promote` | atom-suggest, designer | 要件化フェーズ（atoms ↔ plan/*.md の橋渡し）|
-| `.claude/outputs.csv` | `bin/atoms complete` | atom-suggest | 完了履歴（成果物 path + outcome + metric）|
+| `.claude/outputs.csv` | `bin/atoms complete [--metric]` | atom-suggest, edd-check | 完了履歴（成果物 path + outcome + metric）。metric 列は EDD 構造化フォーマット `key:value;key:value`（標準 key: fr_coverage / duration_ms / status / token_cost、自由テキスト後方互換あり）|
 | `plan/requirements.md` | discovery-council, deep-interview | designer, critic, quality-gate | 要件定義（FR-X 形式） |
 | `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
 | `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（v0.45.0 以降、rm しない） |
@@ -204,7 +204,7 @@ Guides だけでは「誘導したつもり」になりがちなので、重要�
 | `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（プロファイル・フィードバック・プロジェクト知見） |
 | Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
 | `.editorial/round-N/` | editorial-swarm | editorial-swarm（次 round） | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort。trigger ∈ claude-proactive / user-slash。session_id は Claude Code v2.1.132+、effort は v2.1.133+ で記録）|
+| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort,token_cost。trigger ∈ claude-proactive / user-slash。session_id は Claude Code v2.1.132+、effort は v2.1.133+、token_cost は EDD FR-4 で列定義のみ先行・実値は /usage Desktop 対応後）|
 | `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
 
 **原則**: コンテキスト再構築コストをゼロにする。A スキルの出力を B スキルが読むとき、A の文脈を知る必要はなく、成果物ファイルだけで完結する。
