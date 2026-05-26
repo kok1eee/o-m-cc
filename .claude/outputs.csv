@@ -20,3 +20,4 @@ O018,A023,2026-05-09,other,~/dotfiles/claude/.claude/rules/jj.md にマルチレ
 O019,A024,2026-05-09,other,code-reviewer agent 削除 (重複: built-in Skill: simplify がカバー)。quality-gate 再設計: simplify → lint → 条件付き Council (security 関連変更時 security-reviewer / plan/requirements.md ありの時 critic)。capabilities.md / CLAUDE.md / README / facets / agent definitions / hooks コメントから code-reviewer 言及を一括更新。agent 数 15 → 14,agent 削除 + quality-gate 軽量化,
 O020,A057,2026-05-26,code,"CLAUDE.md,hooks/simplify-diff-gate.sh",code-review 名前衝突を built-in 明示に統一,status:pass
 O021,A058,2026-05-26,skill,skills/discovery-council/SKILL.md,fallback 追加で exit 1 回避,status:pass
+O022,P006,2026-05-26,doc,plan/12factor-audit.md,12-factor self-audit 完了: 中核4原則充足・Factor5が唯一の能動改善余地,status:pass;fr_coverage:100%
