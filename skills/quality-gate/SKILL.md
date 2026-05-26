@@ -128,6 +128,21 @@ Monitor:
 
 エラーが残っていれば修正してから Step 4 へ。warning のみなら記録して続行。
 
+### Step 3.5: EDD drift check（optional / 通知止まり）
+
+`bin/edd-check` が存在する場合のみ実行する EDD 層の数値ゲート（FR-5）。FR カバレッジ率と outputs.csv の failure rate を閾値判定し、超過していれば `edd-drift` atom を登録する（Sensors 止まり = 通知のみ）。**pass/fail 判定には影響させない**（NFR-3）。
+
+```bash
+# edd-check が無ければ skip（A-3: optional 機能、既存環境への影響ゼロ）
+if [[ -x bin/edd-check ]]; then
+  bin/edd-check 2>&1 || true   # exit 1 でも quality-gate は止めない（通知止まり）
+fi
+```
+
+- exit 1（閾値超え）でも **quality-gate の総合判定は変えない**。検知結果は Step 9 summary に「EDD drift」として記載する
+- 閾値超え時は `edd-drift` atom が atoms.csv に登録される（7 日重複防止あり）。人間が後で `/atom-suggest` で拾って判断する
+- 閾値: `EDD_FR_COVERAGE_MIN`（default 70）/ `EDD_FAILURE_RATE_MAX`（default 30）を env で上書き可
+
 ### Step 4: 条件付き Review Council（security / plan 整合性が必要な時のみ）
 
 ここまでで「コード品質一般」と「lint」は片付いている。**残りの責任範囲は (a) セキュリティ脆弱性、(b) 計画妥当性 / 範囲整合性** のみ。これらは条件付きで spawn する:
@@ -232,6 +247,7 @@ fork の **最後のメッセージ** が呼び出し元（main / sisyphus）に
 - **総合判定**: 通過 / 修正必要 / 停止（ユーザー判断待ち）のいずれか
 - **Step 2 code-review findings**: `[fix needed]` マーカー付きで「ファイル:行 — 内容」形式で列挙（fork 内で修正済みの分は `[fixed by debugger]` マーカー付きで別記）
 - **Step 3 lint 結果**: 各言語の error / warning 件数。残存 error があれば該当ファイル列挙
+- **Step 3.5 EDD drift**（edd-check 実行時のみ）: FR coverage / failure rate の閾値判定結果。超過があれば登録された edd-drift atom を記載（通知のみ、判定には影響しない）
 - **Step 4 Council 結果**（実行時のみ）: Critical / Warning の件数、Critical の代表例
 - **caller への次アクション**: 「Edit で fix → quality-gate 再実行」「修正不可なのでユーザー判断必要」等
 
@@ -245,6 +261,7 @@ Step 2 code-review findings:
   [fixed by debugger] src/utils.ts:88 — off-by-one in loop boundary
 
 Step 3 lint: ruff 0 / ty 0 / shellcheck 0 errors
+Step 3.5 EDD drift: FR coverage 100% / failure rate OK（閾値内、atom 登録なし）
 Step 4 Council: 未実行 (security-related changes なし / requirements.md なし)
 
 次アクション: src/auth.ts:42 を Edit で fix → quality-gate を再実行

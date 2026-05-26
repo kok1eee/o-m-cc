@@ -19,10 +19,10 @@ $ARGUMENTS
 ## プロジェクト状態（動的注入）
 
 ### ディレクトリ構造
-!`ls -d */ 2>/dev/null`
+!`ls -d */ 2>/dev/null || echo "(サブディレクトリなし)"`
 
 ### 技術スタック
-!`ls package.json pyproject.toml Cargo.toml go.mod Gemfile setup.py requirements.txt 2>/dev/null`
+!`ls package.json pyproject.toml Cargo.toml go.mod Gemfile setup.py requirements.txt 2>/dev/null || echo "(技術スタック検出なし — md+shell 等)"`
 
 ## Step 1: チーム作成
 
