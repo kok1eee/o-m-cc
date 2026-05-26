@@ -1,0 +1,2 @@
+- [EDD layer design](project_edd_layer.md) — EDD 層設計の ADR と requirements 齟齬2点（atoms --metric 重複 / skill-prompt-log.sh 列不整合）
+- [Data layer integration](project_data_layer_integration.md) — CSV 列追加時の header migration / DictReader 後方互換 / env var 閾値 / 複数 writer 罠
