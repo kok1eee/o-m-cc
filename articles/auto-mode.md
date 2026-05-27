@@ -35,6 +35,8 @@ claude --permission-mode auto
 ```
 
 > **注意**: 一部の記事で `--enable-auto-mode` と紹介されているが、実際のフラグは `--permission-mode auto`。
+>
+> **v2.1.152 更新**: 以前は Auto Mode に入る際に一度 opt-in の同意確認が出たが、v2.1.152 でこの consent が不要になった（`--permission-mode auto` を付ければそのまま有効）。Sisyphus Loop を回す上での初回摩擦がさらに減った。
 
 ### `--dangerously-skip-permissions` との違い
 
