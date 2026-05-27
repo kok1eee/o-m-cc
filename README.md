@@ -34,6 +34,8 @@ claude plugin marketplace add kok1eee/o-m-cc
 
 # 3. プラグインインストール
 claude plugin install o-m-cc@kok1eee
+#    install 直後に /o-m-cc:* skill が出てこない場合は /reload-skills（v2.1.152+）で
+#    再起動なしに再スキャン（旧バージョンはセッション再起動）
 
 # 4. プロジェクト初期化（CLAUDE.md作成 + Sisyphus有効化）
 /o-m-cc:install
