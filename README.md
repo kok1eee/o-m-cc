@@ -335,7 +335,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|--------|
 | @security-reviewer | セキュリティレビュー（OWASP Top 10、認証認可、入力検証） | sonnet | default | project |
 
-> **コードレビュー**（correctness bug 検出）は v0.58.0 から built-in skill に一任（当時の `Skill: simplify` を v2.1.147 で `Skill: code-review` にリネーム + cleanup-and-fix 動作削除）。旧 `code-reviewer` agent は v0.58.0 で削除。自動 cleanup 機能は失われたため、findings は main agent が手動反映する。
+> **コードレビュー**（correctness bug 検出）は v0.58.0 から built-in skill に一任（当時の `Skill: simplify` を v2.1.147 で `Skill: code-review` にリネーム + cleanup-and-fix 動作削除 → **v2.1.152 で `--fix` として apply 復活**、`/simplify` は `--fix` の alias）。旧 `code-reviewer` agent は v0.58.0 で削除。無印 `code-review` は検出のみで findings は main agent が反映、`--fix` で自動適用も可。
 
 ### Prior Art Agents（feature-flow Phase B 専用）
 
@@ -580,7 +580,7 @@ Sisyphus Loop の背後にある哲学：
 2. **並列実行**: Agent Teams で3体同時に分析できる。Discovery Council（researcher + analyst + scout）は並列 spawn で時間コストを削減する。ロールプレイは直列実行しかできない
 3. **永続メモリ**: `memory: project` を持つエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を蓄積する。次のセッションでも引き継がれる。ロールプレイのコンテキストはセッション終了で消える
 
-ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除、`Skill: simplify` → `Skill: code-review` は v2.1.147 でリネーム + cleanup 動作削除）。
+ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除、`Skill: simplify` → `Skill: code-review` は v2.1.147 でリネーム + cleanup 削除 → v2.1.152 で `--fix` として復活）。
 
 ## Token & Cost
 

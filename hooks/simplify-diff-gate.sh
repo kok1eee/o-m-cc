@@ -13,8 +13,9 @@
 # 2. CODE_REVIEW_DIFF_THRESHOLD を大きくして push（推奨しない）
 #
 # 履歴: built-in /simplify は v2.1.147 で /code-review にリネーム + cleanup-and-fix 動作削除
-# (correctness bug 検出特化に変更)。本 gate は「diff が大きいときレビューを必ず通す」役割
-# として機能継続。skill-usage.csv の旧「simplify」エントリも match させて後方互換維持。
+# (correctness bug 検出特化) → v2.1.152 で /code-review --fix として apply 復活、/simplify は
+# その alias として復活。本 gate は「diff が大きいときレビューを必ず通す」役割で機能継続。
+# code-review / simplify どちらの skill-usage.csv エントリも match させて後方互換維持。
 # ファイル名 simplify-diff-gate.sh はそのまま (内部参照のみ、再 rename の breaking 回避)。
 set -euo pipefail
 

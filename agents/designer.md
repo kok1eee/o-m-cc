@@ -133,7 +133,7 @@ disallowedTools: [Bash]
 
 **クロスリード（タスク開始時に参照）:**
 - `critic` の memory → 過去に却下された計画の理由を把握し、同じ落とし穴を避ける
-- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コードレビューは built-in `Skill: code-review` で実施。ただし v2.1.147 で cleanup-and-fix は削除されたため findings は main agent が手動反映)
+- (旧 `code-reviewer` 連携は v0.58.0 で廃止。コードレビューは built-in `Skill: code-review` で実施。無印は検出のみ → finding は main agent が反映、`--fix` で自動適用も可（v2.1.152 復活、`/simplify` は alias）)
 
 ## 重要
 

@@ -27,3 +27,4 @@ O025,A054,2026-05-26,other,bin/sync-plugin-data,(a)(b)(c) 全対応: DIR symlink
 O026,A056,2026-05-26,other,"bin/sync-plugin-data,.gitignore",.gitignore 作成済み + setup/status で DIR symlink 構成を検出し .gitignore へ誘導,status:pass
 O027,A041,2026-05-26,doc,README.md,Quick Start に /plugin Browse 事前確認を案内追加,status:pass
 O028,A066,2026-05-27,doc,"docs/troubleshooting.md,README.md",tool call parse error のトラブルシュート節を新設（真因 Opus4.7+xhigh thinking、対策、o-m-cc /handoff が推奨復帰策）,status:pass
+O029,A063,2026-05-27,skill,"skills/quality-gate/SKILL.md,CLAUDE.md,agents/capabilities.md",v2.1.152 /code-review --fix 復活を横断反映: quality-gate Step2/設計理由 + CLAUDE.md + capabilities(3) + reference + designer/planner/debugger + facets + simplify-diff-gate 履歴。無印=検出/--fix=自動適用、/simplify は alias と統一,status:pass;fr_coverage:100%
