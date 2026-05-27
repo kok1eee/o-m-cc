@@ -26,3 +26,4 @@ O024,A061,2026-05-26,doc,agents/capabilities.md,codegraph を任意の外部 com
 O025,A054,2026-05-26,other,bin/sync-plugin-data,(a)(b)(c) 全対応: DIR symlink early-exit + mv 前 rm -f + status の DIR-SYMLINK 表示。OWASP-NIST 監査 Finding2 と同件,status:pass
 O026,A056,2026-05-26,other,"bin/sync-plugin-data,.gitignore",.gitignore 作成済み + setup/status で DIR symlink 構成を検出し .gitignore へ誘導,status:pass
 O027,A041,2026-05-26,doc,README.md,Quick Start に /plugin Browse 事前確認を案内追加,status:pass
+O028,A066,2026-05-27,doc,"docs/troubleshooting.md,README.md",tool call parse error のトラブルシュート節を新設（真因 Opus4.7+xhigh thinking、対策、o-m-cc /handoff が推奨復帰策）,status:pass

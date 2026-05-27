@@ -455,6 +455,10 @@ claude
 
 hooks のエラーは `.claude/hooks-error.log` に記録されます。
 
+### ランタイムの落とし穴
+
+`The model's tool call could not be parsed` 等、o-m-cc を回していて踏みやすい Claude Code / モデル側の事象と対処は [docs/troubleshooting.md](docs/troubleshooting.md) を参照（要点: Opus 4.7 + xhigh thinking のストリーミングバグ。`/effort medium` / `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` / 壊れた session は `/handoff` で新規再開）。
+
 ### 状態リセット
 
 問題が発生した場合:
