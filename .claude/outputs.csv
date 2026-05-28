@@ -32,3 +32,4 @@ O030,A064,2026-05-27,skill,skills/atom-suggest/SKILL.md,"disallowed-tools は al
 O031,A065,2026-05-27,doc,README.md,Quick Start に /reload-skills 案内追加。SessionStart hook の reloadSkills:true は o-m-cc hook が skill を動的 install しないため使い所なし（採用せず）,status:pass
 O032,A067,2026-05-27,doc,articles/auto-mode.md,v2.1.152 で auto mode の opt-in consent 撤廃を article 起動方法に追記。--permission-mode auto は依然有効、CLAUDE.md は behavior 記述で opt-in 前提なし→変更不要,status:pass
 O033,A069,2026-05-27,data,"hooks/session-title.sh,hooks/hooks.json",専用 hook session-title.sh を新設(repo名 + journal最新見出し)。既存 banner を壊さず sessionTitle だけ JSON 出力。複数ウィンドウ/cmux/handoff の識別性向上,status:pass
+O034,P007,2026-05-28,doc,CLAUDE.md,設計思想セクションに Anthropic 5 パターン × o-m-cc 対応表を追加。4/5 採用 + Orchestrator-workers 拒否を 'simple composable patterns' 主張で接地,status:pass;fr_coverage:100%

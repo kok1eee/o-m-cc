@@ -85,6 +85,20 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 | **Plugin ネイティブ** | Claude Code のプラグインシステムに準拠。settings.json で自動設定 | プラグイン外でのグローバル設定変更を前提とする設計 |
 | **エージェント自律性** | 各エージェントは専門家として自律的に判断・行動する | エージェントの行動を細かくスクリプト化して自由度を奪う |
 
+### Anthropic 5 パターンとの対応（一次情報接地）
+
+Anthropic の [Building effective agents](https://www.anthropic.com/research/building-effective-agents) が挙げる 5 パターンを o-m-cc がどう実装/拒否しているか。**「simple, composable patterns rather than complex frameworks」**という上位主張に従い、4 パターン採用 / 1 パターン意図的拒否:
+
+| Anthropic パターン | o-m-cc の実装 | 採否 |
+|---|---|---|
+| Prompt chaining | SDD フロー（discovery-council → design → task-decomposition → 実装 → quality-gate） | ✅ 採用 |
+| Routing | CLAUDE.md「ワークフロー判断」テーブルが状況→skill を route | ✅ 採用 |
+| Parallelization | Agent Teams（discovery-council / quality-gate / editorial-swarm の並列 spawn） | ✅ 採用 |
+| Evaluator-optimizer | experiment skill（try→measure→keep/revert）+ Review Council | ✅ 採用 |
+| **Orchestrator-workers** | — | ❌ **意図的拒否**（上記「Peer-to-peer 協調」原則。中央オーケストレーターを置かず agent 同士が SendMessage で対等に協調する） |
+
+→ 4/5 採用は Anthropic 推奨に従いつつ、Orchestrator-workers を拒否する判断も**同じ原典の「simple composable patterns」主張に接地**している（複雑な中央制御より、対等な agent の composition）。
+
 ## Skill 発動ガイドライン（Opus 4.7 + auto mode 対応）
 
 **重要: o-m-cc の skill は「action の加速装置」であって「planning の遅延装置」ではない。**
