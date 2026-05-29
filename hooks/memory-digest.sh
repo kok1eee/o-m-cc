@@ -133,7 +133,7 @@ for f in ${MEMORY_FILES[@]+"${MEMORY_FILES[@]}"}; do
   # ## ヘッダー行を最大5つ抽出してトピック一覧を表示
   grep -m 5 '^## ' "$f" 2>/dev/null | while IFS= read -r line; do
     echo "     ${line}"
-  done
+  done || true
   echo ""
 done
 
