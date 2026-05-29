@@ -10,7 +10,7 @@ o-m-cc 固有の問題ではないが、o-m-cc（Agent Teams / 高 effort skill 
 ツール呼び出しの直後（Bash / Edit / MCP など種類を問わず）に上記エラーが出て作業が止まる。retry しても同じ。`/clear` しても数ターンで再発。**`/context` に空きがあっても発生する**。
 
 ### 真因（利用者側の問題ではない）
-**Opus 4.7（1M context バリアント）+ extended thinking（default `xhigh`）のモデル応答ストリーミングバグ**（Anthropic Issue [#24662](https://github.com/anthropics/claude-code/issues/24662)）。
+**Opus 4.7+ / 4.8（1M context バリアント）+ extended thinking（default `high`〜`xhigh`）のモデル応答ストリーミングバグ系列**（Anthropic Issue [#24662](https://github.com/anthropics/claude-code/issues/24662)、v2.1.156 で Opus 4.8 thinking blocks の API エラー fix が追加されたが同系列のバグは継続注視中）。
 
 セッションの jsonl（`~/.claude/projects/<proj>/<session-id>.jsonl`）を見ると、parse 失敗直前の assistant メッセージが壊れている:
 1. `content` に空の `thinking` ブロックしかない（text / tool_use が続かない）
@@ -21,8 +21,8 @@ Claude Code の parser は「`stop_reason: tool_use` なら `tool_use` ブロッ
 
 | 要因 | 寄与度 |
 |---|---|
-| Opus 4.7 応答ストリーミングのバグ | 核心 |
-| extended thinking が default `xhigh`（thinking-heavy） | 大 |
+| Opus 4.7+ / 4.8 応答ストリーミングのバグ系列 | 核心（v2.1.156 で 4.8 thinking blocks の修正が入ったが継続注視） |
+| extended thinking が default `high`〜`xhigh`（thinking-heavy） | 大（v2.1.154 で Opus 4.8 default effort が `high` に引き上げ） |
 | 1M context バリアント | 中 |
 | 長期セッション（cache_read 大） | 中 |
 
@@ -32,7 +32,7 @@ Claude Code の parser は「`stop_reason: tool_use` なら `tool_use` ブロッ
 1. **`/effort medium`**（または `low`）で thinking を抑える — 根本に近い対症療法。⚠️ o-m-cc の `quality-gate` / `discovery-council` / `design` / `sisyphus` は意図的に `effort: high`。品質とのトレードオフがあるため、バグが頻発するときの一時退避として使う
 2. **`CLAUDE_CODE_DISABLE_1M_CONTEXT=1 claude`** で 1M context バリアントを無効化（標準 200k に戻す）— 再現条件を 1 つ潰す
 3. **壊れたセッションは `--resume` / `--continue` しない**。壊れた assistant メッセージが履歴に残ると再開のたびに再送され、同じエラーが続く。→ **`/o-m-cc:handoff` で `journal.md` に状態をスナップショットし、新規セッションで再開する**（これは記事推奨の復帰策そのもの。o-m-cc は標準で持っている）
-4. **`claude update`** — 2.1.148→152 と stream-handling 修正が継続投入されている（v2.1.152 の「stale thinking-block signatures を先回り除去 + retry 安全網」もこの系列）。完治はモデル側の修正待ち
+4. **`claude update`** — 2.1.148→152→156 と stream-handling 修正が継続投入されている（v2.1.152 の「stale thinking-block signatures を先回り除去 + retry 安全網」、v2.1.156 の「Opus 4.8 thinking blocks 改変による API エラー fix」もこの系列）。完治はモデル側の修正待ち
 5. **`/bug`** で Anthropic に報告（session ID + request_id 添付）。モデル/ストリーミング側のバグなのでこれが最も価値が高い
 
 ### 効かない対処

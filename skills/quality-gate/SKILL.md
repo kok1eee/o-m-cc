@@ -92,7 +92,8 @@ Review Council 前に検出する。過去に「5 画面 redesign を要求し�
 Anthropic 公式の **`Skill: code-review`** に **コードレビュー（correctness bug 検出）** を委譲する。effort level 指定可（`/code-review high` 等）。
 
 - **`Skill: code-review`（無印）**: bug を **検出・報告のみ**（v2.1.147 でこの挙動に特化）
-- **`Skill: code-review` に `--fix`**: v2.1.152 で **apply が復活**。findings を working tree に自動適用し、reuse / simplification / efficiency の改善も surface する（`/simplify` はこの `--fix` の alias）
+- **`Skill: code-review` に `--fix`**: v2.1.152 で apply 復活。findings を working tree に自動適用（**v2.1.154 から完全な bug-hunting + fix**、cleanup 系は分離された）
+- **`/simplify`**: v2.1.154 で **cleanup-only review (reuse / simplification / efficiency / altitude) + fix** に divergence。bug 検出はせず軽量な整理だけ走る
 
 本 Step は **検出（無印）を基本**とする。理由は下記「修正の振り分け」の通り、correctness bug は軽微/複雑で扱いを分けるため。reuse/simplification/efficiency 系の cleanup を一括適用したい場面では `--fix` を使ってよい。
 
@@ -108,7 +109,7 @@ Skill: code-review
    - **複雑なバグ**: Step 6 と同じ要領で `Agent` ツールから **debugger を spawn** して fork 内で修正完結させる（debugger は Edit/Write を持つ）
 3. **caller 側の動作**: fork 終了後、main / sisyphus は summary を読んで該当箇所を Edit し、必要なら quality-gate を再実行して通過確認する（iterative ループ）
 
-> **設計理由 / 経緯**: v0.58.0 当時は `Skill: simplify`（cleanup-and-fix）と独自 `code-reviewer` agent の責任範囲が重複していたため統合した。v2.1.147 で `/simplify` は `/code-review` にリネーム + **cleanup 機能が一旦削除**（bug 検出特化）。**v2.1.152 で `/code-review --fix` として apply が復活**（`/simplify` は `--fix` の alias に）。本 Step が無印（検出）を基本にするのは cleanup を嫌うからではなく、correctness bug は軽微/複雑で修正の振り分けが要るため。format / style 統一は引き続き Step 3 の lint に任せる。
+> **設計理由 / 経緯**: v0.58.0 当時は `Skill: simplify`（cleanup-and-fix）と独自 `code-reviewer` agent の責任範囲が重複していたため統合した。v2.1.147 で `/simplify` は `/code-review` にリネーム + **cleanup 機能が一旦削除**（bug 検出特化）。**v2.1.152 で `/code-review --fix` として apply が復活**（当時 `/simplify` は `--fix` の alias）。**v2.1.154 で `/simplify` と `/code-review --fix` が divergence**: `/code-review --fix` = 完全 bug-hunting + 自動 fix、`/simplify` = cleanup-only (reuse / simplification / efficiency / altitude) + 自動 fix。本 Step が無印（検出）を基本にするのは cleanup を嫌うからではなく、correctness bug は軽微/複雑で修正の振り分けが要るため。format / style 統一は引き続き Step 3 の lint に任せる。reuse/simplification 系の整理だけしたいときは `/simplify` が軽い。
 
 ### Step 3: 静的解析（lint + 型チェック）— Monitor で並列ストリーミング
 
@@ -278,7 +279,7 @@ Step 4 Council: 未実行 (security-related changes なし / requirements.md な
 - **diff が大きすぎて reviewer がコンテキスト溢れ**: 変更が数千行ある場合、reviewer に渡す diff を要約するか、ファイル単位で分割してレビューする
 - **静的解析ツールが未インストールで失敗**: `ruff`, `shellcheck`, `tsc` 等が PATH にない場合がある。`compgen -G` のファイル検出だけでなく、コマンドの存在確認も行う
 - **前回の TeamCreate の残骸でエラー**: Step 2 で既存チームの TeamDelete を先に実行する。前セッションのチームが残っているとチーム名が衝突する
-- **agent 側に閾値カットを書かない（4.7 リテラル解釈トラップ）**: `"Confidence 80+ のみ報告"` のような閾値指示を agent に書くと、Opus 4.7 は文字通り守ってバグを発見しても silent drop する。agent は coverage-first（全件 + confidence/severity 付与）、フィルタは Step 4 の集約側で行う
+- **agent 側に閾値カットを書かない（4.7+ / 4.8 リテラル解釈トラップ）**: `"Confidence 80+ のみ報告"` のような閾値指示を agent に書くと、Opus 4.7 から observed の挙動として文字通り守ってバグを発見しても silent drop する（4.8 でも継続の可能性、Anthropic 公式 prompting best practices で名指しの注意あり）。agent は coverage-first（全件 + confidence/severity 付与）、フィルタは Step 4 の集約側で行う
 
 <!-- AUTO-GOTCHAS -->
 

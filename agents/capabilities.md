@@ -88,7 +88,7 @@ TeamCreate → team_name で作成
 | **仮説競合** | debugger × 2-3 | 異なる仮説を並列検証、偏りを排除 |
 | **多角調査** | researcher + analyst + scout | コード・外部情報・要件を同時に調査 |
 | **設計批評** | designer + critic | 設計しながらリアルタイムでレビュー |
-| **コードレビュー (correctness bug)** | `Skill: code-review` (built-in) | bug を effort 別で検出・報告（`--comment` で GitHub PR コメント可）。無印は検出のみ → finding は main agent が修正。`--fix` で working tree に自動適用（v2.1.152 で復活、`/simplify` は `--fix` の alias） |
+| **コードレビュー (correctness bug)** | `Skill: code-review` (built-in) | bug を effort 別で検出・報告（`--comment` で GitHub PR コメント可）。無印は検出のみ → finding は main agent が修正。`--fix` で完全 bug-hunting + 自動適用（v2.1.152 で復活）。**v2.1.154 から `/simplify` は cleanup-only (reuse/simplification/efficiency/altitude) + fix に divergence** で別物 |
 
 ---
 
@@ -115,7 +115,7 @@ TeamCreate → team_name で作成
 | **researcher** | コードベース探索・外部調査 | ファイル探索、構造把握、API仕様確認 | `/discovery-council` / ユーザー直接 | 探索, どこ, 構造, 調べて, 使い方, ベストプラクティス |
 | **security-reviewer** | セキュリティチェック | 外部入力処理、認証実装の変更後 | `/quality-gate` | セキュリティ, 脆弱性, security |
 
-> **コードレビュー (correctness bug 検出)** は Claude Code の built-in `Skill: code-review` に一任（effort level 指定可）。旧 `code-reviewer` agent は v0.58.0 で削除。cleanup-and-fix は v2.1.147 で一旦削除 → **v2.1.152 で `--fix` として復活**（`/code-review --fix` が findings を自動適用、`/simplify` は alias）。無印は検出のみで finding は main agent が反映、`--fix` で自動適用。format / style は lint で補完。
+> **コードレビュー (correctness bug 検出)** は Claude Code の built-in `Skill: code-review` に一任（effort level 指定可）。旧 `code-reviewer` agent は v0.58.0 で削除。cleanup-and-fix は v2.1.147 で一旦削除 → v2.1.152 で `--fix` 復活 → **v2.1.154 で `/simplify` と `/code-review --fix` が divergence**: `/code-review --fix` = 完全 bug-hunting + 自動 fix、`/simplify` = cleanup-only (reuse/simplification/efficiency/altitude) + fix。無印は検出のみで finding は main agent が反映、bug 系は `--fix` / 軽い整理は `/simplify`。format / style は lint で補完。
 
 ---
 

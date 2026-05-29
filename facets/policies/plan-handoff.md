@@ -2,7 +2,7 @@
 
 **上位スキル → 下位 agent / subagent / Council へ計画やコンテキストを引き継ぐときの共通プロトコル。**
 
-Anthropic 公式 prompting best practices（Claude Opus 4.7）で名指しされている 3 つの落とし穴を回避することを目的とする:
+Anthropic 公式 prompting best practices（Claude Opus 4.7 で観測、v2.1.154+ のデフォルト Opus 4.8 でも継続注視）で名指しされている 3 つの落とし穴を回避することを目的とする:
 
 1. **Lost in the Middle**: 20k+ tokens の入力で、長文と指示の配置順次第で品質が最大 30% ぶれる
 2. **リテラル解釈**: 4.7 は `"only critical"` `"be conservative"` `"Confidence 80+ のみ"` のような閾値指示を文字通り守り、bug を発見しても silent drop する

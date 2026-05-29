@@ -87,4 +87,4 @@ maxTurns: 20
 
 ## 連携
 
-- **`Skill: code-review`** (built-in): 修正後のコードレビュー（correctness bug 検出）。無印は検出のみ → findings 反映は main agent、`--fix` で自動適用も可（v2.1.152 復活、`/simplify` は alias）。format / style 統一は lint
+- **`Skill: code-review`** (built-in): 修正後のコードレビュー（correctness bug 検出）。無印は検出のみ → findings 反映は main agent、`--fix` で完全 bug-hunting + 自動適用（v2.1.152 復活）。v2.1.154 から `/simplify` は cleanup-only に divergence で別物。format / style 統一は lint

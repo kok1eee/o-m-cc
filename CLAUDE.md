@@ -99,11 +99,11 @@ Anthropic の [Building effective agents](https://www.anthropic.com/research/bui
 
 → 4/5 採用は Anthropic 推奨に従いつつ、Orchestrator-workers を拒否する判断も**同じ原典の「simple composable patterns」主張に接地**している（複雑な中央制御より、対等な agent の composition）。
 
-## Skill 発動ガイドライン（Opus 4.7 + auto mode 対応）
+## Skill 発動ガイドライン（Opus 4.x + auto mode 対応）
 
 **重要: o-m-cc の skill は「action の加速装置」であって「planning の遅延装置」ではない。**
 
-Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode の「prefer action over planning」を過剰解釈して o-m-cc skill の発動を抑制しがち。これは誤り:
+Opus 4.7+（v2.1.154 以降は Opus 4.8 がデフォルト）は指示を文字通り解釈する傾向があるため、auto mode の「prefer action over planning」を過剰解釈して o-m-cc skill の発動を抑制しがち。これは誤り:
 
 - `/sisyphus` = 新機能を **実装まで一気通貫で走らせる** action skill（内部に planning phase はあるが成果物は動作するコード）。**明示起動推奨**（auto mode での自動発動は実質機能しない）
 - built-in `/goal` = 完了条件を設定してターン跨ぎで継続する native action。**auto mode でも発動する**。Agent Teams・quality-gate 不要な多ターン継続タスクはまずこれ
@@ -123,14 +123,14 @@ Opus 4.7 は指示を文字通り解釈する傾向があるため、auto mode �
 
 1. ユーザーが明示指定（`/o-m-cc:sisyphus` 等） → 必ず発動
 2. skill description のトリガーフレーズが含まれる → 発動
-3. **状況がテーブルの行にマッチする → 発動**（Opus 4.7 で効きにくくなっているので特に意識）
+3. **状況がテーブルの行にマッチする → 発動**（Opus 4.7+ / 4.8 で効きにくくなっているので特に意識）
 4. auto mode でも 3 は有効。「action である」と明示されている skill は抑制しない
 
 ## Subagent / Agent Teams の発動（auto mode でも必須）
 
 **subagent spawn と Agent Teams は「並列 action」であり、planning ではない。auto mode でも必ず使うこと。**
 
-Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがちだが、これは誤り。subagent は:
+Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制されがちだが、これは誤り。subagent は:
 - **メイン context の汚染を避けるための並列実行**（Read 大量 / Grep / WebSearch 等）
 - **独立視点でのレビュー**（security-reviewer / critic、コードレビュー（correctness bug 検出）は built-in `Skill: code-review`）
 - **バイアスなしの検証**（Verifier パターン）
@@ -193,7 +193,7 @@ Opus 4.7 + auto mode で subagent / Agent Teams の発動が抑制されがち�
 | クロスモデルレビューで別視点が欲しい・Claude の盲点を別モデルに突かせたい | `/codex:review` or `/codex:adversarial-review`（[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)）。Node.js + Codex CLI + ChatGPT アカウント（無料可）必要。o-m-cc Review Council と補完関係（同モデル複数視点 vs 別モデル）|
 
 **実装完了時のフロー:**
-1. built-in `/code-review` — コードレビュー（Anthropic 公式ネイティブスキル。correctness bug を effort 別で報告、`--comment` で GitHub PR インラインコメント可。v2.1.147 で `/simplify` から rename + cleanup 削除 → **v2.1.152 で `/code-review --fix` として apply 復活**（findings を working tree に自動適用、`/simplify` は `--fix` の alias）。無印は検出のみ／`--fix` で自動修正）。※ marketplace plugin `code-review:code-review`（PR レビュー）とは別物。o-m-cc が指すのは常に built-in の方
+1. built-in `/code-review` — コードレビュー（Anthropic 公式ネイティブスキル。correctness bug を effort 別で報告、`--comment` で GitHub PR インラインコメント可。v2.1.147 で `/simplify` から rename + cleanup 削除 → v2.1.152 で `/code-review --fix` として apply 復活 → **v2.1.154 で `/simplify` と `/code-review --fix` が divergence**: `/code-review --fix` は完全な **bug-hunting** レビュー + 自動 fix、`/simplify` は **cleanup-only** レビュー（reuse / simplification / efficiency / altitude）+ 自動 fix。両者は別物で、無印 `/code-review` は検出のみ）。※ marketplace plugin `code-review:code-review`（PR レビュー）とは別物。o-m-cc が指すのは常に built-in の方
 2. Review Council — セキュリティ関連の変更、新規ファイル3つ以上、100行以上の変更がある場合
 3. lint（`bin/lint`）— 常に実行（format / style 統一を担当、cleanup 自動化のフォロー）
 

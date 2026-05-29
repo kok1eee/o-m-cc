@@ -16,9 +16,9 @@
 **検出した issue は `confidence` と `severity` を付与して全件報告する。**
 agent 側で finding 時にフィルタリング・閾値カットを行わない。集約・ランキング・降格は Council 側 / 上位スキル側で行う。
 
-### 理由（4.7 リテラル解釈トラップ）
+### 理由（4.7+ / 4.8 リテラル解釈トラップ）
 
-Claude Opus 4.7 は `"Confidence 80+ のみ報告"` `"only critical"` `"be conservative"` のような指示を文字通り守る傾向が強い。**bug を発見しているのに「閾値以下」と判定して silent drop する**事故が観測されている（Anthropic 公式 prompting best practices で名指しの注意あり）。
+Claude Opus 4.7 から observed の挙動として `"Confidence 80+ のみ報告"` `"only critical"` `"be conservative"` のような指示を文字通り守る傾向が強い（v2.1.154 でデフォルトとなった Opus 4.8 でも同系列の傾向は継続の可能性、確証なし）。**bug を発見しているのに「閾値以下」と判定して silent drop する**事故が観測されている（Anthropic 公式 prompting best practices で名指しの注意あり）。
 
 → agent には「全件挙げ + confidence/severity 付与」を指示し、フィルタは集約側で持つ。閾値は集約側に集中させる方が後から調整が効く。
 

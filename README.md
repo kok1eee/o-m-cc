@@ -168,7 +168,7 @@ Agent Teams (Council + Pipeline ハイブリッド):
 
 **Phase 1 は Discovery Council（peer-to-peer）、Phase 2-3 は Pipeline（順次）**
 
-> **推奨モデル**: Claude Code v2.1.111+ の Max 契約なら **Opus 4.7 + Auto mode** が `/o-m-cc:sisyphus` のような長時間ループと相性が良い（`--enable-auto-mode` は不要）。`/effort xhigh` で速度と知能のバランス調整も可能。
+> **推奨モデル**: Claude Code v2.1.111+ の Max 契約なら **Opus 4.7+ / 4.8 + Auto mode** が `/o-m-cc:sisyphus` のような長時間ループと相性が良い（`--enable-auto-mode` は不要、v2.1.152 で opt-in consent も撤廃）。`/effort xhigh` で速度と知能のバランス調整も可能（v2.1.154 で Opus 4.8 がデフォルト、default effort も high に引き上げ）。
 
 > **`/goal` vs `/o-m-cc:sisyphus`**: built-in `/goal <完了条件>` はターン跨ぎの単純継続（完了条件を満たすまで Claude が作業を続けるだけ）。Agent Teams・quality-gate・構造化フェーズは含まない。**新機能開発や設計判断を伴う作業は `/o-m-cc:sisyphus`**（要件→設計→実装→品質ゲートを Agent Teams で一貫実行）。
 
@@ -337,7 +337,7 @@ claude plugin marketplace add anthropics/claude-plugins-official
 |-------|------|-------|------------|--------|
 | @security-reviewer | セキュリティレビュー（OWASP Top 10、認証認可、入力検証） | sonnet | default | project |
 
-> **コードレビュー**（correctness bug 検出）は v0.58.0 から built-in skill に一任（当時の `Skill: simplify` を v2.1.147 で `Skill: code-review` にリネーム + cleanup-and-fix 動作削除 → **v2.1.152 で `--fix` として apply 復活**、`/simplify` は `--fix` の alias）。旧 `code-reviewer` agent は v0.58.0 で削除。無印 `code-review` は検出のみで findings は main agent が反映、`--fix` で自動適用も可。
+> **コードレビュー**（correctness bug 検出）は v0.58.0 から built-in skill に一任（`Skill: simplify` を v2.1.147 で `Skill: code-review` にリネーム + cleanup-and-fix 削除 → v2.1.152 で `--fix` 復活 → **v2.1.154 で `/simplify` と `/code-review --fix` が divergence**: `/code-review --fix` = 完全な bug-hunting + 自動 fix、`/simplify` = cleanup-only review (reuse / simplification / efficiency / altitude) + 自動 fix）。旧 `code-reviewer` agent は v0.58.0 で削除。無印 `code-review` は検出のみで findings は main agent が反映、`--fix` で bug fix 自動適用、cleanup だけなら `/simplify`。
 
 ### Prior Art Agents（feature-flow Phase B 専用）
 
@@ -459,7 +459,7 @@ hooks のエラーは `.claude/hooks-error.log` に記録されます。
 
 ### ランタイムの落とし穴
 
-`The model's tool call could not be parsed` 等、o-m-cc を回していて踏みやすい Claude Code / モデル側の事象と対処は [docs/troubleshooting.md](docs/troubleshooting.md) を参照（要点: Opus 4.7 + xhigh thinking のストリーミングバグ。`/effort medium` / `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` / 壊れた session は `/handoff` で新規再開）。
+`The model's tool call could not be parsed` 等、o-m-cc を回していて踏みやすい Claude Code / モデル側の事象と対処は [docs/troubleshooting.md](docs/troubleshooting.md) を参照（要点: Opus 4.7+ / 4.8 + xhigh thinking のストリーミングバグ系列。v2.1.156 で Opus 4.8 thinking blocks の API エラー fix が出るも継続注視。`/effort medium` / `CLAUDE_CODE_DISABLE_1M_CONTEXT=1` / 壊れた session は `/handoff` で新規再開）。
 
 ### 状態リセット
 
@@ -582,7 +582,7 @@ Sisyphus Loop の背後にある哲学：
 2. **並列実行**: Agent Teams で3体同時に分析できる。Discovery Council（researcher + analyst + scout）は並列 spawn で時間コストを削減する。ロールプレイは直列実行しかできない
 3. **永続メモリ**: `memory: project` を持つエージェントはプロジェクト固有の知見（パターン、規約、過去の判断）を蓄積する。次のセッションでも引き継がれる。ロールプレイのコンテキストはセッション終了で消える
 
-ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除、`Skill: simplify` → `Skill: code-review` は v2.1.147 でリネーム + cleanup 削除 → v2.1.152 で `--fix` として復活）。
+ただし正直に言うと、全体すべてが常に必要なわけではない。実際のタスクで頻繁に使うのは analyst, designer, planner, researcher の4〜5体。残りは特定の状況（セキュリティ監査、デバッグ、ギャップ分析等）で呼ばれる専門家だ。常時ロードは frontmatter のみ（全体の約10%）なので、存在コストは低い。コードレビュー（correctness bug 検出）は built-in `Skill: code-review` に一任（旧 code-reviewer agent は v0.58.0 で削除、`Skill: simplify` → `Skill: code-review` は v2.1.147 でリネーム + cleanup 削除 → v2.1.152 で `--fix` 復活 → v2.1.154 で `/simplify` と `/code-review --fix` が divergence: 前者は cleanup-only、後者は bug-hunting）。
 
 ## Token & Cost
 
