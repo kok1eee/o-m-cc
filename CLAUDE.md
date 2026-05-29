@@ -140,6 +140,8 @@ Opus 4.7+（v2.1.154 以降は Opus 4.8 がデフォルト）は指示を文字�
 
 **判断軸**: 議論が価値 → Agent Teams / 大規模・再実行・script 化 → dynamic workflow / それ以外の単発 → subagent。**dynamic workflow は大量トークンを使うため auto では暗黙発動しない。main が「これは workflow 向き」と判断したら明示的に提案・起動する**（A081）。
 
+> **opt-in キーワード**: dynamic workflow のユーザー側トリガーは v2.1.160 で `workflow` → `ultracode` に改名された（プロンプト入力で violet ハイライト）。「workflow」と打っても発動しない（自分の言葉で頼めば従来通り起動する）。main が workflow を提案するときは「`ultracode` で起動できます」と案内する。
+
 ### Subagent / Agent Teams の発動（auto mode でも必須）
 
 **subagent spawn と Agent Teams は「並列 action」であり、planning ではない。auto mode でも必ず使うこと。**
