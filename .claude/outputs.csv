@@ -34,3 +34,5 @@ O032,A067,2026-05-27,doc,articles/auto-mode.md,v2.1.152 で auto mode の opt-in
 O033,A069,2026-05-27,data,"hooks/session-title.sh,hooks/hooks.json",専用 hook session-title.sh を新設(repo名 + journal最新見出し)。既存 banner を壊さず sessionTitle だけ JSON 出力。複数ウィンドウ/cmux/handoff の識別性向上,status:pass
 O034,P007,2026-05-28,doc,CLAUDE.md,設計思想セクションに Anthropic 5 パターン × o-m-cc 対応表を追加。4/5 採用 + Orchestrator-workers 拒否を 'simple composable patterns' 主張で接地,status:pass;fr_coverage:100%
 O035,P008,2026-05-28,doc,plan/eval-harness-revisit.md,EDD 監査の OUT 判断 4 件を Anthropic 一次情報で再評価。3/4 維持確認、1/4 (小規模 eval) を中間案 (experiment 経由の Guides 止まり docs 化) としてフォロー atom 化,status:pass;fr_coverage:100%
+O036,P009,2026-05-29,doc,CLAUDE.md,実行形態 routing (subagent / Agent Teams / dynamic workflow) を main が auto mode で判断する規律を明文化。3 形態の使い分けテーブル + anti-pattern + o-m-cc 文脈の例,status:pass;fr_coverage:100%
+O037,P009,2026-05-29,doc,CLAUDE.md,実行形態 routing (subagent / Agent Teams / dynamic workflow) を main が auto mode で判断する規律を明文化。3 形態の使い分けテーブル + anti-pattern + o-m-cc 文脈の例,status:pass;fr_coverage:100%

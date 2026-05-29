@@ -126,7 +126,21 @@ Opus 4.7+（v2.1.154 以降は Opus 4.8 がデフォルト）は指示を文字�
 3. **状況がテーブルの行にマッチする → 発動**（Opus 4.7+ / 4.8 で効きにくくなっているので特に意識）
 4. auto mode でも 3 は有効。「action である」と明示されている skill は抑制しない
 
-## Subagent / Agent Teams の発動（auto mode でも必須）
+## 実行形態の routing（auto mode で main が判断してぐるぐる回す）
+
+**o-m-cc の基本動作は「main agent が auto mode / Sisyphus 思想で止まらず回り、各タスクで最適な実行形態を選ぶ」こと。** main が選ぶのは「どの協調形態を使うか」（Routing パターン、A073）であって、agent を上から支配する中央オーケストレーターではない（peer-to-peer 原則と両立）。
+
+選択肢は 3 つ。main が状況で使い分ける:
+
+| 実行形態 | 選ぶ状況 | 性質 |
+|---|---|---|
+| **subagent spawn**（Agent tool 単体） | 単発の重い調査・レビュー・検証。context 汚染を避けたい | その都度 main が召喚、~1 体 |
+| **Agent Teams**（TeamCreate + SendMessage） | **agent 同士の議論・相互検証そのものが価値**（要件分析・多角レビュー・記事推敲） | peer-to-peer、~3-10 体、議論型 |
+| **dynamic workflow**（`/workflows`、JS script） | **大規模並列・再実行性が欲しい**（数十〜数百項目の一括処理、repo 横断 audit、cross-checked 検証） | 段取りを script 化、background、~数百体 |
+
+**判断軸**: 議論が価値 → Agent Teams / 大規模・再実行・script 化 → dynamic workflow / それ以外の単発 → subagent。**dynamic workflow は大量トークンを使うため auto では暗黙発動しない。main が「これは workflow 向き」と判断したら明示的に提案・起動する**（A081）。
+
+### Subagent / Agent Teams の発動（auto mode でも必須）
 
 **subagent spawn と Agent Teams は「並列 action」であり、planning ではない。auto mode でも必ず使うこと。**
 
@@ -163,12 +177,26 @@ Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制され�
 
 **これらは sisyphus / quality-gate / editorial-swarm skill 内で自動構築されるが、手動でも積極使用可**。
 
+### Dynamic Workflow を使うべき場面
+
+| 状況 | なぜ workflow か |
+|---|---|
+| 数十〜数百項目の一括処理（全 skill の SKILL.md を並列レビュー、大量 atom の一括判定 等） | main が 1 体ずつ判断するより script のループで回す方が速い |
+| repo 横断 audit / 大規模 migration | 段取りを script 化すれば再実行可能、background で進む |
+| cross-checked research（複数視点の結果を互いに検証） | 数百 agent の結果を script が集約 |
+
+**Agent Teams との違い**: Agent Teams は「agent 同士が SendMessage で議論」（議論プロセスが価値）。workflow は「script が段取りを持ち、各 agent は独立実行 → script が集約」（再実行性・大規模並列が価値）。**議論が要らない大量処理は workflow、議論が価値なら Agent Teams**。
+
+**o-m-cc 文脈の使い分け例**: 「要件を 3 視点で詰める」→ Agent Teams（discovery-council）/「全 skill を一括 review」「release-notes の全項目を並列 triage」→ dynamic workflow。判断知（CLAUDE.md / facets policies）は workflow の各 agent prompt に渡せば o-m-cc 流の規律を効かせられる。
+
 ### auto mode での anti-pattern
 
 - ❌ 3 ファイル以上の Read を main agent が自分でやる（subagent に delegate すべき）
 - ❌ 大きな実装を main agent だけで完結させる（Verifier subagent を spawn しない）
 - ❌ レビューを「後でやる」と先送り（`Skill: code-review` を即実行すべき）
-- ✅ 並列 agent spawn で context 節約 + 速度向上
+- ❌ 数十項目の同種処理を main が逐次ループで回す（dynamic workflow に投げるべき）
+- ❌ 「議論が価値」なタスクを workflow で処理（相互検証が消える、Agent Teams を使うべき）
+- ✅ 並列 agent spawn で context 節約 + 速度向上 / 大規模一括は workflow / 議論は Agent Teams
 
 ## ワークフロー判断
 
