@@ -4,7 +4,7 @@ description: "新機能を実装まで一気通貫で走らせる action skill�
 argument-hint: "<feature description>"
 allowed-tools: [Read, Write, Edit, Glob, Grep, Bash, WebSearch, WebFetch, TaskCreate, TaskUpdate, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus
-effort: high
+effort: xhigh
 context: fork
 ---
 

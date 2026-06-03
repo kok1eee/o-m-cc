@@ -198,6 +198,7 @@ Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制され�
 - ❌ レビューを「後でやる」と先送り（`Skill: code-review` を即実行すべき）
 - ❌ 数十項目の同種処理を main が逐次ループで回す（dynamic workflow に投げるべき）
 - ❌ 「議論が価値」なタスクを workflow で処理（相互検証が消える、Agent Teams を使うべき）
+- ❌ 単一応答で完結する作業（既に見えている関数の refactor 等）に subagent を spawn（Opus 4.8 公式ガイド: 直接やれ。over-spawn は逆に遅い。spawn は fan-out・複数ファイル読み・独立検証のときだけ）
 - ✅ 並列 agent spawn で context 節約 + 速度向上 / 大規模一括は workflow / 議論は Agent Teams
 
 ## ワークフロー判断
