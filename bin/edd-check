@@ -34,7 +34,9 @@ else
 fi
 cd "$ROOT"
 
-OUTPUTS_CSV="$ROOT/.claude/outputs.csv"
+# データ層は O_M_CC_DATA_DIR で私的リポに分離可（未設定なら従来の $ROOT/.claude）
+DATA_DIR="${O_M_CC_DATA_DIR:-$ROOT/.claude}"
+OUTPUTS_CSV="$DATA_DIR/outputs.csv"
 VALIDATE="$ROOT/bin/validate-plan"
 ATOMS="$ROOT/bin/atoms"
 
@@ -46,7 +48,7 @@ say() { [[ "$QUIET" == false ]] && echo "$@"; return 0; }
 register_atom() {
   local indicator="$1"
   local content="$2"
-  local atoms_csv="$ROOT/.claude/atoms.csv"
+  local atoms_csv="$DATA_DIR/atoms.csv"
 
   # 同一指標で直近 7 日以内の edd-drift atom が存在するか（python で CSV parse）
   local dup="OK"

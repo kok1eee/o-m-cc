@@ -24,21 +24,21 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.repo_root import detect_root  # noqa: E402
+from lib.repo_root import data_dir  # noqa: E402
 
 ATOMS_HEADER = ["id", "created_at", "source", "content", "status", "next"]
 PIPELINE_HEADER = ["id", "atom_id", "promoted_at", "plan_path", "status", "owner", "target_date"]
 OUTPUTS_HEADER = ["id", "pipeline_id", "completed_at", "artifact_type", "artifact_path", "outcome", "metric"]
 
 
-ROOT = detect_root()
-ATOMS = ROOT / ".claude" / "atoms.csv"
-PIPELINE = ROOT / ".claude" / "pipeline.csv"
-OUTPUTS = ROOT / ".claude" / "outputs.csv"
+DATA_DIR = data_dir()
+ATOMS = DATA_DIR / "atoms.csv"
+PIPELINE = DATA_DIR / "pipeline.csv"
+OUTPUTS = DATA_DIR / "outputs.csv"
 
 
 def ensure_files() -> None:
-    (ROOT / ".claude").mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     for path, header in [(ATOMS, ATOMS_HEADER), (PIPELINE, PIPELINE_HEADER), (OUTPUTS, OUTPUTS_HEADER)]:
         if not path.exists():
             with path.open("w", newline="", encoding="utf-8") as f:

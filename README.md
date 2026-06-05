@@ -1,4 +1,4 @@
-# o-m-cc v0.59.2
+# o-m-cc v0.59.3
 
 [English](README_en.md)
 
@@ -730,6 +730,10 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.59.3
+
+- **データ層を `O_M_CC_DATA_DIR` で私的リポに分離可能に** — `atoms.csv` / `pipeline.csv` / `outputs.csv` は個人の開発バックログで、公開される o-m-cc repo に置くべきでない（内部 app 名・作業文脈を含む）。環境変数 `O_M_CC_DATA_DIR` を設定すると `bin/atoms` / `bin/atom-suggest` / `bin/edd-check` がそこを読み書きする（未設定なら後方互換で `<repo root>/.claude`）。「公開機構」と「私的データ」を分離し、私的リポの git で cross-machine 同期・定期改善を回せる。移行手順は [`docs/private-data-dir.md`](docs/private-data-dir.md)。純粋追加で後方互換。
 
 ### 0.59.2
 

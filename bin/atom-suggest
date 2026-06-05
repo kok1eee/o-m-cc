@@ -38,7 +38,7 @@ from collections import Counter
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.repo_root import detect_root  # noqa: E402
+from lib.repo_root import data_dir, detect_root  # noqa: E402
 
 STALE_DAYS = 30
 STUCK_DAYS = 14
@@ -54,11 +54,12 @@ MIN_SAMPLE = 3        # A-4: 構造化 metric が N 件未満なら「データ�
 METRIC_KEYS = ("fr_coverage", "duration_ms", "status", "token_cost")
 
 
-ROOT = detect_root()
-ATOMS = ROOT / ".claude" / "atoms.csv"
-PIPELINE = ROOT / ".claude" / "pipeline.csv"
-OUTPUTS = ROOT / ".claude" / "outputs.csv"
-CONTEXT = ROOT / ".claude" / "context.md"
+ROOT = detect_root()  # skills/ 走査などリポ相対パス用
+DATA_DIR = data_dir()  # atoms/pipeline/outputs（O_M_CC_DATA_DIR で私的リポに分離可）
+ATOMS = DATA_DIR / "atoms.csv"
+PIPELINE = DATA_DIR / "pipeline.csv"
+OUTPUTS = DATA_DIR / "outputs.csv"
+CONTEXT = DATA_DIR / "context.md"
 PLUGIN_DATA = os.environ.get("CLAUDE_PLUGIN_DATA", "")
 USAGE_CSV = Path(PLUGIN_DATA) / "skill-usage.csv" if PLUGIN_DATA else None
 DURATION_CSV = Path(PLUGIN_DATA) / "skill-duration.csv" if PLUGIN_DATA else None

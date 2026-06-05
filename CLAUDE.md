@@ -34,6 +34,8 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 
 スキルはコンテキストではなくファイル/ネイティブ状態を介して連携する:
 
+> **データ層の置き場 (`O_M_CC_DATA_DIR`)**: `atoms.csv` / `pipeline.csv` / `outputs.csv` は個人の開発バックログであり、公開される o-m-cc repo にコミットすべきではない。環境変数 **`O_M_CC_DATA_DIR`** を私的リポのパスに設定すると、`bin/atoms` / `bin/atom-suggest` / `bin/edd-check` はそこを読み書きする（未設定なら後方互換で `<repo root>/.claude`）。これにより「公開プラグイン（機構）」と「私的データ（バックログ）」を分離し、私的リポの git で cross-machine 同期・定期改善を回す。下表の `.claude/*.csv` は `O_M_CC_DATA_DIR` 設定時はそのディレクトリを指す。
+
 | 場所 | Writer | Reader | 用途 |
 |---|---|---|---|
 | `.claude/atoms.csv` | `bin/atoms add` / 手動 | atom-suggest | アイデアバックログ（kawai 氏 atoms 相当）|
