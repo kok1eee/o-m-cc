@@ -1,4 +1,4 @@
-# o-m-cc v0.59.1
+# o-m-cc v0.59.2
 
 [English](README_en.md)
 
@@ -442,8 +442,6 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | PreToolUse | `Bash` | `simplify-diff-gate.sh` | push 系コマンド前に diff 行数をチェック。閾値（default 500、`CODE_REVIEW_DIFF_THRESHOLD` で上書き可。旧 `SIMPLIFY_DIFF_THRESHOLD` も fallback）を超え かつ 最終コミット以降に `/code-review` 未実行なら **exit 2 で block**（強制 review gate）。ファイル名は履歴的に simplify-diff-gate のまま |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
-| TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/atom-suggest で集計可能） |
-| TaskCompleted | - | `task-completed.sh` | タスク完了通知・依存タスクアンブロック |
 
 ### デバッグモード
 
@@ -550,8 +548,6 @@ o-m-cc/
 │   ├── quality-gate-cta.sh    # push 前の quality-gate CTA
 │   ├── plan-mode-exit-cta.sh  # plan mode 終了時に sisyphus を促す
 │   ├── subagent-verify.sh     # サブエージェント成果物検証
-│   ├── task-created-log.sh    # タスク作成ログ
-│   ├── task-completed.sh      # タスク完了通知・アンブロック
 │   └── reset-state.sh         # 状態リセットツール
 ├── docs/
 │   ├── adr/                   # Architecture Decision Records
@@ -734,6 +730,10 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.59.2
+
+- **自作タスク管理コピー機構を削除** — `task-created-log.sh`（`TaskCreated` event）/ `task-completed.sh`（`TaskCompleted` event）を削除。ネイティブの TaskCreate/TaskUpdate が普及する前に、タスクをターミナル表示用にコピーしていた自作機構で、公式機能で不要になった。hooks.json の両 event ブロック・README・`capabilities.md` の参照も整理。成果物 `task-created.log` と、permission-denied 削除で orphan 化した `permission-denials.jsonl` も削除。なお両 event は実発火していた（task-created.log 552 行）が title 抽出が壊れ全 `untitled` で分析価値は無かった。hook 数 18→16。
 
 ### 0.59.1
 

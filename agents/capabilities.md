@@ -76,7 +76,7 @@ TeamCreate → team_name で作成
   → TaskCreate で全タスク登録
   → teammates が自律的にクレーム・実行
   → SendMessage で peer-to-peer 調整（recipient = name）
-  → TaskCompleted hook で完了通知
+  → TaskUpdate で完了（ネイティブタスクリスト）
   → TeamDelete で解散
 ```
 

@@ -120,30 +120,6 @@
           }
         ]
       }
-    ],
-    "TaskCreated": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/task-created-log.sh",
-            "timeout": 2000
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/task-completed.sh",
-            "timeout": 5000
-          }
-        ]
-      }
     ]
   }
 }

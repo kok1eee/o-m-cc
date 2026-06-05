@@ -36,7 +36,7 @@ emit_cta() {
 # systemMessage CTA
 # =============================================================================
 # Claude Code の systemMessage に注入される JSON を出力
-# task-completed, teammate-idle 等で使用
+# quality-gate-cta, plan-mode-exit-cta 等の CTA 系 hook で使用
 emit_cta_system() {
   local msg="$1"
   if command -v jq >/dev/null 2>&1; then
