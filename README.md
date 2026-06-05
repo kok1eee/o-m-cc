@@ -1,4 +1,4 @@
-# o-m-cc v0.59.0
+# o-m-cc v0.59.1
 
 [English](README_en.md)
 
@@ -444,7 +444,6 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
 | TaskCreated | - | `task-created-log.sh` | タスク作成ログ（/atom-suggest で集計可能） |
 | TaskCompleted | - | `task-completed.sh` | タスク完了通知・依存タスクアンブロック |
-| PermissionDenied | - | `permission-denied.sh` | 拒否ログ + 代替提案 |
 
 ### デバッグモード
 
@@ -553,7 +552,6 @@ o-m-cc/
 │   ├── subagent-verify.sh     # サブエージェント成果物検証
 │   ├── task-created-log.sh    # タスク作成ログ
 │   ├── task-completed.sh      # タスク完了通知・アンブロック
-│   ├── permission-denied.sh
 │   └── reset-state.sh         # 状態リセットツール
 ├── docs/
 │   ├── adr/                   # Architecture Decision Records
@@ -736,6 +734,11 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.59.1
+
+- **fix(security): permission-denied hook 削除 + ファイルログ廃止** — `hooks/lib/common.sh` のログ出力先が相対パス `.claude/hooks-error.log` だったため作業中の各リポに書き込まれ、`permission-denied.sh`（非公式 `PermissionDenied` event 登録）が拒否コマンド本文を記録した結果、`ssmm put ...=xoxb-...` 等トークン入りコマンドが平文でリポにコミット・push され漏洩した。原因の permission-denied hook（native auto-mode フィードバックと重複・write-only ログで誰も読まず）を削除、common.sh のファイルログを廃止（可視化は stderr に委ね Claude Code の native 表示に乗せる）。散在した 37 個の `hooks-error.log` も削除。**既に push 済みのトークンはローテーション必須**。
+- **subagent-verify を additionalContext 化（v2.1.163）** — SubagentStop hook が stderr+exit0 で警告していたが exit0 では Claude に届かず Sensor が機能していなかった。v2.1.163 の `hookSpecificOutput.additionalContext` で検出結果を Claude に渡し、turn 継続のまま再 spawn を促せるように。系統A（空 thinking + tool_use 欠落）の subagent 版検出も兼ねる。
 
 ### 0.59.0
 

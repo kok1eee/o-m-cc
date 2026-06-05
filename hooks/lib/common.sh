@@ -2,9 +2,10 @@
 # o-m-cc hooks 共通ライブラリ
 # 全 Bash hooks で source して使用
 
-# ログファイル
-O_M_CC_LOG_FILE="${O_M_CC_LOG_FILE:-.claude/hooks-error.log}"
-O_M_CC_LOG_MAX_LINES=100
+# ログ: ファイル書き込みは廃止。
+# 相対パス .claude/hooks-error.log が各リポを汚染し、permission-denied hook 経由で
+# 拒否コマンド本文の秘密がコミット漏洩したため。可視化は log_* の stderr 出力に委ね、
+# Claude Code の native な hook stderr/失敗表示に乗せる（logging.md「ファイルログ廃止」方針）。
 
 # =============================================================================
 # Headless モード検出
@@ -59,42 +60,12 @@ sed_inplace() {
 # ログ機能
 # =============================================================================
 
-# ログディレクトリ確保
-_ensure_log_dir() {
-  local log_dir
-  log_dir=$(dirname "$O_M_CC_LOG_FILE")
-  if [[ ! -d "$log_dir" ]]; then
-    mkdir -p "$log_dir" 2>/dev/null || true
-  fi
-}
-
-# ログローテーション (100行超過時に古い行から削除)
-_rotate_log() {
-  if [[ ! -f "$O_M_CC_LOG_FILE" ]]; then
-    return
-  fi
-
-  local line_count
-  line_count=$(wc -l < "$O_M_CC_LOG_FILE" 2>/dev/null || echo "0")
-  line_count=$((line_count + 0))  # 数値化
-
-  if [[ "$line_count" -gt "$O_M_CC_LOG_MAX_LINES" ]]; then
-    tail -n "$O_M_CC_LOG_MAX_LINES" "$O_M_CC_LOG_FILE" > "${O_M_CC_LOG_FILE}.tmp"
-    mv "${O_M_CC_LOG_FILE}.tmp" "$O_M_CC_LOG_FILE"
-  fi
-}
-
-# メッセージログ出力
+# メッセージログ出力（ファイル書き込みは廃止 → no-op）。
+# 旧実装は .claude/hooks-error.log に追記していたが、相対パスゆえに作業中の各リポへ書き込まれ、
+# 拒否コマンド本文の秘密が混入してコミット漏洩した。可視化は呼び出し側（log_error は常時 stderr、
+# log_warn/log_debug は O_M_CC_DEBUG=1 時に stderr）に委ねる。
 log_message() {
-  local level="$1"
-  local message="$2"
-  local hook_name="${O_M_CC_HOOK_NAME:-unknown}"
-  local timestamp
-  timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-
-  _ensure_log_dir
-  echo "[${timestamp}] [${hook_name}] [${level}] ${message}" >> "$O_M_CC_LOG_FILE"
-  _rotate_log
+  : # no-op
 }
 
 log_error() {

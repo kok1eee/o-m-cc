@@ -144,18 +144,6 @@
           }
         ]
       }
-    ],
-    "PermissionDenied": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/permission-denied.sh",
-            "timeout": 3000
-          }
-        ]
-      }
     ]
   }
 }
