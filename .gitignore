@@ -22,6 +22,12 @@ __pycache__/
 .claude/idle-counts/
 /plan/
 
+# 私的データ層（個人の開発バックログ。O_M_CC_DATA_DIR で私的リポに分離。
+# 公開される o-m-cc repo にコミットしない。詳細は docs/private-data-dir.md）
+.claude/atoms.csv
+.claude/pipeline.csv
+.claude/outputs.csv
+
 # Legacy context files (v0.42.0 で廃止済だが古い hook が書き戻す可能性があるため ignore)
 # VCS 共有は .claude/journal.md（/handoff で更新）だけで行う
 .claude/chronicle.md
