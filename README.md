@@ -1,4 +1,4 @@
-# o-m-cc v0.60.0
+# o-m-cc v0.61.0
 
 [English](README_en.md)
 
@@ -733,6 +733,12 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.61.0
+
+- **grill を独立スキルに昇格** — 0.60.0 で deep-interview の2モード目として入れた「grill」（完成した plan/design を対話で詰問し実装前に穴を潰す）を、専用スキル `/o-m-cc:grill` に分離。deep-interview は要件掘り下げ専用に戻した。`!` 動的注入で起動時に `plan/*.md` の有無を検知する Step 0 前提ガードを追加し、計画が無い状態で grill が呼ばれたら deep-interview / design / feature-flow へ誘導して空回りを防ぐ。skill 数 15 → 16。
+- **`publicity-gate.sh` 新設（push 前 leak gate, A086）** — 公開 repo への push 直前に diff を scan し、Slack(`xox*`) / AWS(`AKIA`) / GitHub(`ghp_`) / 秘密鍵パターンの混入を検出したら exit 2 で block（秘密値は出力せずパターン種別のみ報告）。会話ログ `*.jsonl` は除外、`PUBLICITY_GATE_OFF=1` で bypass。先のトークン漏洩インシデントの構造的予防（Sensors → 物理ブロック寄り）。`simplify-diff-gate.sh` と同じ PreToolUse(Bash, push 系) 方式。
+- **plugin.json / marketplace.json の description を実数に修正** — 「15 の専門エージェント」→「14」（code-reviewer 削除時の取りこぼし）。
 
 ### 0.60.0
 
