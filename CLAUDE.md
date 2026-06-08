@@ -32,31 +32,9 @@ o-m-cc は Harness Engineering の 2 軸（事前制御 / 事後検知）で設�
 
 ### データレイヤー（スキル間で共有される状態）
 
-スキルはコンテキストではなくファイル/ネイティブ状態を介して連携する:
-
-> **データ層の置き場 (`O_M_CC_DATA_DIR`)**: `atoms.csv` / `pipeline.csv` / `outputs.csv` は個人の開発バックログであり、公開される o-m-cc repo にコミットすべきではない。環境変数 **`O_M_CC_DATA_DIR`** を私的リポのパスに設定すると、`bin/atoms` / `bin/atom-suggest` / `bin/edd-check` はそこを読み書きする（未設定なら後方互換で `<repo root>/.claude`）。これにより「公開プラグイン（機構）」と「私的データ（バックログ）」を分離し、私的リポの git で cross-machine 同期・定期改善を回す。下表の `.claude/*.csv` は `O_M_CC_DATA_DIR` 設定時はそのディレクトリを指す。
-
-| 場所 | Writer | Reader | 用途 |
-|---|---|---|---|
-| `.claude/atoms.csv` | `bin/atoms add` / 手動 | atom-suggest | アイデアバックログ（kawai 氏 atoms 相当）|
-| `.claude/pipeline.csv` | `bin/atoms promote` | atom-suggest, designer | 要件化フェーズ（atoms ↔ plan/*.md の橋渡し）|
-| `.claude/outputs.csv` | `bin/atoms complete [--metric]` | atom-suggest, edd-check | 完了履歴（成果物 path + outcome + metric）。metric 列は EDD 構造化フォーマット `key:value;key:value`（標準 key: fr_coverage / duration_ms / status / token_cost）。自由テキストとの後方互換あり（FR-2）|
-| `plan/requirements.md` | discovery-council, deep-interview | designer, critic, quality-gate | 要件定義（FR-X 形式）|
-| `plan/design.md` | designer | planner, critic, quality-gate | アーキテクチャ設計 |
-| `plan/archive/<timestamp>-<slug>/` | sisyphus Step 0B | — | 旧 plan の履歴保全（rm しない）|
-| `plan/progress.md` | experiment | experiment (次 iteration) | 試行履歴（keep/revert 判断）|
-| TaskCreate / TaskUpdate | planner, sisyphus | 全 teammate | ネイティブタスクリスト（Claude Code 機能）。atoms backlog 由来の実装はタスク `metadata` に `pipeline_id`/`atom_id` を付与して業務状態（CSV）と橋渡し（12-factor Factor 5、CSV への複製はしない軽量規約）|
-| `.claude/journal.md` | handoff | session-resume.sh, 別マシン | EC2 跨ぎ引き継ぎ（Recap + Next Actions）|
-| `.claude/memory/` | Claude Code auto-memory | 全スキル次回セッション | auto-memory（ユーザープロファイル・フィードバック・プロジェクト知見）|
-| Gotchas セクション（各 SKILL.md） | evolve | 次回スキル起動時 | スキル固有の実行経験から抽出した学び |
-| `.editorial/round-N/` | editorial-swarm | editorial-swarm (次 round) | 記事レビューの findings / diff 履歴 |
-| `${CLAUDE_PLUGIN_DATA}/skill-usage.csv` | skill-usage-log.sh / skill-prompt-log.sh hooks | atom-suggest, evolve | スキル使用履歴（CSV: timestamp,skill,trigger,session_id,effort,token_cost。trigger ∈ claude-proactive/user-slash。session_id は v2.1.132+、effort は v2.1.133+、token_cost は EDD FR-4 で列定義のみ先行・実値は /usage Desktop 対応後）|
-| `${CLAUDE_PLUGIN_DATA}/skill-duration.csv` | skill-duration-log.sh hook | atom-suggest | スキル実行時間（CSV: timestamp,skill,duration_ms）|
-| `${CLAUDE_PLUGIN_DATA}/agent-duration.csv` | agent-duration-log.sh hook | atom-suggest | subagent dispatch 実行時間（CSV: timestamp,agent_type,duration_ms。v2.1.144+ の SubagentStop hook input から取得）|
+スキルはコンテキストではなくファイル/ネイティブ状態を介して連携する。**各 CSV / plan ファイルの writer / reader / 用途の一覧、`O_M_CC_DATA_DIR` による公開/私的データ分離、Mac/EC2 跨マシン同期の詳細は [docs/data-layer.md](docs/data-layer.md) 参照。**
 
 **原則**: コンテキスト（会話履歴）に依存しない。別スキル/別セッション/別マシンから再開できる状態を必ずファイルに書く。
-
-**Mac/EC2 跨マシン同期** (オプショナル): 上 3 つの CSV (skill-usage / skill-duration / agent-duration) は `${CLAUDE_PLUGIN_DATA}` 配下に置かれるため per-machine になる。`bin/sync-plugin-data setup` で `~/dotfiles/claude/.claude/plugins/data/o-m-cc-kok1eee/` に実体を移して symlink 化すると dotfiles の git 同期に乗る（`.gitattributes` の `merge=union` で append-only 行を両側保持）。詳細は README「跨マシン同期」セクション参照。
 
 ## エージェント実行ヒント
 - `background: true` — I/O集約的な調査エージェント（researcher）にバックグラウンド実行ヒント
@@ -89,17 +67,7 @@ quality-gate はワークフローの自然なタイミング（コミット前�
 
 ### Anthropic 5 パターンとの対応（一次情報接地）
 
-Anthropic の [Building effective agents](https://www.anthropic.com/research/building-effective-agents) が挙げる 5 パターンを o-m-cc がどう実装/拒否しているか。**「simple, composable patterns rather than complex frameworks」**という上位主張に従い、4 パターン採用 / 1 パターン意図的拒否:
-
-| Anthropic パターン | o-m-cc の実装 | 採否 |
-|---|---|---|
-| Prompt chaining | SDD フロー（discovery-council → design → task-decomposition → 実装 → quality-gate） | ✅ 採用 |
-| Routing | CLAUDE.md「ワークフロー判断」テーブルが状況→skill を route | ✅ 採用 |
-| Parallelization | Agent Teams（discovery-council / quality-gate / editorial-swarm の並列 spawn） | ✅ 採用 |
-| Evaluator-optimizer | experiment skill（try→measure→keep/revert）+ Review Council | ✅ 採用 |
-| **Orchestrator-workers** | — | ❌ **意図的拒否**（上記「Peer-to-peer 協調」原則。中央オーケストレーターを置かず agent 同士が SendMessage で対等に協調する） |
-
-→ 4/5 採用は Anthropic 推奨に従いつつ、Orchestrator-workers を拒否する判断も**同じ原典の「simple composable patterns」主張に接地**している（複雑な中央制御より、対等な agent の composition）。
+o-m-cc は Anthropic「Building effective agents」の 5 パターンのうち 4 つ（prompt chaining / routing / parallelization / evaluator-optimizer）を採用し、**Orchestrator-workers のみ意図的に拒否**（peer-to-peer 原則）。詳細な対応表と接地理由は [docs/adr/0001-peer-to-peer-over-orchestrator.md](docs/adr/0001-peer-to-peer-over-orchestrator.md) 参照。
 
 ## Skill 発動ガイドライン（Opus 4.x + auto mode 対応）
 
@@ -142,7 +110,7 @@ Opus 4.7+（v2.1.154 以降は Opus 4.8 がデフォルト）は指示を文字�
 
 **判断軸**: 議論が価値 → Agent Teams / 大規模・再実行・script 化 → dynamic workflow / それ以外の単発 → subagent。**dynamic workflow は大量トークンを使うため auto では暗黙発動しない。main が「これは workflow 向き」と判断したら明示的に提案・起動する**（A081）。
 
-> **opt-in キーワード**: dynamic workflow のユーザー側トリガーは v2.1.160 で `workflow` → `ultracode` に改名された（プロンプト入力で violet ハイライト）。「workflow」と打っても発動しない（自分の言葉で頼めば従来通り起動する）。main が workflow を提案するときは「`ultracode` で起動できます」と案内する。
+> **opt-in キーワード**: dynamic workflow のユーザー側トリガーは `ultracode`（旧 `workflow`、プロンプト入力で violet ハイライト）。「workflow」と打っても発動しない（自分の言葉で頼めば従来通り起動する）。main が workflow を提案するときは「`ultracode` で起動できます」と案内する。
 
 ### Subagent / Agent Teams の発動（auto mode でも必須）
 
@@ -164,7 +132,7 @@ Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制され�
 | 類似機能を辿りたい | `code-explorer` |
 | アーキテクチャ / 抽象境界を把握したい | `architecture-mapper` |
 | 命名規則 / テストパターン調査 | `convention-scout` |
-| コード品質レビュー | built-in `Skill: code-review`（旧 `code-reviewer` agent は v0.58.0 で削除） |
+| コード品質レビュー | built-in `Skill: code-review` |
 | セキュリティレビュー | `security-reviewer` |
 | 計画の妥当性検証 | `critic` |
 | 曖昧な部分の調査 | `researcher` |
@@ -223,11 +191,11 @@ Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制され�
 | PR レビューが欲しい | `/ultrareview <PR#>`（built-in, クラウド並列多エージェント）。ローカル＋静的解析込みなら `/quality-gate`（o-m-cc）|
 | UI polish・複数画面 redesign・a11y 対応・CSS 統一 | `/ui-polish` で軽量ループ（Council なし、tsc/lint のみゲート）。新規デザインをゼロから生成するなら外部プラグイン `frontend-design` |
 | 技術記事の最終推敲・Zenn 記事レビュー・AI 定型句除去・fact-check・読者視点チェック | `/editorial-swarm` で 4 並列レビュー Council（anti-ai-slop / fact-checker / narrative-critic / reader-advocate）。severity 付き findings を一括承認して最大 3 ラウンドで収束 |
-| Sonnet/Haiku 実行時に自動で上位モデル相談を入れたい（Sisyphus 長ループで詰まり予防） | **セッション開始時に一度だけ `/advisor`（built-in beta）を実行**して有効化すれば、以後は同一リクエスト内で Opus advisor が自動 sub-inference（毎回手動プロンプトなし、Sisyphus の「止まらない」原則と両立）。SWE-bench +2.7pt / コスト -11.9%。Opus executor には効果薄。Vertex / Bedrock 非対応 |
+| Sonnet/Haiku 実行時に自動で上位モデル相談を入れたい（Sisyphus 長ループで詰まり予防） | **セッション開始時に一度だけ `/advisor`（built-in beta）を実行**して有効化すれば、以後は同一リクエスト内で Opus advisor が自動 sub-inference（毎回手動プロンプトなし、Sisyphus の「止まらない」原則と両立）。Opus executor には効果薄、Vertex / Bedrock 非対応 |
 | クロスモデルレビューで別視点が欲しい・Claude の盲点を別モデルに突かせたい | `/codex:review` or `/codex:adversarial-review`（[openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)）。Node.js + Codex CLI + ChatGPT アカウント（無料可）必要。o-m-cc Review Council と補完関係（同モデル複数視点 vs 別モデル）|
 
 **実装完了時のフロー:**
-1. built-in `/code-review` — コードレビュー（Anthropic 公式ネイティブスキル。correctness bug を effort 別で報告、`--comment` で GitHub PR インラインコメント可。v2.1.147 で `/simplify` から rename + cleanup 削除 → v2.1.152 で `/code-review --fix` として apply 復活 → **v2.1.154 で `/simplify` と `/code-review --fix` が divergence**: `/code-review --fix` は完全な **bug-hunting** レビュー + 自動 fix、`/simplify` は **cleanup-only** レビュー（reuse / simplification / efficiency / altitude）+ 自動 fix。両者は別物で、無印 `/code-review` は検出のみ）。※ marketplace plugin `code-review:code-review`（PR レビュー）とは別物。o-m-cc が指すのは常に built-in の方
+1. built-in `/code-review` — correctness bug を effort 別で報告（**検出のみ**、`--comment` で GitHub PR インラインコメント可）。`--fix` は **bug-hunting + 自動 fix**、`/simplify` は **cleanup-only**（reuse / simplification / efficiency / altitude）+ 自動 fix の別物。※ marketplace plugin `code-review:code-review` とは別物で、o-m-cc が指すのは常に built-in
 2. Review Council — セキュリティ関連の変更、新規ファイル3つ以上、100行以上の変更がある場合
 3. lint（`bin/lint`）— 常に実行（format / style 統一を担当、cleanup 自動化のフォロー）
 
