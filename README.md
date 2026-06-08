@@ -73,7 +73,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 ## Skills
 
-合計 15 スキル（セットアップ 1 + 計画 6 + 検証 2 + 実験・学習 2 + 運用 4）。
+合計 16 スキル（セットアップ 1 + 計画 7 + 検証 2 + 実験・学習 2 + 運用 4）。
 
 ### セットアップ
 
@@ -442,6 +442,7 @@ o-m-cc は hooks を使って以下の自動化を提供します。
 | PreToolUse | `Skill` | `skill-usage-log.sh` | スキル使用ログを記録（/atom-suggest で集計可能） |
 | PreToolUse | `Bash` | `quality-gate-cta.sh` | push 系コマンド前に quality-gate を促す CTA |
 | PreToolUse | `Bash` | `simplify-diff-gate.sh` | push 系コマンド前に diff 行数をチェック。閾値（default 500、`CODE_REVIEW_DIFF_THRESHOLD` で上書き可。旧 `SIMPLIFY_DIFF_THRESHOLD` も fallback）を超え かつ 最終コミット以降に `/code-review` 未実行なら **exit 2 で block**（強制 review gate）。ファイル名は履歴的に simplify-diff-gate のまま |
+| PreToolUse | `Bash` | `publicity-gate.sh` | push 系コマンド前に diff の追加行を scan。秘密/認証情報の**実トークン形式**（Slack `xox*` / AWS `AKIA` / GitHub `ghp_` / 秘密鍵ブロック）を検出したら **exit 2 で block**（公開 repo への secret 漏洩の予防、A086）。会話ログ `*.jsonl` は除外、誤検知は `PUBLICITY_GATE_OFF=1` で bypass |
 | PostToolUse | `ExitPlanMode` | `plan-mode-exit-cta.sh` | plan 完了時に /o-m-cc:sisyphus 実行を促す CTA |
 | SubagentStop | - | `subagent-verify.sh` | サブエージェント成果物の検証 |
 
@@ -521,7 +522,7 @@ o-m-cc/
 │   ├── check-consistency      # agents/skills 数 + version 表記の一貫性検証
 │   ├── atoms                  # atoms.csv / pipeline.csv / outputs.csv 操作（add/promote/complete/archive）
 │   └── atom-suggest           # backlog 分析と次アクション提案（macro 視点）
-├── skills/                    # 15 スキル定義
+├── skills/                    # 16 スキル定義
 │   ├── install/SKILL.md
 │   ├── deep-interview/SKILL.md
 │   ├── feature-flow/SKILL.md

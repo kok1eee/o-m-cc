@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "o-m-cc",
-      "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。15 の専門エージェント + 15 スキル + hooks による品質チェック。仕様駆動開発（SDD）フロー対応。web アプリ機能定義（feature-flow）対応。UI polish / a11y 対応用の軽量ループ（ui-polish）、記事推敲用の並列レビュー Council（editorial-swarm）も搭載。",
+      "description": "Sisyphus Loop - Agent Teams による並列マルチエージェントワークフロー。15 の専門エージェント + 16 スキル + hooks による品質チェック。仕様駆動開発（SDD）フロー対応。web アプリ機能定義（feature-flow）対応。UI polish / a11y 対応用の軽量ループ（ui-polish）、記事推敲用の並列レビュー Council（editorial-swarm）も搭載。",
       "version": "0.60.0",
       "source": {
         "source": "url",

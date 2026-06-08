@@ -4,7 +4,7 @@
 > 詳細なディレクトリ構造・Hooks 一覧・スキル一覧は [README.md](README.md) を参照。
 
 ## プロジェクト概要
-Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。14 の専門エージェント + 15 スキル + hooks による自動化。
+Claude Code 用マルチエージェントプラグイン。Agent Teams (TeamCreate/SendMessage) による peer-to-peer マルチエージェント協調。Sisyphus Loop（タスク完了まで止まらないワークフロー）と仕様駆動開発（SDD）フローを提供。14 の専門エージェント + 16 スキル + hooks による自動化。
 
 ## 技術スタック
 - Shell scripts (Bash) - hooks, scripts
