@@ -1,6 +1,6 @@
 ---
 name: feature-flow
-description: "web アプリの機能を構造化して書き下すワークフロー。新規（最初から）と既存（途中から）の 2 モード対応。ユーザーストーリー → 先行事例調査（並列3エージェント） → データと操作 → 成功条件 → Spec + Reader Test の 5 フェーズ。「機能を考えたい」「機能定義したい」「web アプリ作りたい」「機能から設計したい」「新しい機能」で発動。※ 曖昧な状態の掘り下げは deep-interview、要件統合は discovery-council、設計は design を使う。"
+description: "web アプリの機能を構造化して書き下すワークフロー。新規/既存の 2 モード、5 フェーズで構造化（先行事例調査は並列3エージェント、Reader Test 付き）。「機能を考えたい」「機能定義したい」「web アプリ作りたい」「機能から設計したい」「新しい機能」で発動。※ 曖昧な状態の掘り下げは deep-interview、要件統合は discovery-council、設計は design を使う。"
 argument-hint: "<feature description> [--new | --existing | --light]"
 allowed-tools: [Agent, TeamCreate, TeamDelete, SendMessage, Read, Glob, Grep, Write, Edit, AskUserQuestion, WebSearch, WebFetch, Bash]
 model: opus

@@ -1,6 +1,6 @@
 ---
 name: editorial-swarm
-description: "技術記事の並列レビュー Council。anti-ai-slop / fact-checker / narrative-critic / reader-advocate を並列 spawn → severity 付き findings を集約 → low は自動 apply、medium/high は AskUserQuestion で一括承認 → 再ラウンド（最大 3）。Zenn などのドラフト完成後に使う。「記事レビュー」「editorial swarm」「編集会議」「記事推敲」「記事添削」で発動。"
+description: "技術記事の並列レビュー Council。anti-ai-slop / fact-checker / narrative-critic / reader-advocate を並列 spawn、severity 付き findings を最大3ラウンドで収束。Zenn などのドラフト完成後に使う。「記事レビュー」「editorial swarm」「編集会議」「記事推敲」「記事添削」で発動。"
 argument-hint: "<article path> [target reader profile]"
 allowed-tools: [Agent, TeamCreate, TeamDelete, SendMessage, TaskCreate, TaskUpdate, Read, Write, Edit, AskUserQuestion, Glob, Grep, WebSearch, WebFetch, Bash]
 model: sonnet

@@ -1,6 +1,6 @@
 ---
 name: quality-gate
-description: "コード品質の最終確認。Skill: code-review (built-in) で correctness bug を検出 → main agent が findings を修正 → lint/ty 静的解析 → 条件付きで security-reviewer / critic を spawn (security 関連変更 or plan/requirements.md がある時のみ)。実装完了後、マージ前、コードを書き終えたときに使う。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
+description: "コード品質の最終確認。Skill: code-review (built-in) で correctness bug を検出 → main agent が findings を修正 → lint/ty 静的解析 → 条件付きで security-reviewer / critic を spawn (security 関連変更 or plan/requirements.md がある時のみ)。「品質チェックして」「品質ゲート通して」「レビューして」「コードを確認して」「PR 出す前にチェック」「セキュリティ大丈夫？」「コード見て」で発動。"
 argument-hint: "[specific files or 'all']"
 allowed-tools: [Read, Glob, Grep, Bash, Monitor, AskUserQuestion, Agent, TeamCreate, TeamDelete, SendMessage, Skill, PushNotification]
 model: opus

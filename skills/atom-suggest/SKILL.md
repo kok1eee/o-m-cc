@@ -1,6 +1,6 @@
 ---
 name: atom-suggest
-description: "atoms.csv / pipeline.csv / outputs.csv / skill-usage.csv / skill-duration.csv / context.md を統合分析し、backlog 俯瞰 + skill ヘルス（top/duration/unused）を 1 レポートで提示する。kawai 氏型 analytics ループの起点。「次に何やる？」「atom 整理」「放置案件」「stale」「振り返り」「retro」「skill 使用統計」「unused skill」「atom-suggest」で発動。"
+description: "backlog（atoms/pipeline/outputs）と skill ヘルス（usage/duration/unused）を統合分析し 1 レポートで提示する。kawai 氏型 analytics ループの起点。「次に何やる？」「atom 整理」「放置案件」「stale」「振り返り」「retro」「skill 使用統計」「unused skill」「atom-suggest」で発動。"
 allowed-tools: [Read, Bash]
 effort: low
 ---
