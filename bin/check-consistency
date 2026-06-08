@@ -148,6 +148,47 @@ check_json_desc() {
 check_json_desc ".claude-plugin/plugin.json" '.description // ""'
 check_json_desc ".claude-plugin/marketplace.json" '.plugins[0].description // ""'
 
+# === skill 名衝突チェック (A080) ===
+# skills/*/SKILL.md の name が built-in skill / 既知コマンド名・他 installed plugin 名
+# と衝突していないか検知する。衝突すると bare 呼び出し（/code-review 等）が曖昧化する。
+# A057 で built-in /code-review と marketplace plugin code-review:code-review の衝突を
+# 実体験したことの構造的予防（Sensors 止まり: 検知のみ、warning 表示で exit code には
+# 影響させない。built-in リストは手動メンテのハードコードで、誤検知が CI を止めるべき
+# でないため）。
+check_skill_name_conflicts() {
+  # 手動メンテの予約名リスト（built-in skill / slash command で、衝突すると曖昧化する）。
+  # Claude Code の version 更新で built-in が増えたら随時追記する。
+  local builtins="code-review simplify plan goal review advisor"
+  local conflicts=()
+
+  # installed_plugins.json から自身（o-m-cc）を除く plugin 名（@ 前）を取得
+  local plugin_names="" ipj="$HOME/.claude/plugins/installed_plugins.json"
+  if [[ -f "$ipj" ]]; then
+    plugin_names=$(jq -r '.plugins | keys[]' "$ipj" 2>/dev/null \
+      | sed 's/@.*//' | grep -vx 'o-m-cc' | sort -u || true)
+  fi
+
+  local f name
+  for f in skills/*/SKILL.md; do
+    [[ -f "$f" ]] || continue
+    name=$(awk -F': ' '/^name:/{gsub(/[" ]/,"",$2); print $2; exit}' "$f")
+    [[ -z "$name" ]] && continue
+    if grep -qw -- "$name" <<< "$builtins"; then
+      conflicts+=("skills/$name/ の name='$name' が built-in skill/コマンドと衝突（/$name の bare 呼び出しが曖昧化）")
+    fi
+    if [[ -n "$plugin_names" ]] && grep -qxF -- "$name" <<< "$plugin_names"; then
+      conflicts+=("skills/$name/ の name='$name' が installed plugin 名と衝突（$name:... 呼び出しが曖昧化）")
+    fi
+  done
+
+  if [[ ${#conflicts[@]} -gt 0 ]]; then
+    echo ""
+    echo "⚠️  skill 名衝突 (${#conflicts[@]} 件 / warning のみ、exit code 不変):"
+    for c in "${conflicts[@]}"; do echo "  - $c"; done
+  fi
+}
+check_skill_name_conflicts
+
 # === 結果 ===
 echo ""
 if [[ ${#errors[@]} -eq 0 ]]; then
