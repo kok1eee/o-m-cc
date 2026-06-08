@@ -197,3 +197,12 @@ o-m-cc のランタイムファイルを追加（重複しない場合のみ）�
 ---
 
 **Step 1 から自動実行してください。**
+
+## Gotchas
+
+- **公式 `/init` の後に実行**: CLAUDE.md が前提（Step 1 で弾く）。CLAUDE.md 生成は `/init` に任せ、install は o-m-cc アドオンのみ追加する
+- **settings.json は Read してマージ**: 上書きすると公式 `/init` が入れた既存パーミッションが消える。必ず既存を読んで allow/deny を統合する
+- **CLAUDE.md 追記は冪等に**: `<!-- o-m-cc: start -->` マーカーが既にあればスキップ。再実行で二重追記しない
+- **`disable-model-invocation: true`**: auto では発動しない設計。明示的に `/o-m-cc:install` で呼ぶ前提（セットアップを勝手に走らせない）
+
+<!-- AUTO-GOTCHAS -->

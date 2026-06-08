@@ -45,3 +45,12 @@ Agent:
 ## 出力
 
 plan/design.md
+
+## Gotchas
+
+- **requirements.md 無しで spawn しない**: 前提が無いと designer が空想で設計し、下流のタスク分解・実装がずれる。無ければ `discovery-council` へ誘導して終了する
+- **background spawn 禁止**: designer は foreground で完了を待つ。background にすると design.md 未完成のまま次フェーズ（task-decomposition）が走る
+- **`## 既知の不足` の引き継ぎ漏れ**: requirements.md の既知の不足を design.md に反映/引き継がないと、quality-gate まで漏れが顕在化しない
+- **軽微な設計変更で毎回 spawn しない**: designer は opus/high でトークンが重い。1 コンポーネントの微修正なら design.md を直接 Edit する方が速い
+
+<!-- AUTO-GOTCHAS -->

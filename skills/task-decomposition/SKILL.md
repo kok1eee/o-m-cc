@@ -45,3 +45,12 @@ Agent:
 ## 出力
 
 TaskCreate（ネイティブタスクシステム）
+
+## Gotchas
+
+- **plan/tasks.md を作らない**: タスクはネイティブ TaskCreate に登録する。tasks.md を作るとネイティブタスクと二重管理になり乖離する（Claude Code ネイティブ活用の原則）
+- **design.md だけで呼ばない**: requirements.md も入力に渡さないと要件トレーサビリティ（FR-X ↔ task）が切れる。両方が前提
+- **`## 既知の不足` を放置しない**: 対応タスクを作るか、対応不要の理由を task description に記録する。無言でスキップすると quality-gate の実装範囲検証で落ちる
+- **atoms backlog 由来の実装**: タスク metadata に `pipeline_id`/`atom_id` を付与して業務状態(CSV)と橋渡しする（CSV への複製はしない軽量規約）
+
+<!-- AUTO-GOTCHAS -->

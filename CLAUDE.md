@@ -209,7 +209,8 @@ Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制され�
 |------|-----------|
 | ピンポイントな修正（typo, 1ファイル変更） | そのまま実行 |
 | 複数ファイルにまたがる変更 | `/plan` で計画してから実行 |
-| 要件が曖昧・何を作るか不明確 | `/deep-interview` で掘り下げてから `/sisyphus` |
+| 要件が曖昧・何を作るか不明確 | `/deep-interview`（掘り下げモード）で掘り下げてから `/sisyphus` |
+| plan/design はできたが実装前に詰めたい・「この設計で大丈夫？」 | `/deep-interview`（grill モード）で決定木を1枝ずつ詰問。非対話で一括批判が欲しいなら `critic` を spawn |
 | 新機能・設計判断が必要な変更 | `/sisyphus` で要件→設計→タスク分解→実装 |
 | 複数ターンかかる実装・継続タスク（設計判断・Agent Teams 不要） | built-in `/goal <完了条件>` で継続（auto mode でも発動。Agent Teams・quality-gate なし）。大型新機能で Agent Teams + quality-gate が必要なら明示的に `/o-m-cc:sisyphus` |
 | 最適化・リファクタリング・試行錯誤 | `/experiment` で実験駆動ループ（試す→測る→保持 or revert） |

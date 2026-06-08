@@ -87,7 +87,7 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 
 | スキル | 説明 | Context | 自動発動 |
 |--------|------|---------|----------|
-| `/o-m-cc:deep-interview <idea>` | ソクラテス式要件掘り下げ → discovery-council にハンドオフ | - | 「要件が曖昧」「掘り下げて」「インタビュー」で発動 |
+| `/o-m-cc:deep-interview <idea｜plan>` | 構造化インタビュー（2モード自動判定: 掘り下げ→discovery-council / grill=既存 plan を決定木で詰問） | - | 「要件が曖昧」「掘り下げて」「この設計で大丈夫?」「plan を詰めて」「grill」で発動 |
 | `/o-m-cc:feature-flow <feature>` | web アプリ機能を 5 フェーズで構造化（2 モード + 並列 3 エージェント Prior Art + Reader Test） | - | 「機能を考えたい」「web アプリ作りたい」「機能から設計」で発動 |
 | `/o-m-cc:sisyphus <task>` | 計画→実装→品質ゲートまで止まらない Sisyphus ワークフロー | fork | 「計画して」「この機能を実装したい」で発動 |
 | `/o-m-cc:discovery-council <task>` | 3エージェント並列要件分析 Council | fork | 「要件を整理して」「要件定義して」で発動 |
@@ -95,6 +95,8 @@ Sisyphus モード有効化後は、普通にタスクを依頼するだけ：
 | `/o-m-cc:task-decomposition` | planner によるタスク分解 | - | 「タスクに分解して」で発動 |
 
 > **棲み分け**: `deep-interview`（曖昧アイデア → 5軸サマリー） → `feature-flow`（機能 → 構造化 spec） → `discovery-council`（複数機能 → requirements.md）の順で詳細度が上がる。単一機能なら `feature-flow` から、要件統合まで必要なら `discovery-council` も使う。
+>
+> **詰問（vetting）の使い分け**: 既存 plan/design を**対話で**詰めたいときは `deep-interview` の **grill モード**（決定木を1問ずつ降りる）。**非対話で一括の批判レポート**が欲しいときは `critic` agent。両者は補完で、同じことを二重にやらない。
 
 ### 検証
 
