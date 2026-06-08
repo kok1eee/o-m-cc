@@ -1,4 +1,4 @@
-# o-m-cc v0.59.3
+# o-m-cc v0.60.0
 
 [English](README_en.md)
 
@@ -732,6 +732,14 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.60.0
+
+- **deep-interview に grill モードを追加** — 完成した plan/design を対話で詰問し実装前に穴を潰す「grill」を、新スキルではなく deep-interview の2モード目として実装（plan/design の有無で自動判定）。独立スキル化は skill sprawl（critic とも重複）を避けて見送り、対話インタビューの入口を1つに保つ。skill 数は 15 のまま。
+- **skill description をトリガー指向に整理** — 6 skill（design / task-decomposition / quality-gate / atom-suggest / feature-flow / editorial-swarm）から「X 完成後/実装前に使う」等の使い方説明と機構の冗長を除去、トリガーフレーズは全温存。
+- **Gotchas backfill** — design / task-decomposition / install / deep-interview に実失敗モードベースの Gotchas + AUTO-GOTCHAS マーカーを追加。
+- **editorial-swarm の reviewer prompt を外出し** — 4 reviewer の prompt テンプレを `facets/references/editorial-swarm-prompts.md` に分離（progressive disclosure、SKILL.md 本文 -2.5k 字）。
+- **CLAUDE.md スリム化** — changelog/metric cruft 除去 + データレイヤー詳細表→`docs/data-layer.md` / Anthropic 5 パターン表→`docs/adr/0001` へ移設（always-on 約 -21%）。操作系 routing 表は load-bearing のため残置。
 
 ### 0.59.3
 
