@@ -129,6 +129,7 @@ Opus 4.7+ / 4.8 + auto mode で subagent / Agent Teams の発動が抑制され�
 | 状況 | 発動する subagent |
 |---|---|
 | コード全体を把握したい（3 ファイル以上の Read が見込まれる） | `Explore` or `general-purpose` |
+| 純粋な場所特定・機械的 fan-out grep（どこにある / 何が import してる、判断ゼロ） | `Explore`（`model: haiku` 指定。素だと session model=Opus 継承で過剰。理解・構造化が要るなら Sonnet の `code-explorer` 側へ） |
 | 類似機能を辿りたい | `code-explorer` |
 | アーキテクチャ / 抽象境界を把握したい | `architecture-mapper` |
 | 命名規則 / テストパターン調査 | `convention-scout` |
