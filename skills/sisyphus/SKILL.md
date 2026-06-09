@@ -213,7 +213,7 @@ Skill: task-decomposition
 各タスクを以下のループで消化する。**実装者の「通ったはず」は信用しない。verification（自己エビデンス収集）+ Verifier（独立視点）の二段階で検証する。**
 
 1. 実装
-2. `Skill: verification` — 実装者自身がエビデンスを収集（Iron Law: 検証コマンドを実行し出力を確認するまで完了宣言しない）
+2. `Skill: verification` — 実装者自身がエビデンスを収集（Iron Law: 検証コマンドを実行し出力を確認するまで完了宣言しない）。runnable な変更は test 緑だけで通さず挙動証拠まで取る（下記ルール参照）
 3. verification 通過 → Verifier spawn（独立視点で adversarial 検証）
 4. Verifier 通過 → 次のタスク
 5. verification or Verifier fail → Debugger spawn → 修正 → 再検証（最大2回）
@@ -249,6 +249,7 @@ Monitor:
 - テストコマンドは Verifier が プロジェクトの CLAUDE.md やファイル構成から特定する（`npm test`, `pytest`, `cargo test` 等）
 - テスト成功の証拠は **Verifier の報告**（コマンド出力付き）のみ
 - テストが存在しないプロジェクトでは、Verifier がビルド成功・エラーなし等を確認する
+- **runnable な変更は「挙動」まで検証する**: test 緑 / ビルド成功は必要条件であって十分条件ではない。web アプリ / サーバ / UI を持つ変更は、Verifier が native `Skill: run` / `verify` / `webapp-testing` で実際に起動し要件のユーザーパスを観測した証拠まで取る（長時間自律ループの挙動ゲート）。起動・観測できなければ「未検証」扱いで次に通さない。docs-only / 純粋ロジックのみの変更はコマンド証拠で足りる
 
 ## Step 6: Quality Gate
 
