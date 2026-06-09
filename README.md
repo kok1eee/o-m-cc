@@ -2,6 +2,8 @@
 
 [English](README_en.md)
 
+> ❄️ **凍結（FROZEN, 2026-06-09〜）**: o-m-cc の能動開発は停止しました。loop / 設計駆動の役割は後継プラグイン **flywheel**（Sensors-first / harness-driven loop engine）に移行。flywheel が validate-plan + designing フェーズの judgment library（grill/critic/scout/design/discovery-council 等）を**移設・同梱**して自己完結化したため、o-m-cc は新機能を追加せず維持のみ。auto mode で skill が発動しない構造的問題（Guides-first の限界）を flywheel の物理ゲート（Sensors-first）が解消する。
+
 **Sisyphus Loop for Claude Code** - TODOが完了するまで止まらないマルチエージェントワークフロー
 
 ## Overview
