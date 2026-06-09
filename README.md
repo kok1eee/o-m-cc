@@ -1,4 +1,4 @@
-# o-m-cc v0.61.0
+# o-m-cc v0.62.0
 
 [English](README_en.md)
 
@@ -733,6 +733,10 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.62.0
+
+- **`bin/check-consistency` に skill 名衝突チェックを追加（A080）** — skills/*/SKILL.md の `name` が built-in skill / 既知コマンド名（code-review / simplify / plan / goal / review / advisor）・他 installed plugin 名（installed_plugins.json）と衝突していないか突合し warning 表示。A057 で built-in `/code-review` と marketplace plugin `code-review:code-review` の衝突を実体験したことの構造的予防。Sensors 止まり（検知のみ、exit code 不変）。built-in リストは手動メンテのハードコードで、誤検知が CI を止めないよう warning に留める。
 
 ### 0.61.0
 
