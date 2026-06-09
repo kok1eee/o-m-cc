@@ -1,4 +1,4 @@
-# o-m-cc v0.62.0
+# o-m-cc v0.63.0
 
 [English](README_en.md)
 
@@ -733,6 +733,10 @@ Claude Code の CLAUDE.md は **毎ターン再注入される** 特殊な位置
 - **本番環境のデバッグ** - 繊細な調査が必要
 
 ## Changelog
+
+### 0.63.0
+
+- **挙動検証ゲートを追加（長時間自律ループの eval gate 強化、tip ⑤）** — Claude Code の自律実行のコツ「ブラウザ/サーバで自己検証できる環境」を o-m-cc の loop に配線。これまで verification / Sisyphus Step 5 / Verifier は test コマンド・ビルド中心で、「テスト緑だがブラウザ/サーバで壊れている」変更を検知できなかった。`verification` skill に「挙動検証」節を追加し、runnable な変更（web アプリ / サーバ / CLI / UI）は native `Skill: run` / `verify` / `webapp-testing` / webwright に**委譲**して起動・観測する（再実装しない）。`sisyphus` Step 5 のルールに挙動ゲートを 1 本追加し、Verifier が runnable な変更を実際に起動・観測するまで次に通さないようにした。docs-only / 純粋ロジックのみの変更はコマンド証拠で足りる旨を明示（過剰検証防止）。eval gate を静的（test/build）から挙動（live run）へ拡張する Sensor 強化で、新スキル・新 agent は追加していない（anti-sprawl）。`verification` の allowed-tools に `Skill` を追加（委譲を実行可能にするため）。
 
 ### 0.62.0
 
